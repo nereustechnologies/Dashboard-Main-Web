@@ -57,6 +57,18 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
     recordAction,
   } = useExerciseData()
 
+  const downloadCSV = (csvContent: string, fileName: string) => {
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.setAttribute("href", url)
+    link.setAttribute("download", fileName)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
   const orderedCategories = ["mobility", "strength", "endurance"]
 
   const startExercise = (exerciseId: string) => {
@@ -116,7 +128,9 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
 
         for (const sensorCSV of individualSensorCSVs) {
           if (sensorCSV.csvContent) {
+            downloadCSV(sensorCSV.csvContent, `${activeExercise}_${sensorCSV.fileName}`)
             try {
+              console.log(`Uploading CSV: ${sensorCSV.fileName} for exercise ${activeExercise}`)
               const response = await fetch("/api/upload-csv", {
                 method: "POST",
                 headers: {
@@ -157,7 +171,9 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
           csvDataRef.current[activeExercise],
         )
         if (preparedExerciseEvents) {
+          downloadCSV(preparedExerciseEvents.csvContent, `${activeExercise}_${preparedExerciseEvents.fileName}`)
           try {
+            console.log(`Uploading CSV: ${preparedExerciseEvents.fileName} for exercise ${activeExercise}`)
             const response = await fetch("/api/upload-csv", {
               method: "POST",
               headers: {
@@ -174,13 +190,16 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
             })
             if (!response.ok) {
               const errorData = await response.json()
-              console.error("Failed to upload exercise events CSV:", errorData.error || response.statusText)
+              console.error(
+                `Failed to upload ${preparedExerciseEvents.fileName} for ${activeExercise}:`,
+                errorData.error || response.statusText,
+              )
               // setError(`Failed to upload exercise log for ${activeExercise}.`);
             } else {
-              console.log(`Successfully uploaded exercise events CSV for ${activeExercise} to ${activeExercise}/`)
+              console.log(`Successfully uploaded ${preparedExerciseEvents.fileName} for ${activeExercise}`)
             }
           } catch (uploadError) {
-            console.error("Error uploading exercise events CSV:", uploadError)
+            console.error(`Error uploading ${preparedExerciseEvents.fileName} for ${activeExercise}:`, uploadError)
             // setError(`Error uploading exercise log for ${activeExercise}.`);
           }
         }
