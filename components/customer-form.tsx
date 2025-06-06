@@ -38,8 +38,8 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
 
   const prefillWithDummyData = () => {
     setFormData({
-      name: "John Doe",
-      age: "42",
+      name: `Marshal Mathers - ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
+      age: "42", 
       gender: "male",
       height: "178",
       weight: "82",

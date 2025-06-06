@@ -85,7 +85,7 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
     setTimerInterval(interval)
 
     // Record exercise start
-    handleRecordAction("Exercise Started")
+    handleRecordAction("Exercise Started", undefined, exerciseId)
   }
 
   const handleCompleteExercise = async () => {
@@ -236,13 +236,14 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
     setLastAction(null)
   }
 
-  const handleRecordAction = async (action: string, leg?: string) => {
-    if (!activeExercise) return
+  const handleRecordAction = async (action: string, leg?: string, exerciseIdOverride?: string) => {
+    const targetExercise = exerciseIdOverride || activeExercise
+    if (!targetExercise) return
 
     setLastAction(action)
 
     try {
-      await recordAction(action, activeExercise, customerData, timer, currentLeg, testId, leg)
+      await recordAction(action, targetExercise, customerData, timer, currentLeg, testId, leg)
     } catch (error) {
       // Error is already handled in the hook
     }
