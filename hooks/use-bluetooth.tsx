@@ -140,6 +140,7 @@ export function BluetoothProvider({ children }: { children: React.ReactNode }) {
   const exerciseStartTimeRef = useRef<number | null>(null)
   const sampleIndexRef = useRef(0)
   const sensorsRef = useRef(sensors)
+  const sensorDataRef = useRef<SensorDataPoint[]>([])
 
   useEffect(() => {
     sensorsRef.current = sensors
@@ -200,7 +201,11 @@ export function BluetoothProvider({ children }: { children: React.ReactNode }) {
             finalDataPointWithDefaults[key] = parsedData
           }
 
-          setSensorData((prevData) => [...prevData, finalDataPointWithDefaults])
+          setSensorData((prevData) => {
+            const newData = [...prevData, finalDataPointWithDefaults]
+            sensorDataRef.current = newData
+            return newData
+          })
         }
       }
     },
@@ -349,11 +354,12 @@ export function BluetoothProvider({ children }: { children: React.ReactNode }) {
   const stopRecordingAndGetData = () => {
     setIsRecording(false)
     exerciseStartTimeRef.current = null
-    return sensorData
+    return sensorDataRef.current
   }
 
   const clearSensorData = () => {
     setSensorData([])
+    sensorDataRef.current = []
   }
 
   const anySensorConnected = sensors.some((s) => s.connected)
