@@ -10,7 +10,7 @@ import { useBluetooth, type SensorDataPoint } from "@/hooks/use-bluetooth"
 import { useExerciseData } from "@/hooks/use-exercise-data"
 import { ExerciseCategory } from "@/components/exercise-category"
 import { ActiveExerciseInterface } from "@/components/active-exercise-interface"
-import { SensorDataExport } from "@/components/sensor-data-export"
+// import { SensorDataExport } from "@/components/sensor-data-export"
 import {
   prepareExerciseEventsCSV,
   prepareIndividualSensorDataCSVs,
@@ -419,15 +419,14 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
         />
       )}
 
-      {/* Sensor Data Export */}
-      {showSensorData && activeExercise && !exerciseStarted && (
+      {/* {showSensorData && activeExercise && !exerciseStarted && (
         <SensorDataExport
           activeExercise={activeExercise}
           customerData={customerData}
           sensorData={sensorData}
           recordedExerciseEvents={csvDataRef.current[activeExercise] || []}
         />
-      )}
+      )} */}
 
       <div className="flex justify-between items-center mt-8">
         <div className="flex gap-2 items-center">
