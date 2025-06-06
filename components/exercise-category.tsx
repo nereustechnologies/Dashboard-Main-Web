@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Play, CheckCircle, Download, Database } from "lucide-react"
-import { downloadCSV } from "@/lib/exercise-utils"
 
 interface ExerciseCategoryProps {
   exercises: Array<{ id: string; name: string; completed: boolean }>
@@ -44,15 +43,6 @@ export function ExerciseCategory({
               <div className="flex items-center gap-2">
                 {exercise.completed && (
                   <>
-                    <Button
-                      onClick={() => downloadCSV(exercise.id, customerData)}
-                      variant="outline"
-                      size="sm"
-                      className="border-green-500 text-green-500"
-                    >
-                      <Download size={16} className="mr-1" />
-                      CSV
-                    </Button>
                     <Button
                       onClick={() => onShowSensorData(exercise.id)}
                       variant="outline"

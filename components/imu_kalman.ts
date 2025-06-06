@@ -1,7 +1,4 @@
-// You'll need to install these dependencies:
-// npm install ml-matrix mathjs
-
-import { Matrix } from 'ml-matrix';
+import { Matrix, inverse } from 'ml-matrix';
 
 interface IMUData {
   accel: number[];
@@ -9,15 +6,16 @@ interface IMUData {
   mag: number[];
 }
 
-interface ProcessingResult {
+export interface ProcessingResult {
   roll_deg: number;
   pitch_deg: number;
   yaw_deg: number;
   velocity: number[];
   velocity_highpass: number[];
+  acceleration: number[];
 }
 
-interface ProcessingState {
+export interface ProcessingState {
   acc_prev: number[] | null;
   vel_prev: number[] | null;
   vel_prev_hp: number[] | null;
@@ -68,7 +66,8 @@ export function imuKalmanProcessing(
       pitch_deg: (filteredPitch * 180) / Math.PI,
       yaw_deg: (filteredYaw * 180) / Math.PI,
       velocity: vel,
-      velocity_highpass: velHp
+      velocity_highpass: velHp,
+      acceleration: accFiltered
     },
     state: newState
   };
@@ -144,7 +143,7 @@ function kalmanOrientationFilter(
 
   // Update step
   const S = H.mmul(PPred).mmul(H.transpose()).add(R);
-  const KK = PPred.mmul(H.transpose()).mmul(Matrix.inverse(S));
+  const KK = PPred.mmul(H.transpose()).mmul(inverse(S));
   const XKNew = XPred.add(KK.mmul(ZK.sub(H.mmul(XPred))));
   PK = Matrix.eye(6).sub(KK.mmul(H)).mmul(PPred);
 

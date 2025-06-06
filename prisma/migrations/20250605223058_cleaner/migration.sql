@@ -57,18 +57,6 @@ CREATE TABLE "Exercise" (
 );
 
 -- CreateTable
-CREATE TABLE "ExerciseData" (
-    "id" TEXT NOT NULL,
-    "timestamp" TEXT NOT NULL,
-    "action" TEXT NOT NULL,
-    "leg" TEXT,
-    "exerciseId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "ExerciseData_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "TestRating" (
     "id" TEXT NOT NULL,
     "overall" INTEGER NOT NULL,
@@ -84,28 +72,18 @@ CREATE TABLE "TestRating" (
 );
 
 -- CreateTable
-CREATE TABLE "Sensor" (
+CREATE TABLE "ExerciseAssetFile" (
     "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "battery" INTEGER NOT NULL,
-    "connected" BOOLEAN NOT NULL DEFAULT false,
+    "exerciseId" TEXT NOT NULL,
+    "fileName" TEXT NOT NULL,
+    "fileType" TEXT NOT NULL,
+    "s3PathRaw" TEXT NOT NULL,
+    "s3PathProcessed" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'uploaded',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Sensor_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "ZipFile" (
-    "id" TEXT NOT NULL,
-    "filename" TEXT NOT NULL,
-    "filePath" TEXT NOT NULL,
-    "testId" TEXT,
-    "testerId" TEXT NOT NULL,
-    "customerId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "ZipFile_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ExerciseAssetFile_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -113,6 +91,9 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "TestRating_testId_key" ON "TestRating"("testId");
+
+-- CreateIndex
+CREATE INDEX "ExerciseAssetFile_exerciseId_idx" ON "ExerciseAssetFile"("exerciseId");
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -127,16 +108,7 @@ ALTER TABLE "Test" ADD CONSTRAINT "Test_testerId_fkey" FOREIGN KEY ("testerId") 
 ALTER TABLE "Exercise" ADD CONSTRAINT "Exercise_testId_fkey" FOREIGN KEY ("testId") REFERENCES "Test"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ExerciseData" ADD CONSTRAINT "ExerciseData_exerciseId_fkey" FOREIGN KEY ("exerciseId") REFERENCES "Exercise"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "TestRating" ADD CONSTRAINT "TestRating_testId_fkey" FOREIGN KEY ("testId") REFERENCES "Test"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ZipFile" ADD CONSTRAINT "ZipFile_testerId_fkey" FOREIGN KEY ("testerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ZipFile" ADD CONSTRAINT "ZipFile_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ZipFile" ADD CONSTRAINT "ZipFile_testId_fkey" FOREIGN KEY ("testId") REFERENCES "Test"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "ExerciseAssetFile" ADD CONSTRAINT "ExerciseAssetFile_exerciseId_fkey" FOREIGN KEY ("exerciseId") REFERENCES "Exercise"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

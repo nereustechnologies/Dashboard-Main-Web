@@ -122,9 +122,8 @@ export async function POST(request: NextRequest) {
       for (let i = 0; i < sensors.length; i++) {
         const sensorData = generateMockSensorData(20)
         let sensorCsv = sensorHeaders.join(",") + "\n"
-
         sensorData.forEach((row) => {
-          const rowValues = sensorHeaders.map((header) => `"${row[header]}"`)
+          const rowValues = sensorHeaders.map((header) => `"${row[header as keyof typeof row]}"`)
           sensorCsv += rowValues.join(",") + "\n"
         })
 

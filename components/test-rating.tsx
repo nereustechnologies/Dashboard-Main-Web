@@ -184,12 +184,12 @@ ${customerFeedback || "No feedback provided."}
         </div>
       </div>
 
-      <div className="flex justify-between">
-        <Button onClick={onBack} variant="outline" className="border-gray-700">
+      <div className="flex justify-between mt-6">
+        <Button variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button onClick={handleSubmit} className="bg-[#00D4EF] hover:bg-[#00D4EF]/80 text-black">
-          Submit & Finish
+        <Button type="submit" className="bg-primary hover:bg-primary/80 text-black">
+          Submit Review
         </Button>
       </div>
     </div>

@@ -11,12 +11,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { exerciseId, timestamp, action, leg, customerId } = body
+    const { exerciseId, testId } = body
+
+    if (!exerciseId || !testId) {
+      return NextResponse.json({ error: "Missing exerciseId or testId" }, { status: 400 })
+    }
 
     // First, check if we need to create an exercise record
     let exercise = await prisma.exercise.findFirst({
       where: {
         name: exerciseId,
+        testId: testId,
       },
     })
 
@@ -31,47 +36,16 @@ export async function POST(request: NextRequest) {
         category = "endurance"
       }
 
-      // Find or create a test for this customer
-      let test = await prisma.test.findFirst({
-        where: {
-          customerId: customerId,
-          testerId: user.id,
-          status: "In Progress",
-        },
-      })
-
-      if (!test) {
-        // Create a new test
-        test = await prisma.test.create({
-          data: {
-            customerId: customerId,
-            testerId: user.id,
-            status: "In Progress",
-          },
-        })
-      }
-
       // Create the exercise
       exercise = await prisma.exercise.create({
         data: {
           name: exerciseId,
           category: category,
-          testId: test.id,
+          testId: testId,
         },
       })
     }
-
-    // Now create the exercise data
-    const exerciseData = await prisma.exerciseData.create({
-      data: {
-        timestamp,
-        action,
-        leg: leg || "N/A",
-        exerciseId: exercise.id,
-      },
-    })
-
-    return NextResponse.json({ success: true, exerciseData }, { status: 201 })
+    return NextResponse.json({ success: true, exerciseId: exercise.id }, { status: 200 })
   } catch (error) {
     console.error("Error recording exercise data:", error)
     return NextResponse.json({ error: "An error occurred while recording exercise data" }, { status: 500 })

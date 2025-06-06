@@ -29,7 +29,9 @@ export async function login(email: string, password: string, userType: string) {
     const token = "mock_token_" + Math.random().toString(36).substring(2)
 
     // Set cookies
-    cookies().set("token", token, {
+    ;(await
+      // Set cookies
+      cookies()).set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24, // 1 day

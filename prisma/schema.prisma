@@ -22,7 +22,6 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   tests     Test[]
-  ZipFile   ZipFile[]
 }
 
 model Customer {
@@ -39,7 +38,6 @@ model Customer {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   tests         Test[]
-  ZipFile       ZipFile[]
 }
 
 model Test {
@@ -54,29 +52,18 @@ model Test {
   ratings    TestRating?
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
-  ZipFile    ZipFile[]
 }
 
 model Exercise {
-  id        String         @id @default(uuid())
-  name      String
+  id        String    @id @default(uuid())
+  name      String // e.g., "Knee Flexion & Extension"
   category  String // "mobility", "strength", "endurance"
-  completed Boolean        @default(false)
+  completed Boolean   @default(false)
   testId    String
-  test      Test           @relation(fields: [testId], references: [id])
-  data      ExerciseData[]
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-}
-
-model ExerciseData {
-  id         String   @id @default(uuid())
-  timestamp  String
-  action     String
-  leg        String?
-  exerciseId String
-  exercise   Exercise @relation(fields: [exerciseId], references: [id])
-  createdAt  DateTime @default(now())
+  test      Test      @relation(fields: [testId], references: [id])
+  assetFiles ExerciseAssetFile[] // Relation to the new model
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model TestRating {
@@ -91,25 +78,18 @@ model TestRating {
   test             Test     @relation(fields: [testId], references: [id])
   createdAt        DateTime @default(now())
 }
+// New model to store paths to S3 files for each exercise
+model ExerciseAssetFile {
+  id                String   @id @default(uuid())
+  exerciseId        String
+  exercise          Exercise @relation(fields: [exerciseId], references: [id])
+  fileName          String   // Original filename of the uploaded CSV
+  fileType          String   // Describes the content (e.g., "exercise_events", "raw_sensor_left_thigh", "raw_sensor_combined")
+  s3PathRaw         String   // S3 path/URL for the raw uploaded CSV
+  s3PathProcessed   String?  // S3 path/URL for the processed CSV (initially null)
+  status            String   @default("uploaded") // e.g., "uploaded", "processing_pending", "processed", "error"
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-model Sensor {
-  id        String   @id @default(uuid())
-  name      String
-  battery   Int
-  connected Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ZipFile {
-  id         String   @id
-  filename   String
-  filePath   String
-  testId     String?
-  testerId   String
-  customerId String
-  createdAt  DateTime @default(now())
-  tester     User     @relation(fields: [testerId], references: [id])
-  customer   Customer @relation(fields: [customerId], references: [id])
-  test       Test?    @relation(fields: [testId], references: [id])
+  @@index([exerciseId])
 }

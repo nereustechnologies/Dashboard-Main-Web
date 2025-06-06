@@ -1,24 +1,29 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ArrowRight, ArrowLeft, Activity } from "lucide-react"
 import { useTestStep } from "@/components/test-step-context"
 import { useExerciseState } from "@/hooks/use-exercise-state"
-import { useWebSocket } from "@/hooks/use-websocket"
+import { useBluetooth, type SensorDataPoint } from "@/hooks/use-bluetooth"
 import { useExerciseData } from "@/hooks/use-exercise-data"
 import { ExerciseCategory } from "@/components/exercise-category"
 import { ActiveExerciseInterface } from "@/components/active-exercise-interface"
 import { SensorDataExport } from "@/components/sensor-data-export"
-import { uploadSensorData, downloadSensorDataAsCSV } from "@/lib/exercise-utils"
+import {
+  prepareExerciseEventsCSV,
+  prepareIndividualSensorDataCSVs,
+  type IndividualSensorCSV,
+} from "@/lib/exercise-utils"
 
 interface TestExercisesProps {
   onComplete: (exerciseData: any) => void
   customerData: any
+  testId: string
 }
 
-export default function TestExercises({ onComplete, customerData }: TestExercisesProps) {
+export default function TestExercises({ onComplete, customerData, testId }: TestExercisesProps) {
   const { step, setStep } = useTestStep()
   const [activeCategory, setActiveCategory] = useState("mobility")
   const [activeExercise, setActiveExercise] = useState<string | null>(null)
@@ -27,9 +32,9 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
   const [timerInterval, setTimerInterval] = useState<NodeJS.Timeout | null>(null)
   const [currentLeg, setCurrentLeg] = useState<string | null>(null)
   const [showSensorData, setShowSensorData] = useState(false)
-  const [generatingZip, setGeneratingZip] = useState(false)
+  const [isCompleting, setIsCompleting] = useState(false)
   const [lastAction, setLastAction] = useState<string | null>(null)
-
+  const [exerciseStartTime, setExerciseStartTime] = useState<number>(0)
   const {
     exerciseState,
     mobilityCompleted,
@@ -39,13 +44,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
     retryExercise,
   } = useExerciseState()
 
-  const {
-    sensorData,
-    isWebSocketConnected,
-    connectWebSocket,
-    disconnectWebSocket,
-    clearSensorData,
-  } = useWebSocket()
+  const { sensorData, startRecording, stopRecordingAndGetData, clearSensorData } = useBluetooth()
 
   const {
     exerciseData,
@@ -54,7 +53,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
     setError,
     csvDataRef,
     initializeExerciseCSVData,
-    clearExerciseData,
+    clearExerciseData: clearExerciseLogData,
     recordAction,
   } = useExerciseData()
 
@@ -70,8 +69,10 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
     setLastAction(null)
     clearSensorData()
 
-    // Connect to WebSocket when starting exercise
-    connectWebSocket()
+    const startTime = Date.now()
+    setExerciseStartTime(startTime)
+
+    startRecording(startTime)
 
     // Initialize CSV data for this exercise if it doesn't exist
     initializeExerciseCSVData(exerciseId)
@@ -100,15 +101,90 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
         setTimerInterval(null)
       }
 
-      // Upload sensor data if available
-      if (Object.keys(sensorData).length > 0) {
-        await uploadSensorData(activeExercise, sensorData, customerData)
-        // Download local copy as well
-        downloadSensorDataAsCSV(activeExercise, sensorData)
+      const token = localStorage.getItem("token")
+      if (!token) {
+        setError("Authentication required to upload data.")
+        return
       }
 
-      // Disconnect WebSocket when exercise is completed
-      disconnectWebSocket()
+      // Stop recording and get sensor data
+      const sensorDataToUpload = stopRecordingAndGetData()
+
+      // Prepare and upload individual sensor data CSVs
+      if (sensorDataToUpload.length > 0) {
+        const individualSensorCSVs = prepareIndividualSensorDataCSVs(activeExercise, sensorDataToUpload, customerData)
+
+        for (const sensorCSV of individualSensorCSVs) {
+          if (sensorCSV.csvContent) {
+            try {
+              const response = await fetch("/api/upload-csv", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  customerId: customerData.id,
+                  testId: testId,
+                  fileName: `${activeExercise}/${sensorCSV.fileName}`,
+                  fileType: sensorCSV.fileName.replace(/\.csv$/, ""),
+                  csvContent: sensorCSV.csvContent,
+                }),
+              })
+              if (!response.ok) {
+                const errorData = await response.json()
+                console.error(
+                  `Failed to upload ${sensorCSV.fileName} for ${activeExercise}:`,
+                  errorData.error || response.statusText,
+                )
+                // setError(`Failed to upload ${sensorCSV.fileName}.`); // Optional: accumulate errors or show first
+              } else {
+                console.log(`Successfully uploaded ${sensorCSV.fileName} for ${activeExercise}`)
+              }
+            } catch (uploadError) {
+              console.error(`Error uploading ${sensorCSV.fileName} for ${activeExercise}:`, uploadError)
+              // setError(`Error uploading ${sensorCSV.fileName}.`);
+            }
+          }
+        }
+      }
+
+      // Prepare and upload exercise log data as CSV
+      if (csvDataRef.current[activeExercise] && csvDataRef.current[activeExercise].length > 0) {
+        const preparedExerciseEvents = prepareExerciseEventsCSV(
+          activeExercise,
+          customerData,
+          csvDataRef.current[activeExercise],
+        )
+        if (preparedExerciseEvents) {
+          try {
+            const response = await fetch("/api/upload-csv", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                customerId: customerData.id,
+                testId: testId,
+                fileName: `${activeExercise}/${preparedExerciseEvents.fileName}`,
+                fileType: "exercise_events",
+                csvContent: preparedExerciseEvents.csvContent,
+              }),
+            })
+            if (!response.ok) {
+              const errorData = await response.json()
+              console.error("Failed to upload exercise events CSV:", errorData.error || response.statusText)
+              // setError(`Failed to upload exercise log for ${activeExercise}.`);
+            } else {
+              console.log(`Successfully uploaded exercise events CSV for ${activeExercise} to ${activeExercise}/`)
+            }
+          } catch (uploadError) {
+            console.error("Error uploading exercise events CSV:", uploadError)
+            // setError(`Error uploading exercise log for ${activeExercise}.`);
+          }
+        }
+      }
 
       // Reset exercise state
       setActiveExercise(null)
@@ -117,8 +193,8 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
       setCurrentLeg(null)
       setLastAction(null)
     } catch (error) {
-      console.error('Error completing exercise:', error)
-      setError('Failed to complete exercise. Please try again.')
+      console.error("Error completing exercise:", error)
+      setError("Failed to complete exercise. Please try again.")
     }
   }
 
@@ -137,9 +213,6 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
       setTimerInterval(null)
     }
 
-    // Disconnect WebSocket when exercise is skipped
-    disconnectWebSocket()
-
     // Reset exercise state
     setActiveExercise(null)
     setExerciseStarted(false)
@@ -151,9 +224,9 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
   const handleRetryExercise = (exerciseId: string) => {
     // Mark the exercise as not completed
     retryExercise(exerciseId)
-    
+
     // Clear previous data for this exercise
-    clearExerciseData(exerciseId)
+    clearExerciseLogData(exerciseId)
     clearSensorData()
     setShowSensorData(false)
     setActiveExercise(null)
@@ -169,7 +242,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
     setLastAction(action)
 
     try {
-      await recordAction(action, activeExercise, customerData, timer, currentLeg, leg)
+      await recordAction(action, activeExercise, customerData, timer, currentLeg, testId, leg)
     } catch (error) {
       // Error is already handled in the hook
     }
@@ -208,55 +281,41 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
     setShowSensorData(true)
   }
 
-  const generateAndCompleteTest = async () => {
-    setGeneratingZip(true)
+  const completeTest = async () => {
+    setIsCompleting(true)
     setError("")
 
     try {
-      // Get token from localStorage
       const token = localStorage.getItem("token")
       if (!token) {
         throw new Error("Authentication required")
       }
 
-      // Prepare data for zip generation
-      const zipData = {
-        customerId: customerData.id,
-        customerName: customerData.name,
-        exerciseData: csvDataRef.current,
-        date: new Date().toISOString().split("T")[0],
-      }
-
-      // Generate zip file via API
-      const response = await fetch("/api/generate-zip", {
+      const response = await fetch("/api/tests/complete", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(zipData),
+        body: JSON.stringify({ testId }),
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to generate exercise report")
+        throw new Error(errorData.error || "Failed to complete the test.")
       }
 
-      const data = await response.json()
+      alert("Test completed successfully!")
 
-      // Show success message or prompt to download
-      alert(`Test completed! Report has been saved for ${customerData.name}.`)
-
-      // Pass the data back to parent
       onComplete({
         exercises: csvDataRef.current,
-        zipFileId: data.zipFileId,
       })
     } catch (error) {
-      console.error("Error generating test report:", error)
-      setError(error instanceof Error ? error.message : "An error occurred while generating the test report")
+      console.error("Error completing test:", error)
+      const errorMessage = error instanceof Error ? error.message : "An error occurred"
+      setError(errorMessage)
     } finally {
-      setGeneratingZip(false)
+      setIsCompleting(false)
     }
   }
 
@@ -264,14 +323,14 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
   const canGoToPreviousCategory = !exerciseStarted && currentCategoryIndex > 0
   const canGoToNextCategory = !exerciseStarted && currentCategoryIndex < orderedCategories.length - 1
 
-  let isNextCategoryEnabled = false
-  if (canGoToNextCategory) {
-    if (activeCategory === "mobility" && mobilityCompleted) {
-      isNextCategoryEnabled = true
-    } else if (activeCategory === "strength" && strengthCompleted) {
-      isNextCategoryEnabled = true
-    }
+  const categoryCompletionStatus = {
+    mobility: mobilityCompleted,
+    strength: strengthCompleted,
+    endurance: enduranceCompleted,
   }
+
+  const isNextCategoryEnabled =
+    canGoToNextCategory && categoryCompletionStatus[activeCategory as keyof typeof categoryCompletionStatus]
 
   return (
     <div className="space-y-6">
@@ -287,15 +346,23 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
 
       <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="mobility" className={mobilityCompleted ? "text-green-500" : ""}>
+          <TabsTrigger value="mobility" className={mobilityCompleted ? "text-green-500" : ""} disabled={exerciseStarted}>
             Mobility
             {mobilityCompleted && " ✓"}
           </TabsTrigger>
-          <TabsTrigger value="strength" className={strengthCompleted ? "text-green-500" : ""}>
+          <TabsTrigger
+            value="strength"
+            className={strengthCompleted ? "text-green-500" : ""}
+            disabled={!mobilityCompleted || exerciseStarted}
+          >
             Strength
             {strengthCompleted && " ✓"}
           </TabsTrigger>
-          <TabsTrigger value="endurance" className={enduranceCompleted ? "text-green-500" : ""}>
+          <TabsTrigger
+            value="endurance"
+            className={enduranceCompleted ? "text-green-500" : ""}
+            disabled={!strengthCompleted || exerciseStarted}
+          >
             Endurance
             {enduranceCompleted && " ✓"}
           </TabsTrigger>
@@ -358,6 +425,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
           activeExercise={activeExercise}
           customerData={customerData}
           sensorData={sensorData}
+          recordedExerciseEvents={csvDataRef.current[activeExercise] || []}
         />
       )}
 
@@ -373,7 +441,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
               if (idx > 0) setActiveCategory(orderedCategories[idx - 1])
             }}
             className="border-gray-600 text-gray-300"
-            disabled={orderedCategories.indexOf(activeCategory) === 0}
+            disabled={!canGoToPreviousCategory}
           >
             <ArrowLeft size={16} className="mr-1" />
             Previous Section
@@ -384,7 +452,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
               if (idx < orderedCategories.length - 1) setActiveCategory(orderedCategories[idx + 1])
             }}
             className="bg-[#00D4EF] hover:bg-[#00D4EF]/80 text-black"
-            disabled={orderedCategories.indexOf(activeCategory) === orderedCategories.length - 1}
+            disabled={!isNextCategoryEnabled}
           >
             Next Section
             <ArrowRight size={16} className="ml-1" />
@@ -392,7 +460,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
         </div>
 
         <div className="flex items-center gap-2">
-          {generatingZip && (
+          {isCompleting && (
             <span className="text-sm text-gray-400 flex items-center">
               <svg
                 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
@@ -407,13 +475,12 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Generating report...
+              Completing Test...
             </span>
           )}
-
           <Button
-            onClick={() => generateAndCompleteTest()}
-            disabled={!mobilityCompleted || !strengthCompleted || !enduranceCompleted || generatingZip}
+            onClick={completeTest}
+            disabled={!mobilityCompleted || !strengthCompleted || !enduranceCompleted || isCompleting}
             className="bg-[#00D4EF] hover:bg-[#00D4EF]/80 text-black"
           >
             Complete Testing

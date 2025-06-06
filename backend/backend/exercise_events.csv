@@ -1,0 +1,9 @@
+Timestamp,Hip Flexion Angle (°),Knee Flexion Angle Left (°),Knee Flexion Angle Right (°),Leg Used,Phase Label,Hold Duration (s),Reps
+00:02,21,90,12,left,Selected left Leg,0,1
+00:02,18,91,10,left,Hold Began,0,1
+00:05,18,92,92,right,Selected right Leg,0,1
+00:03,19,91,10,left,Holding,0,1
+00:06,18,12,92,right,Hold Began,0,1
+00:04,19,91,12,left,Hold Ended,4,1
+00:07,20,11,91,right,Holding,0,1
+00:08,17,12,91,right,Hold Ended,8,2

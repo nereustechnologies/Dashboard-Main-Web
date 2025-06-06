@@ -1,258 +1,3 @@
-// "use client"
-
-// import { useState } from "react"
-// import { useTestStep } from "./test-step-context"
-// import { Button } from "@/components/ui/button"
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-// import { Activity, ArrowLeft, ArrowRight, Loader2 } from "lucide-react"
-// import { ExerciseCategory } from "./exercise-category"
-// import { ActiveExerciseInterface } from "./active-exercise-interface"
-// import { SensorDataExport } from "./sensor-data-export"
-// import { useExerciseState } from "@/hooks/use-exercise-state"
-// import { useWebSocket } from "@/hooks/use-websocket"
-// import { useExerciseData } from "@/hooks/use-exercise-data"
-
-// interface TestExercisesProps {
-//   onComplete: (exerciseData: any) => void
-//   customerData: any
-// }
-
-// export default function TestExercises({ onComplete, customerData }: TestExercisesProps) {
-//   const [activeCategory, setActiveCategory] = useState("mobility")
-//   const { step, setStep } = useTestStep()
-//   const [generatingZip, setGeneratingZip] = useState(false)
-
-//   // Use custom hooks
-//   const exerciseState = useExerciseState()
-//   const webSocket = useWebSocket()
-//   const exerciseData = useExerciseData(customerData)
-
-//   const orderedCategories = ["mobility", "strength", "endurance"]
-
-//   const handleStartExercise = (exerciseId: string) => {
-//     exerciseData.startExercise(exerciseId)
-//     webSocket.connect()
-//   }
-
-//   const handleCompleteExercise = async () => {
-//     if (!exerciseData.activeExercise) return
-
-//     try {
-//       // Complete exercise in state
-//       exerciseState.completeExercise(exerciseData.activeExercise)
-      
-//       // Upload and download sensor data if available
-//       if (Object.keys(webSocket.sensorData).length > 0) {
-//         await exerciseData.uploadSensorData(webSocket.sensorData)
-//       }
-
-//       // Disconnect WebSocket and reset exercise state
-//       webSocket.disconnect()
-//       exerciseData.resetExercise()
-//     } catch (error) {
-//       console.error('Error completing exercise:', error)
-//       exerciseData.setError('Failed to complete exercise. Please try again.')
-//     }
-//   }
-
-//   const handleSkipExercise = async () => {
-//     if (!exerciseData.activeExercise) return
-
-//     try {
-//       // Record skip action
-//       await exerciseData.recordAction("Exercise Skipped")
-      
-//       // Complete exercise in state
-//       exerciseState.completeExercise(exerciseData.activeExercise)
-      
-//       // Disconnect WebSocket and reset exercise state
-//       webSocket.disconnect()
-//       exerciseData.resetExercise()
-//     } catch (error) {
-//       console.error('Error skipping exercise:', error)
-//       exerciseData.setError('Failed to skip exercise. Please try again.')
-//     }
-//   }
-
-//   const handleRetryExercise = (exerciseId: string) => {
-//     exerciseState.retryExercise(exerciseId)
-//     exerciseData.clearExerciseData(exerciseId)
-//     webSocket.clearSensorData()
-//   }
-
-//   const generateAndCompleteTest = async () => {
-//     setGeneratingZip(true)
-//     exerciseData.setError("")
-
-//     try {
-//       const result = await exerciseData.generateTestReport()
-//       alert(`Test completed! Report has been saved for ${customerData.name}.`)
-//       onComplete(result)
-//     } catch (error) {
-//       console.error("Error generating test report:", error)
-//       exerciseData.setError(error instanceof Error ? error.message : "An error occurred while generating the test report")
-//     } finally {
-//       setGeneratingZip(false)
-//     }
-//   }
-
-//   const currentCategoryIndex = orderedCategories.indexOf(activeCategory)
-
-//   const canGoToPreviousCategory = !exerciseData.exerciseStarted && currentCategoryIndex > 0
-//   const canGoToNextCategory = !exerciseData.exerciseStarted && currentCategoryIndex < orderedCategories.length - 1
-  
-//   let isNextCategoryEnabled = false
-//   if (canGoToNextCategory) {
-//     if (activeCategory === "mobility" && exerciseState.mobilityCompleted) {
-//       isNextCategoryEnabled = true
-//     } else if (activeCategory === "strength" && exerciseState.strengthCompleted) {
-//       isNextCategoryEnabled = true
-//     }
-//   }
-
-//   return (
-//     <div className="space-y-6">
-//       <div className="space-y-2">
-//         <h3 className="text-lg font-medium flex items-center gap-2">
-//           <Activity size={20} className="text-[#00D4EF]" />
-//           Test Exercises
-//         </h3>
-//         <p className="text-sm text-gray-400">Complete all exercises in order: Mobility → Strength → Endurance</p>
-//       </div>
-
-//       {exerciseData.error && (
-//         <div className="p-3 text-sm bg-red-500/20 border border-red-500 rounded text-red-500">
-//           {exerciseData.error}
-//         </div>
-//       )}
-
-//       <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
-//         <TabsList className="grid w-full grid-cols-3">
-//           <TabsTrigger value="mobility" className={exerciseState.mobilityCompleted ? "text-green-500" : ""}>
-//             Mobility
-//             {exerciseState.mobilityCompleted && " ✓"}
-//           </TabsTrigger>
-//           <TabsTrigger value="strength" className={exerciseState.strengthCompleted ? "text-green-500" : ""}>
-//             Strength
-//             {exerciseState.strengthCompleted && " ✓"}
-//           </TabsTrigger>
-//           <TabsTrigger value="endurance" className={exerciseState.enduranceCompleted ? "text-green-500" : ""}>
-//             Endurance
-//             {exerciseState.enduranceCompleted && " ✓"}
-//           </TabsTrigger>
-//         </TabsList>
-
-//         <TabsContent value="mobility">
-//           <ExerciseCategory
-//             exercises={exerciseState.exerciseState.mobility}
-//             onStartExercise={handleStartExercise}
-//             onRetryExercise={handleRetryExercise}
-//             onShowSensorData={exerciseData.setShowSensorData}
-//             exerciseStarted={exerciseData.exerciseStarted}
-//             customerData={customerData}
-//           />
-//         </TabsContent>
-
-//         <TabsContent value="strength">
-//           <ExerciseCategory
-//             exercises={exerciseState.exerciseState.strength}
-//             onStartExercise={handleStartExercise}
-//             onRetryExercise={handleRetryExercise}
-//             onShowSensorData={exerciseData.setShowSensorData}
-//             exerciseStarted={exerciseData.exerciseStarted}
-//             customerData={customerData}
-//           />
-//         </TabsContent>
-
-//         <TabsContent value="endurance">
-//           <ExerciseCategory
-//             exercises={exerciseState.exerciseState.endurance}
-//             onStartExercise={handleStartExercise}
-//             onRetryExercise={handleRetryExercise}
-//             onShowSensorData={exerciseData.setShowSensorData}
-//             exerciseStarted={exerciseData.exerciseStarted}
-//             customerData={customerData}
-//           />
-//         </TabsContent>
-//       </Tabs>
-
-//       {/* Active Exercise Interface */}
-//       {exerciseData.exerciseStarted && exerciseData.activeExercise && (
-//         <ActiveExerciseInterface
-//           activeExercise={exerciseData.activeExercise}
-//           timer={exerciseData.timer}
-//           currentLeg={exerciseData.currentLeg}
-//           lastAction={exerciseData.lastAction}
-//           timerInterval={exerciseData.timerInterval}
-//           exerciseStarted={exerciseData.exerciseStarted}
-//           onRecordAction={exerciseData.recordAction}
-//           onSetLeg={exerciseData.setLeg}
-//           onCompleteExercise={handleCompleteExercise}
-//           onSkipExercise={handleSkipExercise}
-//           onTimerControl={exerciseData.handleTimerControl}
-//         />
-//       )}
-
-//       {/* Sensor Data Export */}
-//       {exerciseData.showSensorData && exerciseData.activeExercise && !exerciseData.exerciseStarted && (
-//         <SensorDataExport
-//           activeExercise={exerciseData.activeExercise}
-//           customerData={customerData}
-//           sensorData={webSocket.sensorData}
-//         />
-//       )}
-
-//       <div className="flex justify-between items-center mt-8">
-//         <div className="flex gap-2 items-center">
-//           <Button variant="outline" onClick={() => setStep(2)} className="border-gray-700">
-//             Back
-//           </Button>
-//           <Button
-//             variant="outline"
-//             onClick={() => {
-//               const idx = orderedCategories.indexOf(activeCategory)
-//               if (idx > 0) setActiveCategory(orderedCategories[idx - 1])
-//             }}
-//             className="border-gray-600 text-gray-300"
-//             disabled={!canGoToPreviousCategory}
-//           >
-//             <ArrowLeft size={16} className="mr-1" />
-//             Previous Section
-//           </Button>
-//           <Button
-//             onClick={() => {
-//               const idx = orderedCategories.indexOf(activeCategory)
-//               if (idx < orderedCategories.length - 1) setActiveCategory(orderedCategories[idx + 1])
-//             }}
-//             className="bg-[#00D4EF] hover:bg-[#00D4EF]/80 text-black"
-//             disabled={!canGoToNextCategory || !isNextCategoryEnabled}
-//           >
-//             Next Section
-//             <ArrowRight size={16} className="ml-1" />
-//           </Button>
-//         </div>
-
-//         <div className="flex items-center gap-2">
-//           {generatingZip && (
-//             <span className="text-sm text-gray-400 flex items-center">
-//               <Loader2 className="animate-spin mr-2 h-4 w-4" />
-//               Generating report...
-//             </span>
-//           )}
-
-//           <Button
-//             onClick={() => generateAndCompleteTest()}
-//             disabled={!exerciseState.mobilityCompleted || !exerciseState.strengthCompleted || !exerciseState.enduranceCompleted || generatingZip}
-//             className="bg-[#00D4EF] hover:bg-[#00D4EF]/80 text-black"
-//           >
-//             Complete Testing
-//           </Button>
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -280,13 +25,51 @@ interface TestExercisesProps {
   customerData: any
 }
 
+interface Exercise {
+  id: string;
+  name: string;
+  completed: boolean;
+}
+
 interface ExerciseState {
-  mobility: Array<{ id: string; name: string; completed: boolean }>;
-  strength: Array<{ id: string; name: string; completed: boolean }>;
-  endurance: Array<{ id: string; name: string; completed: boolean }>;
+  mobility: Exercise[];
+  strength: Exercise[];
+  endurance: Exercise[];
 }
 
 type ExerciseCategory = keyof ExerciseState;
+
+interface SensorData {
+  AX: number;
+  AY: number;
+  AZ: number;
+  GX: number;
+  GY: number;
+  GZ: number;
+  MX: number;
+  MY: number;
+  MZ: number;
+}
+
+interface WebSocketData {
+  left_thigh: SensorData;
+  left_shin: SensorData;
+  right_thigh: SensorData;
+  right_shin: SensorData;
+  timestamp: number;
+  sample_index: number;
+}
+
+interface SensorDataState {
+  [timestamp: string]: WebSocketData;
+}
+
+interface SensorCSVContent {
+  left_thigh: string;
+  left_shin: string;
+  right_thigh: string;
+  right_shin: string;
+}
 
 export default function TestExercises({ onComplete, customerData }: TestExercisesProps) {
   const [activeCategory, setActiveCategory] = useState("mobility")
@@ -304,7 +87,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
   const [showSensorData, setShowSensorData] = useState(false)
   const [generatingZip, setGeneratingZip] = useState(false)
   const [lastAction, setLastAction] = useState<string | null>(null) // Added state for last action
-  const [sensorData, setSensorData] = useState<{ [key: string]: any[] }>({}) // Add state for WebSocket sensor data
+  const [sensorData, setSensorData] = useState<SensorDataState>({}) // Add state for WebSocket sensor data
   const [isWebSocketConnected, setIsWebSocketConnected] = useState(false)
 
   // Reference to store CSV data
@@ -331,17 +114,13 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
     socket.onmessage = (event) => {
       if (typeof event.data === 'string') {
         try {
-          const jsonData = JSON.parse(event.data);
+          const jsonData = JSON.parse(event.data) as WebSocketData;
           if (typeof jsonData === 'object' && jsonData !== null) {
-            // Store the raw sensor data
+            // Store the raw sensor data with timestamp
             setSensorData(prevData => {
               const newData = { ...prevData };
-              Object.entries(jsonData).forEach(([key, value]) => {
-                if (!newData[key]) {
-                  newData[key] = [];
-                }
-                newData[key].push(value);
-              });
+              const timestamp = jsonData.timestamp || Date.now();
+              newData[timestamp] = jsonData;
               return newData;
             });
           }
@@ -537,48 +316,62 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
     }
   }
 
-  const formatSensorDataForCSV = (data: { [key: string]: any[] }) => {
-    // Define the headers for the CSV
-    const headers = ["AX", "AY", "AZ", "GX", "GY", "GZ", "MX", "MY", "MZ"];
-    let csvContent = headers.join(",") + "\n";
+  const formatSensorDataForCSV = (data: SensorDataState): SensorCSVContent => {
+    // Define the headers for each sensor's CSV
+    const headers = ["timestamp", "sample_index", "AX", "AY", "AZ", "GX", "GY", "GZ", "MX", "MY", "MZ"];
+    
+    // Create separate CSV content for each sensor
+    const sensorCSVs: SensorCSVContent = {
+      left_thigh: headers.join(",") + "\n",
+      left_shin: headers.join(",") + "\n",
+      right_thigh: headers.join(",") + "\n",
+      right_shin: headers.join(",") + "\n"
+    };
 
-    console.log('Formatting Sensor Data:', data);
-   
-    // Get the length of the first array to determine number of rows
-    const firstKey = Object.keys(data)[0];
-    const numRows = data[firstKey]?.length || 0;
-
-    // Map through each index in parallel
-    for (let i = 0; i < numRows; i++) {
-      const row = headers.map(header => {
-        const value = data[header]?.[i] ?? "";
-        return `"${value}"`;
+    // Process each data point
+    Object.entries(data).forEach(([timestamp, sensorData]) => {
+      // Each sensor's data
+      const sensors = ["left_thigh", "left_shin", "right_thigh", "right_shin"] as const;
+      
+      sensors.forEach(sensor => {
+        if (sensorData[sensor]) {
+          const row = [
+            timestamp,
+            sensorData.sample_index,
+            sensorData[sensor].AX.toFixed(6),
+            sensorData[sensor].AY.toFixed(6),
+            sensorData[sensor].AZ.toFixed(6),
+            sensorData[sensor].GX.toFixed(6),
+            sensorData[sensor].GY.toFixed(6),
+            sensorData[sensor].GZ.toFixed(6),
+            sensorData[sensor].MX.toFixed(6),
+            sensorData[sensor].MY.toFixed(6),
+            sensorData[sensor].MZ.toFixed(6)
+          ];
+          
+          sensorCSVs[sensor] += row.join(",") + "\n";
+        }
       });
-      csvContent += row.join(",") + "\n";
-    }
+    });
 
-    console.log('Generated CSV Content:', csvContent);
-    return csvContent;
+    return sensorCSVs;
   };
 
-  const downloadSensorDataAsCSV = (exerciseId: string) => {
+  const downloadSensorCSV = (sensorName: keyof SensorCSVContent, exerciseId: string, sensorData: SensorDataState) => {
     try {
-      const data = sensorData;
-      if (!data || Object.keys(data).length === 0) {
-        console.log("No sensor data available for download");
-        return;
-      }
-
-      const csvContent = formatSensorDataForCSV(data);
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const sensorCSVs = formatSensorDataForCSV(sensorData);
+      const csvContent = sensorCSVs[sensorName];
+      // Convert string to Uint8Array
+      const encoder = new TextEncoder();
+      const uint8Array = encoder.encode(csvContent);
+      const blob = new Blob([uint8Array], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.setAttribute("href", url);
       link.setAttribute(
         "download",
-        `${exerciseId}_sensor_data_${new Date().toISOString().split("T")[0]}.csv`
+        `${exerciseId}_${sensorName}_sensor_data_${new Date().toISOString().split("T")[0]}.csv`
       );
-
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -862,7 +655,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
       if (Object.keys(sensorData).length > 0) {
         // Convert sensor data to CSV format
         const csvContent = formatSensorDataForCSV(sensorData);
-        const csvBlob = new Blob([csvContent], { type: 'text/csv' });
+        const csvBlob = new Blob([csvContent.toString()], { type: 'text/csv' });
         const csvFile = new File([csvBlob], `${activeExercise}_${Date.now()}.csv`, { type: 'text/csv' });
 
         // Create form data and append the file and customerId
@@ -883,7 +676,10 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
         }
 
         // Download local copy as well
-        downloadSensorDataAsCSV(activeExercise);
+        downloadSensorCSV("left_thigh", activeExercise, sensorData);
+        downloadSensorCSV("left_shin", activeExercise, sensorData);
+        downloadSensorCSV("right_thigh", activeExercise, sensorData);
+        downloadSensorCSV("right_shin", activeExercise, sensorData);
       }
 
       // Disconnect WebSocket when exercise is completed
@@ -908,19 +704,19 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
     await recordAction("Exercise Skipped", currentLeg || undefined);
 
     // Mark exercise as completed
-    setExerciseState((prevState) => {
+    setExerciseState((prevState: ExerciseState) => {
       const updatedState = { ...prevState };
-      for (const category in updatedState) {
-        if (Object.prototype.hasOwnProperty.call(updatedState, category) && Array.isArray(updatedState[category])) {
-          const exerciseIndex = updatedState[category].findIndex((ex: any) => ex.id === activeExercise);
-          if (exerciseIndex !== -1) {
-            updatedState[category] = [
-              ...updatedState[category].slice(0, exerciseIndex),
-              { ...updatedState[category][exerciseIndex], completed: true },
-              ...updatedState[category].slice(exerciseIndex + 1),
-            ];
-            break;
-          }
+      const categories: ExerciseCategory[] = ["mobility", "strength", "endurance"];
+      
+      for (const category of categories) {
+        const exerciseIndex = updatedState[category].findIndex((ex) => ex.id === activeExercise);
+        if (exerciseIndex !== -1) {
+          updatedState[category] = [
+            ...updatedState[category].slice(0, exerciseIndex),
+            { ...updatedState[category][exerciseIndex], completed: true },
+            ...updatedState[category].slice(exerciseIndex + 1),
+          ];
+          break;
         }
       }
       return updatedState;
@@ -1538,7 +1334,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
         </Card>
       )}
 
-      {/* CSV Download Button */}
+      {/* Sensor Data Export */}
       {showSensorData && activeExercise && !exerciseStarted && (
         <Card className="border-[#00D4EF]/20 bg-black">
           <CardHeader className="flex flex-row items-center justify-between">
@@ -1552,7 +1348,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
               <p className="mb-4">Sensor data is available for download as CSV files.</p>
               <Button
                 onClick={() => downloadCSV(activeExercise)}
-                className="bg-[#00D4EF] hover:bg-[#00D4EF]/80 text-black"
+                className="bg-[#00D4EF] hover:bg-[#00D4EF]/80 text-black mb-4"
               >
                 <Download size={16} className="mr-2" />
                 Download Exercise Data (CSV)
@@ -1563,12 +1359,36 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
               <h3 className="text-lg mb-4 text-center">Sensor Data</h3>
               <div className="grid grid-cols-2 gap-4">
                 <Button
-                  onClick={() => downloadSensorDataAsCSV(activeExercise)}
+                  onClick={() => downloadSensorCSV("left_thigh", activeExercise, sensorData)}
+                  variant="outline"
+                  className="border-blue-500 text-blue-500"
+                >
+                  <Download size={16} className="mr-2" />
+                  Left Thigh Data
+                </Button>
+                <Button
+                  onClick={() => downloadSensorCSV("left_shin", activeExercise, sensorData)}
                   variant="outline"
                   className="border-green-500 text-green-500"
                 >
                   <Download size={16} className="mr-2" />
-                  Download Sensor Data (CSV)
+                  Left Shin Data
+                </Button>
+                <Button
+                  onClick={() => downloadSensorCSV("right_thigh", activeExercise, sensorData)}
+                  variant="outline"
+                  className="border-yellow-500 text-yellow-500"
+                >
+                  <Download size={16} className="mr-2" />
+                  Right Thigh Data
+                </Button>
+                <Button
+                  onClick={() => downloadSensorCSV("right_shin", activeExercise, sensorData)}
+                  variant="outline"
+                  className="border-purple-500 text-purple-500"
+                >
+                  <Download size={16} className="mr-2" />
+                  Right Shin Data
                 </Button>
               </div>
             </div>

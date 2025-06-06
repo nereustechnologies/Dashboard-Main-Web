@@ -50,12 +50,12 @@ export async function GET(request: NextRequest, { params }: { params: { exercise
           sensor.data = records
         } else {
           // Generate mock data
-          sensor.data = generateMockSensorData(20)
+          sensor.data = generateMockSensorData(20) as typeof sensor.data
         }
       } catch (error) {
         console.error(`Error reading sensor data for ${sensor.id}:`, error)
         // Fall back to mock data
-        sensor.data = generateMockSensorData(20)
+        sensor.data = generateMockSensorData(20) as typeof sensor.data
       }
     }
 

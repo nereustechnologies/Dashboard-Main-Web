@@ -33,6 +33,7 @@ export function useExerciseData() {
     customerData: any,
     timer: number,
     currentLeg: string | null,
+    testId: string,
     leg?: string
   ) => {
     if (!activeExercise) return
@@ -46,6 +47,7 @@ export function useExerciseData() {
       leg: leg || currentLeg || "N/A",
       exerciseId: activeExercise,
       customerId: customerData.id,
+      testId,
     }
 
     if (action === "Exercise Skipped") {
@@ -156,35 +158,32 @@ export function useExerciseData() {
     }
 
     try {
-      // Get token from localStorage
-      const token = localStorage.getItem("token")
+   
+        const token = localStorage.getItem("token")
       if (!token) {
         throw new Error("Authentication required")
       }
 
-      // Send exercise data to API
-      const response = await fetch("/api/exercise-data", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(exerciseDataItem),
-      })
+      // const response = await fetch("/api/exercise-data", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      //   body: JSON.stringify(exerciseDataItem),
+      // })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to record exercise data")
-      }
-
-      // Add to exercise data
+      // if (!response.ok) {
+      //   const errorData = await response.json()
+      //   throw new Error(errorData.error || "Failed to record exercise data")
+      // }
       addExerciseData(exerciseDataItem)
 
-      console.log(`Recording: ${action}, Time: ${timestamp}, Leg: ${leg || currentLeg || "N/A"}`)
+      console.log(`Recording (to CSV data): ${action}, Time: ${timestamp}, Leg: ${leg || currentLeg || "N/A"}`)
     } catch (error) {
-      console.error("Error recording exercise data:", error)
-      setError(error instanceof Error ? error.message : "An error occurred while recording exercise data")
-      throw error
+      console.error("Error recording exercise data (to CSV):", error)
+      setError(error instanceof Error ? error.message : "An error occurred while recording exercise data (to CSV)")
+      // throw error // Decide if you still want to throw the error, which might affect UI
     }
   }
 

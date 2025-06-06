@@ -1,13 +1,17 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-def imu_kalman_processing(sample, dt=0.2, alpha=0.95, beta=0.1):
+def imu_kalman_processing(sample, dt=0.2, alpha=0.95, beta=0.1, state=None):
     Q = 0.01 * np.eye(6)
     R_ = 0.1 * np.eye(3)
 
-    acc_prev = None
-    vel_prev = None
-    vel_prev_hp = None
+    # Initialize state if not provided
+    if state is None:
+        state = {
+            'acc_prev': None,
+            'vel_prev': None,
+            'vel_prev_hp': None
+        }
 
     imu = process_imu_sample(sample)
     roll_acc, pitch_acc, yaw_mag = compute_orientation_from_sample(imu)
@@ -15,12 +19,19 @@ def imu_kalman_processing(sample, dt=0.2, alpha=0.95, beta=0.1):
         roll_acc, pitch_acc, yaw_mag, imu['gyro'], dt, Q, R_
     )
     acc_filtered, vel = transform_acceleration_step(
-        imu['accel'], filtered_roll, filtered_pitch, filtered_yaw, acc_prev, vel_prev, beta, dt
+        imu['accel'], filtered_roll, filtered_pitch, filtered_yaw, 
+        state['acc_prev'], state['vel_prev'], beta, dt
     )
-    vel_hp, vel_prev_hp = high_pass_filter_velocity_step(vel, vel_prev, vel_prev_hp, alpha)
+    vel_hp, vel_prev_hp = high_pass_filter_velocity_step(
+        vel, state['vel_prev'], state['vel_prev_hp'], alpha
+    )
 
-    acc_prev = acc_filtered
-    vel_prev = vel
+    # Update state
+    new_state = {
+        'acc_prev': acc_filtered,
+        'vel_prev': vel,
+        'vel_prev_hp': vel_prev_hp
+    }
 
     return {
         "roll_deg": np.degrees(filtered_roll),
@@ -28,7 +39,7 @@ def imu_kalman_processing(sample, dt=0.2, alpha=0.95, beta=0.1):
         "yaw_deg": np.degrees(filtered_yaw),
         "velocity": vel,
         "velocity_highpass": vel_hp
-    }
+    }, new_state
 
 def process_imu_sample(data):
     return {
