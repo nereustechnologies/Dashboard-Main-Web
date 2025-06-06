@@ -124,6 +124,7 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
 
       // Prepare and upload individual sensor data CSVs
       if (sensorDataToUpload.length > 0) {
+        console.log("Raw sensor data captured for exercise:", activeExercise, sensorDataToUpload)
         const individualSensorCSVs = prepareIndividualSensorDataCSVs(activeExercise, sensorDataToUpload, customerData)
 
         for (const sensorCSV of individualSensorCSVs) {

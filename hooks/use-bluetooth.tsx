@@ -137,6 +137,12 @@ export function BluetoothProvider({ children }: { children: React.ReactNode }) {
   const [sensorData, setSensorData] = useState<SensorDataPoint[]>([])
   const [isRecording, setIsRecording] = useState(false)
 
+  const isRecordingRef = useRef(isRecording)
+
+  useEffect(() => {
+    isRecordingRef.current = isRecording
+  }, [isRecording])
+
   const exerciseStartTimeRef = useRef<number | null>(null)
   const sampleIndexRef = useRef(0)
   const sensorsRef = useRef(sensors)
@@ -168,7 +174,7 @@ export function BluetoothProvider({ children }: { children: React.ReactNode }) {
           ),
         )
 
-        if (isRecording && exerciseStartTimeRef.current) {
+        if (isRecordingRef.current && exerciseStartTimeRef.current) {
           const defaultImuData: IMUData = {
             accX: 0,
             accY: 0,
@@ -209,7 +215,7 @@ export function BluetoothProvider({ children }: { children: React.ReactNode }) {
         }
       }
     },
-    [isRecording],
+    [],
   )
 
   const setSensorState = useCallback((sensorId: string, updates: Partial<Sensor>) => {
