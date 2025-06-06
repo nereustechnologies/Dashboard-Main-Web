@@ -6,15 +6,15 @@ const SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
 const CHARACTERISTIC_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
 
 export interface IMUData {
-  AX: number
-  AY: number
-  AZ: number
-  GX: number
-  GY: number
-  GZ: number
-  MX: number
-  MY: number
-  MZ: number
+  accX: number
+  accY: number
+  accZ: number
+  gyrX: number
+  gyrY: number
+  gyrZ: number
+  magX: number
+  magY: number
+  magZ: number
 }
 
 export interface SensorDataPoint {
@@ -36,15 +36,17 @@ export interface Sensor {
   latestData: IMUData | null
   notificationHandler: ((event: Event) => void) | null
   disconnectHandler: (() => void) | null
+  isConnecting?: boolean
 }
 
 interface BluetoothContextType {
   sensors: Sensor[]
-  connectSensors: () => Promise<void>
-  disconnectSensors: () => void
+  connectSensor: (sensorId: string) => Promise<void>
+  disconnectSensor: (sensorId: string) => Promise<void>
   isConnecting: boolean
   anySensorConnected: boolean
   connectionError: string | null
+  setConnectionError: (error: string | null) => void
   sensorData: SensorDataPoint[]
   isRecording: boolean
   startRecording: (startTime: number) => void
@@ -54,50 +56,33 @@ interface BluetoothContextType {
 
 const BluetoothContext = createContext<BluetoothContextType | undefined>(undefined)
 
-interface IMUDataNumericKeys {
-  AX?: number
-  AY?: number
-  AZ?: number
-  GX?: number
-  GY?: number
-  GZ?: number
-  MX?: number
-  MY?: number
-  MZ?: number
-}
+function parseSensorPacket(dataStr: string): { imu: IMUData | null; battery: number | null } {
+  const parsed: Partial<IMUData> & { battery?: number } = {}
 
-function parseIMUData(dataStr: string): IMUData | null {
-  const parsed: Partial<IMUData> = {}
-  const keyMap: { [key: string]: keyof IMUDataNumericKeys } = {
-    AX: "AX",
-    AY: "AY",
-    AZ: "AZ",
-    GX: "GX",
-    GY: "GY",
-    GZ: "GZ",
-    MX: "MX",
-    MY: "MY",
-    MZ: "MZ",
-  }
-  const regex = /([A-Z]{2}):\s*([-]?\d+(?:\.\d+)?)/g
+  // Regex for keys like accX, gyrY, magZ, and Battery
+  const regex = /(accX|accY|accZ|gyrX|gyrY|gyrZ|magX|magY|magZ|Battery):\s*([-]?\d+(?:\.\d+)?)/g
   let match
+
   while ((match = regex.exec(dataStr)) !== null) {
     const label = match[1]
     const value = parseFloat(match[2])
-    if (label in keyMap) {
-      const dataKey = keyMap[label]
+
+    if (label === "Battery") {
+      parsed.battery = value
+    } else {
+      // It's an IMU key
       // @ts-ignore
-      parsed[dataKey] = value
+      parsed[label as keyof IMUData] = value
     }
   }
 
-  const imuKeys: (keyof IMUDataNumericKeys)[] = ["AX", "AY", "AZ", "GX", "GY", "GZ", "MX", "MY", "MZ"]
+  const imuKeys: (keyof IMUData)[] = ["accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ", "magX", "magY", "magZ"]
   const hasIMUData = imuKeys.every((key) => parsed[key] !== undefined)
 
-  if (hasIMUData) {
-    return parsed as IMUData
+  return {
+    imu: hasIMUData ? (parsed as IMUData) : null,
+    battery: typeof parsed.battery === "number" ? parsed.battery : null,
   }
-  return null
 }
 
 export function BluetoothProvider({ children }: { children: React.ReactNode }) {
@@ -167,13 +152,33 @@ export function BluetoothProvider({ children }: { children: React.ReactNode }) {
       if (!value) return
 
       const text = new TextDecoder().decode(value).trim()
-      const parsedData = parseIMUData(text)
+      const { imu: parsedData, battery } = parseSensorPacket(text)
 
       if (parsedData) {
-        setSensors((prev) => prev.map((s) => (s.id === sensorId ? { ...s, latestData: parsedData } : s)))
+        setSensors((prev) =>
+          prev.map((s) =>
+            s.id === sensorId
+              ? {
+                  ...s,
+                  latestData: parsedData,
+                  ...(battery !== null && { battery }),
+                }
+              : s,
+          ),
+        )
 
         if (isRecording && exerciseStartTimeRef.current) {
-          const defaultImuData: IMUData = { AX: 0, AY: 0, AZ: 0, GX: 0, GY: 0, GZ: 0, MX: 0, MY: 0, MZ: 0 }
+          const defaultImuData: IMUData = {
+            accX: 0,
+            accY: 0,
+            accZ: 0,
+            gyrX: 0,
+            gyrY: 0,
+            gyrZ: 0,
+            magX: 0,
+            magY: 0,
+            magZ: 0,
+          }
           const currentSensors = sensorsRef.current
           const finalDataPointWithDefaults: SensorDataPoint = {
             timestamp: Date.now() - exerciseStartTimeRef.current,
@@ -202,29 +207,44 @@ export function BluetoothProvider({ children }: { children: React.ReactNode }) {
     [isRecording],
   )
 
-  const connectSensors = useCallback(async () => {
-    if (typeof navigator !== "undefined" && !navigator.bluetooth) {
-      setConnectionError("Web Bluetooth is not supported in this browser. Please use Chrome or Edge.")
-      return
-    }
-    setIsConnecting(true)
-    setConnectionError(null)
+  const setSensorState = useCallback((sensorId: string, updates: Partial<Sensor>) => {
+    setSensors((prev) => prev.map((s) => (s.id === sensorId ? { ...s, ...updates } : s)))
+  }, [])
 
-    const updatedSensors = [...sensorsRef.current]
+  const connectSensor = useCallback(
+    async (sensorId: string) => {
+      if (typeof navigator === "undefined" || !navigator.bluetooth) {
+        setConnectionError("Web Bluetooth is not supported in this browser. Please use Chrome or Edge.")
+        return
+      }
 
-    for (let i = 0; i < updatedSensors.length; i++) {
-      const sensorToConnect = updatedSensors[i]
-      if (sensorToConnect.connected) continue
+      const sensorToConnect = sensorsRef.current.find((s) => s.id === sensorId)
+      if (!sensorToConnect) {
+        setConnectionError(`Sensor with ID ${sensorId} not found.`)
+        return
+      }
+
+      // Prevent multiple connection attempts
+      if (sensorToConnect.isConnecting || sensorToConnect.connected) {
+        return
+      }
+
+      setIsConnecting(true)
+      setConnectionError(null)
+      setSensorState(sensorId, { isConnecting: true, connected: false })
 
       try {
-        alert(`Please select the Bluetooth device for: ${sensorToConnect.name}`)
+        let device = sensorToConnect.device
+        if (!device) {
+          alert(`Please select the Bluetooth device for: ${sensorToConnect.name}`)
+          device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: [SERVICE_UUID, "battery_service"],
+          })
+          setSensorState(sensorId, { device })
+        }
 
-        const device = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: [SERVICE_UUID, "battery_service"],
-        })
-
-        if (!device.gatt) {
+        if (!device?.gatt) {
           throw new Error("GATT server not available.")
         }
 
@@ -232,21 +252,17 @@ export function BluetoothProvider({ children }: { children: React.ReactNode }) {
         const service = await server.getPrimaryService(SERVICE_UUID)
         const characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID)
 
-        const notificationHandler = (event: Event) => handleNotifications(event, sensorToConnect.id)
+        const notificationHandler = (event: Event) => handleNotifications(event, sensorId)
         const disconnectHandler = () => {
-          if (characteristic) {
-            characteristic.removeEventListener("characteristicvaluechanged", notificationHandler)
-          }
-          if (device) {
-            device.removeEventListener("gattserverdisconnected", disconnectHandler)
-          }
-          setSensors((prev) =>
-            prev.map((s) =>
-              s.id === sensorToConnect.id
-                ? { ...s, connected: false, device: null, characteristic: null, notificationHandler: null }
-                : s,
-            ),
-          )
+          setSensorState(sensorId, {
+            connected: false,
+            characteristic: null,
+            notificationHandler: null,
+            disconnectHandler: null,
+            isConnecting: false,
+          })
+          characteristic?.removeEventListener("characteristicvaluechanged", notificationHandler)
+          device?.removeEventListener("gattserverdisconnected", disconnectHandler)
         }
 
         if (characteristic.properties.notify) {
@@ -255,78 +271,73 @@ export function BluetoothProvider({ children }: { children: React.ReactNode }) {
           device.addEventListener("gattserverdisconnected", disconnectHandler)
         }
 
-        let batteryLevel = 0
-        try {
-          const batteryService = await server.getPrimaryService("battery_service")
-          const batteryCharacteristic = await batteryService.getCharacteristic("battery_level")
-          const batteryValue = await batteryCharacteristic.readValue()
-          batteryLevel = batteryValue.getUint8(0)
-        } catch (e) {
-          console.warn(`Could not get battery for ${sensorToConnect.name}, using mock value.`)
-          batteryLevel = Math.floor(Math.random() * 30) + 70
-        }
-
-        updatedSensors[i] = {
-          ...sensorToConnect,
+        setSensorState(sensorId, {
           connected: true,
-          device,
           characteristic,
-          battery: batteryLevel,
           notificationHandler,
           disconnectHandler,
-        }
-
-        setSensors([...updatedSensors])
+          isConnecting: false,
+        })
       } catch (error: any) {
         if (error.name === "NotFoundError" || error.name === "AbortError") {
-          alert(`Device selection cancelled for ${sensorToConnect.name}. You can continue with fewer sensors.`)
+          alert(`Device selection cancelled for ${sensorToConnect.name}.`)
         } else {
           setConnectionError(`Failed to connect ${sensorToConnect.name}: ${error.message}`)
-          break
         }
+        setSensorState(sensorId, { isConnecting: false, connected: false })
+      } finally {
+        setIsConnecting(false)
       }
-    }
-    setSensors(updatedSensors)
-    setIsConnecting(false)
-  }, [handleNotifications])
+    },
+    [handleNotifications, setSensorState],
+  )
 
-  const disconnectSensors = useCallback(async () => {
-    for (const sensor of sensorsRef.current) {
-      if (sensor.connected && sensor.device?.gatt?.connected) {
-        if (sensor.characteristic && sensor.notificationHandler) {
-          try {
-            if (sensor.characteristic.properties.notify) {
-              await sensor.characteristic.stopNotifications()
-            }
-            sensor.characteristic.removeEventListener("characteristicvaluechanged", sensor.notificationHandler)
-          } catch (e) {
-            console.error(`Error stopping notifications for ${sensor.name}`, e)
+  const disconnectSensor = useCallback(async (sensorId: string) => {
+    const sensorToDisconnect = sensorsRef.current.find((s) => s.id === sensorId)
+
+    if (sensorToDisconnect?.device?.gatt?.connected) {
+      const { characteristic, notificationHandler, disconnectHandler, device } = sensorToDisconnect
+
+      if (characteristic && notificationHandler) {
+        try {
+          if (characteristic.properties.notify) {
+            await characteristic.stopNotifications()
           }
+          characteristic.removeEventListener("characteristicvaluechanged", notificationHandler)
+        } catch (e) {
+          console.error(`Error stopping notifications for ${sensorToDisconnect.name}`, e)
         }
-        if (sensor.disconnectHandler) {
-          sensor.device.removeEventListener("gattserverdisconnected", sensor.disconnectHandler)
-        }
-        sensor.device.gatt.disconnect()
+      }
+
+      if (disconnectHandler) {
+        device.removeEventListener("gattserverdisconnected", disconnectHandler)
+      }
+
+      device.gatt?.disconnect()
+    }
+
+    setSensorState(sensorId, {
+      connected: false,
+      characteristic: null,
+      notificationHandler: null,
+      disconnectHandler: null,
+      latestData: null,
+    })
+  }, [setSensorState])
+
+  const disconnectAllSensors = useCallback(async () => {
+    for (const sensor of sensorsRef.current) {
+      if (sensor.connected) {
+        await disconnectSensor(sensor.id)
       }
     }
-    setSensors((prev) =>
-      prev.map((s) => ({
-        ...s,
-        connected: false,
-        device: null,
-        characteristic: null,
-        latestData: null,
-        notificationHandler: null,
-        disconnectHandler: null,
-      })),
-    )
-  }, [])
+  }, [disconnectSensor])
 
   useEffect(() => {
     return () => {
-      disconnectSensors()
+      disconnectAllSensors()
     }
-  }, [disconnectSensors])
+  }, [disconnectAllSensors])
 
   const startRecording = (startTime: number) => {
     clearSensorData()
@@ -349,11 +360,12 @@ export function BluetoothProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     sensors,
-    connectSensors,
-    disconnectSensors,
-    isConnecting,
+    connectSensor,
+    disconnectSensor,
+    isConnecting: isConnecting || sensors.some(s => s.isConnecting),
     anySensorConnected,
     connectionError,
+    setConnectionError,
     sensorData,
     isRecording,
     startRecording,

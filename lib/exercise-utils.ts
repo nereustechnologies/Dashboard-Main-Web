@@ -1,9 +1,9 @@
-import { type SensorDataPoint } from "@/hooks/use-websocket" // Assuming SensorDataPoint is exported from here or another accessible path
+import { type SensorDataPoint } from "@/hooks/use-bluetooth" // Assuming SensorDataPoint is exported from here or another accessible path
 
 interface SensorIMUData {
-  AX: number; AY: number; AZ: number;
-  GX: number; GY: number; GZ: number;
-  MX: number; MY: number; MZ: number;
+  accX: number; accY: number; accZ: number;
+  gyrX: number; gyrY: number; gyrZ: number;
+  magX: number; magY: number; magZ: number;
 }
 
 export function formatTime(timeInSeconds: number) {
@@ -150,10 +150,10 @@ export function prepareRawSensorDataCSV(
 
   const headers = [
     "Timestamp", "SampleIndex",
-    "LeftThigh_AX", "LeftThigh_AY", "LeftThigh_AZ", "LeftThigh_GX", "LeftThigh_GY", "LeftThigh_GZ", "LeftThigh_MX", "LeftThigh_MY", "LeftThigh_MZ",
-    "LeftShin_AX", "LeftShin_AY", "LeftShin_AZ", "LeftShin_GX", "LeftShin_GY", "LeftShin_GZ", "LeftShin_MX", "LeftShin_MY", "LeftShin_MZ",
-    "RightThigh_AX", "RightThigh_AY", "RightThigh_AZ", "RightThigh_GX", "RightThigh_GY", "RightThigh_GZ", "RightThigh_MX", "RightThigh_MY", "RightThigh_MZ",
-    "RightShin_AX", "RightShin_AY", "RightShin_AZ", "RightShin_GX", "RightShin_GY", "RightShin_GZ", "RightShin_MX", "RightShin_MY", "RightShin_MZ"
+    "LeftThigh_accX", "LeftThigh_accY", "LeftThigh_accZ", "LeftThigh_gyrX", "LeftThigh_gyrY", "LeftThigh_gyrZ", "LeftThigh_magX", "LeftThigh_magY", "LeftThigh_magZ",
+    "LeftShin_accX", "LeftShin_accY", "LeftShin_accZ", "LeftShin_gyrX", "LeftShin_gyrY", "LeftShin_gyrZ", "LeftShin_magX", "LeftShin_magY", "LeftShin_magZ",
+    "RightThigh_accX", "RightThigh_accY", "RightThigh_accZ", "RightThigh_gyrX", "RightThigh_gyrY", "RightThigh_gyrZ", "RightThigh_magX", "RightThigh_magY", "RightThigh_magZ",
+    "RightShin_accX", "RightShin_accY", "RightShin_accZ", "RightShin_gyrX", "RightShin_gyrY", "RightShin_gyrZ", "RightShin_magX", "RightShin_magY", "RightShin_magZ"
   ];
 
   const csvRows = [
@@ -162,18 +162,18 @@ export function prepareRawSensorDataCSV(
       const row = [
         formatMillisecondsToMMSS(dataPoint.timestamp),
         dataPoint.sample_index,
-        dataPoint.left_thigh?.AX, dataPoint.left_thigh?.AY, dataPoint.left_thigh?.AZ,
-        dataPoint.left_thigh?.GX, dataPoint.left_thigh?.GY, dataPoint.left_thigh?.GZ,
-        dataPoint.left_thigh?.MX, dataPoint.left_thigh?.MY, dataPoint.left_thigh?.MZ,
-        dataPoint.left_shin?.AX, dataPoint.left_shin?.AY, dataPoint.left_shin?.AZ,
-        dataPoint.left_shin?.GX, dataPoint.left_shin?.GY, dataPoint.left_shin?.GZ,
-        dataPoint.left_shin?.MX, dataPoint.left_shin?.MY, dataPoint.left_shin?.MZ,
-        dataPoint.right_thigh?.AX, dataPoint.right_thigh?.AY, dataPoint.right_thigh?.AZ,
-        dataPoint.right_thigh?.GX, dataPoint.right_thigh?.GY, dataPoint.right_thigh?.GZ,
-        dataPoint.right_thigh?.MX, dataPoint.right_thigh?.MY, dataPoint.right_thigh?.MZ,
-        dataPoint.right_shin?.AX, dataPoint.right_shin?.AY, dataPoint.right_shin?.AZ,
-        dataPoint.right_shin?.GX, dataPoint.right_shin?.GY, dataPoint.right_shin?.GZ,
-        dataPoint.right_shin?.MX, dataPoint.right_shin?.MY, dataPoint.right_shin?.MZ,
+        dataPoint.left_thigh?.accX, dataPoint.left_thigh?.accY, dataPoint.left_thigh?.accZ,
+        dataPoint.left_thigh?.gyrX, dataPoint.left_thigh?.gyrY, dataPoint.left_thigh?.gyrZ,
+        dataPoint.left_thigh?.magX, dataPoint.left_thigh?.magY, dataPoint.left_thigh?.magZ,
+        dataPoint.left_shin?.accX, dataPoint.left_shin?.accY, dataPoint.left_shin?.accZ,
+        dataPoint.left_shin?.gyrX, dataPoint.left_shin?.gyrY, dataPoint.left_shin?.gyrZ,
+        dataPoint.left_shin?.magX, dataPoint.left_shin?.magY, dataPoint.left_shin?.magZ,
+        dataPoint.right_thigh?.accX, dataPoint.right_thigh?.accY, dataPoint.right_thigh?.accZ,
+        dataPoint.right_thigh?.gyrX, dataPoint.right_thigh?.gyrY, dataPoint.right_thigh?.gyrZ,
+        dataPoint.right_thigh?.magX, dataPoint.right_thigh?.magY, dataPoint.right_thigh?.magZ,
+        dataPoint.right_shin?.accX, dataPoint.right_shin?.accY, dataPoint.right_shin?.accZ,
+        dataPoint.right_shin?.gyrX, dataPoint.right_shin?.gyrY, dataPoint.right_shin?.gyrZ,
+        dataPoint.right_shin?.magX, dataPoint.right_shin?.magY, dataPoint.right_shin?.magZ,
       ];
       return row.map(val => (val !== undefined && val !== null ? String(val) : "")).join(',');
     })
@@ -215,7 +215,7 @@ export function prepareIndividualSensorDataCSVs(
   const results: IndividualSensorCSV[] = [];
 
   // Standard headers for each individual sensor CSV
-  const individualHeaders = ["Timestamp", "SampleIndex", "AX", "AY", "AZ", "GX", "GY", "GZ", "MX", "MY", "MZ"];
+  const individualHeaders = ["Timestamp", "SampleIndex", "accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ", "magX", "magY", "magZ"];
 
   sensorKeys.forEach(sensorKey => {
     const relevantDataPoints = sensorData.filter(dp => dp[sensorKey] != null);
@@ -233,9 +233,9 @@ export function prepareIndividualSensorDataCSVs(
         const row = [
           formatMillisecondsToMMSS(dataPoint.timestamp),
           dataPoint.sample_index,
-          sensorValues.AX, sensorValues.AY, sensorValues.AZ,
-          sensorValues.GX, sensorValues.GY, sensorValues.GZ,
-          sensorValues.MX, sensorValues.MY, sensorValues.MZ,
+          sensorValues.accX, sensorValues.accY, sensorValues.accZ,
+          sensorValues.gyrX, sensorValues.gyrY, sensorValues.gyrZ,
+          sensorValues.magX, sensorValues.magY, sensorValues.magZ,
         ];
         return row.map(val => (val !== undefined && val !== null ? String(val) : "")).join(',');
       }).filter(row => row !== "")

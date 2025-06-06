@@ -9,48 +9,48 @@ interface SensorDataPoint {
   timestamp: number;
   sample_index: number;
   left_thigh: {
-    AX: number;
-    AY: number;
-    AZ: number;
-    GX: number;
-    GY: number;
-    GZ: number;
-    MX: number;
-    MY: number;
-    MZ: number;
+    accX: number;
+    accY: number;
+    accZ: number;
+    gyrX: number;
+    gyrY: number;
+    gyrZ: number;
+    magX: number;
+    magY: number;
+    magZ: number;
   };
   left_shin: {
-    AX: number;
-    AY: number;
-    AZ: number;
-    GX: number;
-    GY: number;
-    GZ: number;
-    MX: number;
-    MY: number;
-    MZ: number;
+    accX: number;
+    accY: number;
+    accZ: number;
+    gyrX: number;
+    gyrY: number;
+    gyrZ: number;
+    magX: number;
+    magY: number;
+    magZ: number;
   };
   right_thigh: {
-    AX: number;
-    AY: number;
-    AZ: number;
-    GX: number;
-    GY: number;
-    GZ: number;
-    MX: number;
-    MY: number;
-    MZ: number;
+    accX: number;
+    accY: number;
+    accZ: number;
+    gyrX: number;
+    gyrY: number;
+    gyrZ: number;
+    magX: number;
+    magY: number;
+    magZ: number;
   };
   right_shin: {
-    AX: number;
-    AY: number;
-    AZ: number;
-    GX: number;
-    GY: number;
-    GZ: number;
-    MX: number;
-    MY: number;
-    MZ: number;
+    accX: number;
+    accY: number;
+    accZ: number;
+    gyrX: number;
+    gyrY: number;
+    gyrZ: number;
+    magX: number;
+    magY: number;
+    magZ: number;
   };
 }
 
@@ -73,20 +73,20 @@ export function SensorDataExport({ activeExercise, customerData, sensorData, rec
 
     const csvContent = [
       // Headers
-      ['Timestamp', 'Sample Index', 'AX', 'AY', 'AZ', 'GX', 'GY', 'GZ', 'MX', 'MY', 'MZ'],
+      ['Timestamp', 'Sample Index', 'accX', 'accY', 'accZ', 'gyrX', 'gyrY', 'gyrZ', 'magX', 'magY', 'magZ'],
       // Data rows
       ...categoryData.map(row => [
         row.timestamp,
         row.sample_index,
-        row.AX,
-        row.AY,
-        row.AZ,
-        row.GX,
-        row.GY,
-        row.GZ,
-        row.MX,
-        row.MY,
-        row.MZ
+        row.accX,
+        row.accY,
+        row.accZ,
+        row.gyrX,
+        row.gyrY,
+        row.gyrZ,
+        row.magX,
+        row.magY,
+        row.magZ
       ])
     ].map(row => row.join(',')).join('\n');
 
