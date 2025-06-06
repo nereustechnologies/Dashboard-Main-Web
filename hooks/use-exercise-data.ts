@@ -164,19 +164,19 @@ export function useExerciseData() {
         throw new Error("Authentication required")
       }
 
-      // const response = await fetch("/api/exercise-data", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      //   body: JSON.stringify(exerciseDataItem),
-      // })
+      const response = await fetch("/api/exercise-data", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(exerciseDataItem),
+      })
 
-      // if (!response.ok) {
-      //   const errorData = await response.json()
-      //   throw new Error(errorData.error || "Failed to record exercise data")
-      // }
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to record exercise data")
+      }
       addExerciseData(exerciseDataItem)
 
       console.log(`Recording (to CSV data): ${action}, Time: ${timestamp}, Leg: ${leg || currentLeg || "N/A"}`)
