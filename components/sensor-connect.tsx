@@ -1,22 +1,13 @@
 "use client"
 
+import { useState } from "react" // Added useState
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { Battery, Bluetooth, CheckCircle, AlertCircle, Info } from "lucide-react"
+import { Battery, Bluetooth, CheckCircle, AlertCircle, Info, X } from "lucide-react" // Added X icon
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { useBluetooth } from "@/hooks/use-bluetooth"
-
-interface Sensor {
-  id: string
-  name: string
-  battery: number
-  connected: boolean
-  device: BluetoothDevice | null
-  characteristic: BluetoothRemoteGATTCharacteristic | null
-  isConnecting: boolean
-}
+import { useBluetooth, IMUData } from "@/hooks/use-bluetooth" // IMUData might be needed if we pass sensor.latestData around with explicit typing
 
 interface SensorConnectProps {
   onConnect: () => void
@@ -25,6 +16,7 @@ interface SensorConnectProps {
 
 export default function SensorConnect({ onConnect, customerData }: SensorConnectProps) {
   const { sensors, connectSensor, disconnectSensor, isConnecting, connectionError, anySensorConnected, setConnectionError } = useBluetooth()
+  const [showDataCard, setShowDataCard] = useState<Record<string, boolean>>({}); // State to manage individual card visibility
 
   const getBatteryIcon = (level: number) => {
     if (level >= 80) return <Battery size={16} className="text-green-500" />
@@ -123,7 +115,7 @@ export default function SensorConnect({ onConnect, customerData }: SensorConnect
                   </div>
                 )}
               </div>
-              <div className="mt-4">
+              <div className="mt-4 space-y-2">
                 {!sensor.connected && !sensor.isConnecting && (
                   <Button
                     onClick={() => connectSensor(sensor.id)}
@@ -133,13 +125,65 @@ export default function SensorConnect({ onConnect, customerData }: SensorConnect
                     Connect
                   </Button>
                 )}
-                {(sensor.connected || sensor.isConnecting) && (
+
+                {sensor.isConnecting && (
                   <Button
-                    onClick={() => (sensor.isConnecting ? {} : disconnectSensor(sensor.id))}
-                    className="w-full bg-destructive text-white hover:bg-destructive/90"
+                    onClick={() => disconnectSensor(sensor.id)}
+                    className="w-full bg-yellow-500 text-black hover:bg-yellow-600"
                   >
-                    {sensor.isConnecting ? "Cancel" : "Disconnect"}
+                    Cancel Connecting
                   </Button>
+                )}
+
+                {sensor.connected && !sensor.isConnecting && (
+                  <>
+                    <Button
+                      onClick={() => disconnectSensor(sensor.id)}
+                      className="w-full bg-destructive text-white hover:bg-destructive/90"
+                    >
+                      Disconnect
+                    </Button>
+
+                    {/* Data display card - conditionally rendered */}
+                    {showDataCard[sensor.id] && (
+                      <Card className="mt-2 p-2.5 border border-gray-600 bg-gray-800 text-xs shadow-lg">
+                        <div className="flex justify-between items-center mb-1.5">
+                          <span className="font-semibold text-gray-200">Live Sensor Data</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setShowDataCard(prev => ({ ...prev, [sensor.id]: false }))}
+                            className="h-5 w-5 p-0 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full"
+                          >
+                            <X size={12} />
+                          </Button>
+                        </div>
+                        {sensor.latestData ? (
+                          <pre className="whitespace-pre-wrap break-all text-gray-300 text-[10px] leading-tight font-mono">
+                            {`Acc: X:${sensor.latestData.accX.toFixed(1)} Y:${sensor.latestData.accY.toFixed(1)} Z:${sensor.latestData.accZ.toFixed(1)}\n`}
+                            {`Gyr: X:${sensor.latestData.gyrX.toFixed(1)} Y:${sensor.latestData.gyrY.toFixed(1)} Z:${sensor.latestData.gyrZ.toFixed(1)}\n`}
+                            {`Mag: X:${sensor.latestData.magX.toFixed(1)} Y:${sensor.latestData.magY.toFixed(1)} Z:${sensor.latestData.magZ.toFixed(1)}`}
+                          </pre>
+                        ) : (
+                          <p className="text-gray-400 text-[10px]">No data received yet. Waiting for sensor...</p>
+                        )}
+                      </Card>
+                    )}
+
+                    <Button
+                      onClick={() => {
+                        setShowDataCard(prev => ({ ...prev, [sensor.id]: !prev[sensor.id] }));
+                        if (sensor.latestData) {
+                           console.log(`Inspecting data for ${sensor.name}:`, sensor.latestData);
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-gray-600 hover:bg-gray-700"
+                    >
+                      {showDataCard[sensor.id] ? "Hide Incoming Data" : "Check Incoming Data"}
+                    </Button>
+                  </>
                 )}
               </div>
             </CardContent>

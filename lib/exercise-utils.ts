@@ -19,22 +19,30 @@ export function formatMillisecondsToMMSS(milliseconds: number): string {
   return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 }
 
-export function formatSensorDataForCSV(data: { [key: string]: any[] }) {
-  // Define the headers for the CSV
-  const headers = ["AX", "AY", "AZ", "GX", "GY", "GZ", "MX", "MY", "MZ"];
+export function formatSensorDataForCSV(
+  data: Record<string, number[]>, // Data where keys match some/all of the headers
+  headers: string[] // The headers to use for the CSV, also defines order
+): string {
   let csvContent = headers.join(",") + "\n";
+  console.log('Formatting Sensor Data with headers:', headers, 'Data:', data);
 
-  console.log('Formatting Sensor Data:', data);
- 
-  // Get the length of the first array to determine number of rows
-  const firstKey = Object.keys(data)[0];
-  const numRows = data[firstKey]?.length || 0;
+  let numRows = 0;
+  if (headers.length > 0) {
+    for (const header of headers) {
+      if (data[header]) {
+        numRows = Math.max(numRows, data[header].length);
+      }
+    }
+  }
+  // If headers is empty, numRows remains 0, and only headers row (empty if headers is empty) + newline is returned.
 
-  // Map through each index in parallel
   for (let i = 0; i < numRows; i++) {
     const row = headers.map(header => {
-      const value = data[header]?.[i] ?? "";
-      return `"${value}"`;
+      const value = data[header]?.[i];
+      // Quote values to handle potential commas or quotes within the data itself.
+      // Ensure undefined/null are represented as empty strings in CSV.
+      const stringValue = value !== undefined && value !== null ? String(value) : "";
+      return `"${stringValue.replace(/"/g, '""')}"`; // Escape double quotes
     });
     csvContent += row.join(",") + "\n";
   }
@@ -97,7 +105,7 @@ const getExerciseCsvConfig = (exerciseId: string): { headers: string[]; dataKeys
  */
 export function prepareExerciseEventsCSV(
   exerciseId: string,
-  customerData: { name: string; id: string }, // Added id to customerData
+  customerData: { name: string; id: string },
   recordedEvents: any[]
 ): { fileName: string; csvContent: string } | null {
   if (!recordedEvents || recordedEvents.length === 0) {
@@ -113,10 +121,11 @@ export function prepareExerciseEventsCSV(
       return dataKeys.map(key => {
         let value = event[key];
         if (key === 'timestamp' && typeof value === 'number') {
-          value = formatTime(value);
+          value = formatTime(value); // Assuming formatTime is appropriate here, not formatMillisecondsToMMSS
         } else {
           value = value !== undefined && value !== null ? String(value) : "";
         }
+        // Escape quotes and wrap in quotes if value contains comma or quote
         if (String(value).includes(',') || String(value).includes('"')) {
           value = `"${String(value).replace(/"/g, '""')}"`;
         }
@@ -126,7 +135,9 @@ export function prepareExerciseEventsCSV(
   ];
 
   const csvContent = csvRows.join('\n');
-  const fileName = "exercise_events.csv";
+  const dateStr = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  const sanitizedCustomerName = customerData.name.replace(/\s+/g, '_'); // Replace spaces with underscores
+  const fileName = `${sanitizedCustomerName}_${exerciseId}_events_${dateStr}.csv`;
   
   return { fileName, csvContent };
 }
@@ -259,4 +270,3 @@ export function prepareIndividualSensorDataCSVs(
 
   return results;
 }
-  
