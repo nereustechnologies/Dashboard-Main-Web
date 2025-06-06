@@ -36,6 +36,20 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  const prefillWithDummyData = () => {
+    setFormData({
+      name: "John Doe",
+      age: "42",
+      gender: "male",
+      height: "178",
+      weight: "82",
+      sleepLevels: "7",
+      activityLevel: "moderately_active",
+      calorieIntake: "2400",
+      mood: "good",
+    })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -245,7 +259,10 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
 
       {error && <div className="p-3 text-sm bg-red-500/20 border border-red-500 rounded text-red-500">{error}</div>}
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="outline" onClick={prefillWithDummyData}>
+          Prefill
+        </Button>
         <Button type="submit" className="bg-primary text-black hover:bg-primary/90" disabled={loading}>
           {loading ? "Saving..." : "Next: Connect Sensor"}
         </Button>
