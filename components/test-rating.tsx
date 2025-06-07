@@ -8,12 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Star, FileText } from "lucide-react"
 
 interface TestRatingProps {
-  onSubmit: (ratings: any) => void
+  onSubmit: () => void
   onBack: () => void
   customerData: any
+  testId: string
 }
 
-export default function TestRating({ onSubmit, onBack, customerData }: TestRatingProps) {
+export default function TestRating({ onSubmit, onBack, customerData, testId }: TestRatingProps) {
   const [overallRating, setOverallRating] = useState("3")
   const [mobilityRating, setMobilityRating] = useState("3")
   const [strengthRating, setStrengthRating] = useState("3")
@@ -21,7 +22,7 @@ export default function TestRating({ onSubmit, onBack, customerData }: TestRatin
   const [feedback, setFeedback] = useState("")
   const [customerFeedback, setCustomerFeedback] = useState("")
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const ratings = {
       overall: Number.parseInt(overallRating),
       mobility: Number.parseInt(mobilityRating),
@@ -31,7 +32,36 @@ export default function TestRating({ onSubmit, onBack, customerData }: TestRatin
       customerFeedback,
     }
 
-    onSubmit(ratings)
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) {
+        throw new Error("Authentication required. Please log in again.")
+      }
+
+      const response = await fetch("/api/ratings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          testId: testId,
+          ratings: ratings,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to submit ratings.")
+      }
+
+      alert("Test completed and data saved successfully!")
+      onSubmit()
+    } catch (e) {
+      const error = e instanceof Error ? e.message : "An unknown error occurred."
+      console.error("Failed to submit ratings:", error)
+      alert(error)
+    }
   }
 
   const downloadReport = () => {
@@ -188,7 +218,7 @@ ${customerFeedback || "No feedback provided."}
         <Button variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button type="submit" className="bg-primary hover:bg-primary/80 text-black">
+        <Button type="submit" onClick={handleSubmit} className="bg-primary hover:bg-primary/80 text-black">
           Submit Review
         </Button>
       </div>

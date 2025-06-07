@@ -17,7 +17,6 @@ export default function NewTest() {
   const [testCompleted, setTestCompleted] = useState(false)
   const [testData, setTestData] = useState<any>({
     exercises: [],
-    ratings: {},
   })
   const [testId, setTestId] = useState<string>("")
 
@@ -68,51 +67,15 @@ export default function NewTest() {
     setStep(4)
   }
 
-  const handleRatingSubmit = async (ratings: any) => {
-    setTestData((prev: any) => ({
-      ...prev,
-      ratings,
-    }))
-
-    try {
-      // Get token from localStorage
-      const token = localStorage.getItem("token")
-      if (!token) {
-        throw new Error("Authentication required")
-      }
-
-      // Send test data to API
-      const response = await fetch("/api/ratings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          testId: testId,
-          ratings: ratings,
-        }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to save test data")
-      }
-
-      // Reset the form
-      alert("Test completed and data saved successfully!")
-      setStep(1)
-      setCustomerData(null)
-      setSensorConnected(false)
-      setTestCompleted(false)
-      setTestData({
-        exercises: [],
-        ratings: {},
-      })
-    } catch (error) {
-      console.error("Error saving test data:", error)
-      alert(error instanceof Error ? error.message : "An error occurred while saving test data")
-    }
+  const handleRatingSubmit = () => {
+    // Reset the form
+    setStep(1)
+    setCustomerData(null)
+    setSensorConnected(false)
+    setTestCompleted(false)
+    setTestData({
+      exercises: [],
+    })
   }
 
   return (
@@ -165,7 +128,7 @@ export default function NewTest() {
           {step === 3 && <TestExercises onComplete={handleTestComplete} customerData={customerData} testId={testId} />}
 
           {step === 4 && (
-            <TestRating onSubmit={handleRatingSubmit} onBack={() => setStep(3)} customerData={customerData} />
+            <TestRating onSubmit={handleRatingSubmit} onBack={() => setStep(3)} customerData={customerData} testId={testId} />
           )}
         </CardContent>
       </Card>
