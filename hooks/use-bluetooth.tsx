@@ -57,32 +57,57 @@ interface BluetoothContextType {
 const BluetoothContext = createContext<BluetoothContextType | undefined>(undefined)
 
 function parseSensorPacket(dataStr: string): { imu: IMUData | null; battery: number | null } {
-  const parsed: Partial<IMUData> & { battery?: number } = {}
-
-  // Regex for keys like accX, gyrY, magZ, and Battery
-  const regex = /(accX|accY|accZ|gyrX|gyrY|gyrZ|magX|magY|magZ|Battery):\s*([-]?\d+(?:\.\d+)?)/g
+  const parsed: Partial<IMUData> = {}
+  const keyMap: { [key: string]: keyof IMUData } = {
+    AX: "accX",
+    AY: "accY",
+    AZ: "accZ",
+    GX: "gyrX",
+    GY: "gyrY",
+    GZ: "gyrZ",
+    MX: "magX",
+    MY: "magY",
+    MZ: "magZ",
+  }
+  const imuRegex = /([A-Z]{2}):\s*([-]?\d+(?:\.\d+)?)/g
   let match
 
-  while ((match = regex.exec(dataStr)) !== null) {
+  while ((match = imuRegex.exec(dataStr)) !== null) {
     const label = match[1]
     const value = parseFloat(match[2])
-
-    if (label === "Battery") {
-      parsed.battery = value
-    } else {
-      // It's an IMU key
+    if (label in keyMap) {
       // @ts-ignore
-      parsed[label as keyof IMUData] = value
+      parsed[keyMap[label] as keyof IMUData] = value
     }
   }
 
-  const imuKeys: (keyof IMUData)[] = ["accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ", "magX", "magY", "magZ"]
-  const hasIMUData = imuKeys.every((key) => parsed[key] !== undefined)
-
-  return {
-    imu: hasIMUData ? (parsed as IMUData) : null,
-    battery: typeof parsed.battery === "number" ? parsed.battery : null,
+  const batteryMatch = dataStr.match(/Battery:\s*(\d+)/)
+  let battery: number | null = null
+  if (batteryMatch) {
+    battery = parseInt(batteryMatch[1], 10)
   }
+
+  const imuKeys: (keyof IMUData)[] = ["accX", "accY", "accZ", "gyrX", "gyrY", "gyrZ", "magX", "magY", "magZ"]
+  const hasIMUData = imuKeys.some((key) => parsed[key] !== undefined)
+
+  if (!hasIMUData) {
+    return { imu: null, battery }
+  }
+
+  // Ensure a full IMUData object is returned to match the type, filling missing values with 0.
+  const imu: IMUData = {
+    accX: parsed.accX ?? 0,
+    accY: parsed.accY ?? 0,
+    accZ: parsed.accZ ?? 0,
+    gyrX: parsed.gyrX ?? 0,
+    gyrY: parsed.gyrY ?? 0,
+    gyrZ: parsed.gyrZ ?? 0,
+    magX: parsed.magX ?? 0,
+    magY: parsed.magY ?? 0,
+    magZ: parsed.magZ ?? 0,
+  }
+
+  return { imu, battery }
 }
 
 export function BluetoothProvider({ children }: { children: React.ReactNode }) {
