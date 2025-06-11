@@ -299,6 +299,14 @@ export function BluetoothProvider({ children }: { children: React.ReactNode }) {
           })
           characteristic?.removeEventListener("characteristicvaluechanged", notificationHandler)
           device?.removeEventListener("gattserverdisconnected", disconnectHandler)
+          const sensorName = sensorsRef.current.find(s => s.id === sensorId)?.name || sensorId;
+
+          if (isRecordingRef.current) {
+            console.log(`Sensor ${sensorName} disconnected during the test.`);
+            alert(`Sensor ${sensorName} has disconnected during the test.`);
+          } else {
+            console.log(`Sensor ${sensorName} disconnected (not during an active test).`);
+          }
         }
 
         if (characteristic.properties.notify) {
@@ -419,4 +427,4 @@ export function useBluetooth() {
     throw new Error("useBluetooth must be used within a BluetoothProvider")
   }
   return context
-} 
+}
