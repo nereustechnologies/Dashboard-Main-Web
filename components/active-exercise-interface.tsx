@@ -77,7 +77,7 @@ export function ActiveExerciseInterface({
             </Button>
             <Button
               onClick={() => onRecordAction("Max Knee Extension")}
-              className={coloredButtonClass("Max Knee Extension", "bg-yellow-600 hover:bg-yellow-700", "text-black")}
+              className={coloredButtonClass("Max Knee Extension", "bg-yellow-600 hover:bg-yellow-700")}
             >
               Max Knee Extension
             </Button>
@@ -110,7 +110,6 @@ export function ActiveExerciseInterface({
             </Button>
           </div>
         )
-
       case "knee_to_wall":
         return (
           <div className="space-y-2">
@@ -135,20 +134,11 @@ export function ActiveExerciseInterface({
       case "squats":
         return (
           <div className="space-y-2">
-            <Button onClick={() => onRecordAction("Rep Began")} className={buttonClass("Rep Began")}>
-              Rep Began
-            </Button>
             <Button
               onClick={() => onRecordAction("Full Squat")}
               className={coloredButtonClass("Full Squat", "bg-purple-600 hover:bg-purple-700")}
             >
               Full Squat
-            </Button>
-            <Button
-              onClick={() => onRecordAction("Rep Ended")}
-              className={coloredButtonClass("Rep Ended", "bg-red-600 hover:bg-red-700")}
-            >
-              Rep Ended
             </Button>
           </div>
         )
@@ -156,20 +146,11 @@ export function ActiveExerciseInterface({
       case "lunges":
         return (
           <div className="space-y-2">
-            <Button onClick={() => onRecordAction("Rep Began")} className={buttonClass("Rep Began")}>
-              Rep Began
-            </Button>
             <Button
               onClick={() => onRecordAction("Full Lunge")}
               className={coloredButtonClass("Full Lunge", "bg-purple-600 hover:bg-purple-700")}
             >
               Full Lunge
-            </Button>
-            <Button
-              onClick={() => onRecordAction("Rep Ended")}
-              className={coloredButtonClass("Rep Ended", "bg-red-600 hover:bg-red-700")}
-            >
-              Rep Ended
             </Button>
           </div>
         )
@@ -230,7 +211,7 @@ export function ActiveExerciseInterface({
             </Button>
             <Button
               onClick={() => onRecordAction("Direction Changed")}
-              className={coloredButtonClass("Direction Changed", "bg-yellow-600 hover:bg-yellow-700", "text-black")}
+              className={coloredButtonClass("Direction Changed", "bg-yellow-600 hover:bg-yellow-700")}
             >
               Direction Changed
             </Button>
@@ -260,40 +241,49 @@ export function ActiveExerciseInterface({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label className="mb-2 block">Action</Label>
             <div className="space-y-2">{renderActionButtons()}</div>
           </div>
 
           <div>
-            <Label className="mb-2 block">Leg</Label>
-            <div className="space-y-2">
-              <Button
-                onClick={() => onSetLeg("left")}
-                className={`w-full ${
-                  currentLeg === "left" ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"
-                } ${
-                  lastAction === "Selected left Leg" ? "ring-2 ring-white ring-offset-2 ring-offset-gray-900" : ""
-                }`}
-              >
-                <ArrowLeft size={16} className="mr-1" />
-                Left Leg
-              </Button>
-              <Button
-                onClick={() => onSetLeg("right")}
-                className={`w-full ${
-                  currentLeg === "right" ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"
-                } ${
-                  lastAction === "Selected right Leg" ? "ring-2 ring-white ring-offset-2 ring-offset-gray-900" : ""
-                }`}
-              >
-                <ArrowRight size={16} className="mr-1" />
-                Right Leg
-              </Button>
-            </div>
+            {activeExercise !== "squats" &&
+              activeExercise !== "lunges" &&
+              activeExercise !== "plank_hold" &&
+              activeExercise !== "sprint" &&
+              activeExercise !== "shuttle_run" && (
+                <>
+                  <Label className="mb-2 block">Leg</Label>
+                  <div className="space-y-2 mb-4"> {/* Added mb-4 for spacing when leg section is shown */}
+                    <Button
+                      onClick={() => onSetLeg("left")}
+                      className={`w-full ${
+                        currentLeg === "left" ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"
+                      } ${
+                        lastAction === "Selected left Leg" ? "ring-2 ring-white ring-offset-2 ring-offset-gray-900" : ""
+                      }`}
+                    >
+                      <ArrowLeft size={16} className="mr-1" />
+                      Left Leg
+                    </Button>
+                    <Button
+                      onClick={() => onSetLeg("right")}
+                      className={`w-full ${
+                        currentLeg === "right" ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"
+                      } ${
+                        lastAction === "Selected right Leg" ? "ring-2 ring-white ring-offset-2 ring-offset-gray-900" : ""
+                      }`}
+                    >
+                      <ArrowRight size={16} className="mr-1" />
+                      Right Leg
+                    </Button>
+                  </div>
+                </>
+              )}
 
-            <div className="mt-4">
+            {/* Timer Controls - mt-4 removed from here as spacing is handled by mb-4 on leg section or no extra space if leg section is hidden */}
+            <div>
               <Label className="mb-2 block">Timer Controls</Label>
               <div className="flex gap-2">
                 {timerInterval ? (

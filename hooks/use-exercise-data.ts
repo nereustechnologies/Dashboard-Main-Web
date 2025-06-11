@@ -93,19 +93,15 @@ export function useExerciseData() {
       if (activeExercise === "knee_flexion" || activeExercise === "knee_to_wall") {
         exerciseDataItem = {
           ...exerciseDataItem,
-          kneeAngleLeft: leg === "left" || currentLeg === "left" ? generateRandomAngle(5, 90) : "-",
-          kneeAngleRight: leg === "right" || currentLeg === "right" ? generateRandomAngle(12, 90) : "-",
+          kneeAngleLeft: leg === "left" || currentLeg === "left" ? "-" : "-", // Was generateRandomAngle(5, 90)
+          kneeAngleRight: leg === "right" || currentLeg === "right" ? "-" : "-", // Was generateRandomAngle(12, 90)
           phaseLabel: action,
           repCount,
         }
       } else if (activeExercise === "lunge_stretch") {
         exerciseDataItem = {
           ...exerciseDataItem,
-          hipFlexionAngle: generateRandomAngle(17, 22),
-          kneeFlexionAngleLeft:
-            leg === "left" || currentLeg === "left" ? generateRandomAngle(90, 92) : generateRandomAngle(10, 12),
-          kneeFlexionAngleRight:
-            leg === "right" || currentLeg === "right" ? generateRandomAngle(90, 92) : generateRandomAngle(10, 12),
+          // hipFlexionAngle, kneeFlexionAngleLeft, kneeFlexionAngleRight already removed as per previous request
           phaseLabel: action,
           holdDuration: action === "Hold Ended" ? timer : 0,
           reps: repCount,
@@ -113,44 +109,44 @@ export function useExerciseData() {
       } else if (activeExercise === "squats") {
         exerciseDataItem = {
           ...exerciseDataItem,
-          kneeAngleLeft: generateRandomAngle(30, 90),
-          kneeAngleRight: generateRandomAngle(30, 90),
-          hipAngle: generateRandomAngle(60, 110),
+          kneeAngleLeft: "-", // Was generateRandomAngle(30, 90)
+          kneeAngleRight: "-", // Was generateRandomAngle(30, 90)
+          hipAngle: "-", // Was generateRandomAngle(60, 110)
           phaseLabel: action,
           repCount,
         }
       } else if (activeExercise === "lunges") {
         exerciseDataItem = {
           ...exerciseDataItem,
-          kneeAngleLeft: generateRandomAngle(28, 90),
-          kneeAngleRight: generateRandomAngle(88, 100),
-          hipAngle: generateRandomAngle(108, 130),
+          kneeAngleLeft: "-", // Was generateRandomAngle(28, 90)
+          kneeAngleRight: "-", // Was generateRandomAngle(88, 100)
+          hipAngle: "-", // Was generateRandomAngle(108, 130)
           phaseLabel: action,
           repCount,
         }
       } else if (activeExercise === "plank_hold") {
         exerciseDataItem = {
           ...exerciseDataItem,
-          hipAngle: generateRandomAngle(160, 176),
+          hipAngle: "-", // Was generateRandomAngle(160, 176)
           phaseLabel: action,
           holdDuration: action === "Hold Ended" ? timer : action === "Holding" ? timer - 1 : 1,
         }
       } else if (activeExercise === "sprint") {
         exerciseDataItem = {
           ...exerciseDataItem,
-          velocity: generateRandomValue(2.5, 9.3),
-          acceleration: generateRandomValue(-1.2, 3.1),
-          strideLength: generateRandomValue(1.0, 1.75),
-          cadence: generateRandomValue(160, 192),
+          velocity: "0", // Was generateRandomValue(2.5, 9.3)
+          acceleration: "0", // Was generateRandomValue(-1.2, 3.1)
+          strideLength: "0", // Was generateRandomValue(1.0, 1.75)
+          cadence: "0", // Was generateRandomValue(160, 192)
           phaseLabel: action,
         }
       } else if (activeExercise === "shuttle_run") {
         exerciseDataItem = {
           ...exerciseDataItem,
-          velocity: generateRandomValue(2.5, 8.2),
-          acceleration: generateRandomValue(-2.3, 3.1),
-          strideLength: generateRandomValue(1.0, 1.6),
-          cadence: generateRandomValue(160, 185),
+          velocity: "0", // Was generateRandomValue(2.5, 8.2)
+          acceleration: "0", // Was generateRandomValue(-2.3, 3.1)
+          strideLength: "0", // Was generateRandomValue(1.0, 1.6)
+          cadence: "0", // Was generateRandomValue(160, 185)
           phaseLabel: action,
           repCount,
         }
@@ -207,13 +203,6 @@ function formatTime(timeInSeconds: number) {
   return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
 }
 
-function generateRandomAngle(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min + 1) + min)
-}
-
-function generateRandomValue(min: number, max: number) {
-  return (Math.random() * (max - min) + min).toFixed(1)
-}
 
 function calculateRepCount(exerciseData: any[], activeExercise: string) {
   // Simple logic to determine rep count based on actions recorded
