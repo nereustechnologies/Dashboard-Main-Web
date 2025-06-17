@@ -112,7 +112,7 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
 
       // Prepare and upload individual sensor data CSVs
       if (sensorDataToUpload.length > 0) {
-        const individualSensorCSVs = prepareIndividualSensorDataCSVs(activeExercise, sensorDataToUpload, customerData)
+        const individualSensorCSVs = prepareIndividualSensorDataCSVs(activeExercise, sensorDataToUpload)
 
         for (const sensorCSV of individualSensorCSVs) {
           if (sensorCSV.csvContent) {
@@ -184,6 +184,32 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
             // setError(`Error uploading exercise log for ${activeExercise}.`);
           }
         }
+      }
+
+      // All CSV uploads for this exercise are done. Trigger the AWS processing step.
+
+      try {
+        const processResp = await fetch("/api/exercise/process", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            customerId: customerData.id,
+            testId,
+            exerciseName: activeExercise,
+          }),
+        })
+
+        if (!processResp.ok) {
+          const procErr = await processResp.json()
+          console.error("Exercise processing failed:", procErr.error || processResp.statusText)
+        } else {
+          console.log(`Processing started/completed for ${activeExercise}`)
+        }
+      } catch (procError) {
+        console.error(`Error calling processing API for ${activeExercise}:`, procError)
       }
 
       // Reset exercise state

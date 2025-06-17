@@ -1,103 +1,57 @@
-import { type NextRequest, NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
-import { verifyAuth } from "@/lib/auth"
+import { type NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import { verifyAuth } from "@/lib/auth"; // Your utility to verify JWT and get user details
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify authentication
-    const user = await verifyAuth(request)
+    const user = await verifyAuth(request); // This should return user object with id and role
+
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get all tests for this tester
-    const tests = await prisma.test.findMany({
-      where: {
-        testerId: user.id,
-      },
-      include: {
-        customer: true,
-        exercises: true,
-        ratings: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    })
+    let tests;
 
-    return NextResponse.json({ success: true, tests })
-  } catch (error) {
-    console.error("Error fetching tests:", error)
-    return NextResponse.json({ error: "An error occurred while fetching tests" }, { status: 500 })
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    // Verify authentication
-    const user = await verifyAuth(request)
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const body = await request.json()
-    const { customerId, exercises, ratings, zipFileId } = body
-
-    // Create the test
-    const test = await prisma.test.create({
-      data: {
-        status: "Completed",
-        customer: {
-          connect: {
-            id: customerId,
-          },
+    if (user.role === "admin" || user.role === "doctor") {
+      // Admins and Doctors can see all tests
+      tests = await prisma.test.findMany({
+        include: {
+          customer: true, // Include customer details
+          tester: { select: { name: true, id: true } }, // Include tester's name and id
+          exercises: { select: { category: true } }, // For displaying categories
         },
-        tester: {
-          connect: {
-            id: user.id,
-          },
+        orderBy: {
+          createdAt: "desc", // Or 'date' field, depending on preference
         },
-        exercises: {
-          create: exercises.map((exercise: any) => ({
-            name: exercise.name,
-            category: exercise.category,
-            completed: exercise.completed,
-          })),
-        },
-        ratings: {
-          create: {
-            overall: ratings.overall,
-            mobility: ratings.mobility,
-            strength: ratings.strength,
-            endurance: ratings.endurance,
-            feedback: ratings.feedback,
-            customerFeedback: ratings.customerFeedback,
-          },
-        },
-      },
-      include: {
-        exercises: true,
-        ratings: true,
-        customer: true,
-      },
-    })
-
-    // If zipFileId was provided, associate it with this test
-    if (zipFileId) {
-      await prisma.zipFile.update({
+      });
+    } else if (user.role === "tester") {
+      // Testers can only see their own tests
+      tests = await prisma.test.findMany({
         where: {
-          id: zipFileId,
+          testerId: user.id,
         },
-        data: {
-          testId: test.id,
+        include: {
+          customer: true,
+          tester: { select: { name: true, id: true } },
+          exercises: { select: { category: true } },
         },
-      })
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    } else {
+      // Other roles (if any) are not permitted to see this list by default
+      return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 });
     }
 
-    return NextResponse.json({ success: true, test })
+    return NextResponse.json({ tests });
   } catch (error) {
-    console.error("Error creating test:", error)
-    return NextResponse.json({ error: "An error occurred while creating the test" }, { status: 500 })
+    console.error("Error fetching tests:", error);
+    const errorMessage = error instanceof Error ? error.message : "An internal server error occurred";
+    return NextResponse.json({ error: "Failed to fetch tests", details: errorMessage }, { status: 500 });
   }
 }
+
+// You might also have a POST handler here for creating tests, ensure its authorization is correct.
+// export async function POST(request: NextRequest) { /* ... */ }
 

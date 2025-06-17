@@ -16,7 +16,7 @@ export interface IMUData {
   magY: number
   magZ: number
 }
-
+  
 export interface SensorDataPoint {
   timestamp: number
   sample_index: number

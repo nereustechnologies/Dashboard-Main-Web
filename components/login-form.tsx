@@ -14,7 +14,7 @@ export default function LoginForm() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [userType, setUserType] = useState("tester")
+  const [userType, setUserType] = useState("tester") // Default to tester
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -29,7 +29,7 @@ export default function LoginForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password }), // userType is not sent, backend determines role
       })
 
       const data = await response.json()
@@ -54,6 +54,8 @@ export default function LoginForm() {
       // Redirect based on role
       if (data.user.role === "admin") {
         router.push("/admin/dashboard")
+      } else if (data.user.role === "doctor") {
+        router.push("/doctor")
       } else {
         router.push("/tester/dashboard")
       }
@@ -65,11 +67,18 @@ export default function LoginForm() {
     }
   }
 
+  const getButtonText = () => {
+    if (userType === "admin") return "Login as Admin"
+    if (userType === "doctor") return "Login as Doctor"
+    return "Login as Tester"
+  }
+
   return (
     <Tabs defaultValue="tester" onValueChange={setUserType}>
-      <TabsList className="grid w-full grid-cols-2 mb-6">
+      <TabsList className="grid w-full grid-cols-3 mb-6"> {/* Updated to grid-cols-3 */}
         <TabsTrigger value="tester">Tester</TabsTrigger>
         <TabsTrigger value="admin">Admin</TabsTrigger>
+        <TabsTrigger value="doctor">Doctor</TabsTrigger> {/* Added Doctor tab */}
       </TabsList>
 
       <form onSubmit={handleLogin} className="space-y-4">
@@ -106,17 +115,15 @@ export default function LoginForm() {
 
         <div className="pt-2">
           <Button type="submit" className="w-full bg-[#00D4EF] hover:bg-[#00D4EF]/80 text-black" disabled={loading}>
-            {loading ? "Logging in..." : `Login as ${userType === "admin" ? "Admin" : "Tester"}`}
+            {loading ? "Logging in..." : getButtonText()}
           </Button>
         </div>
 
         <div className="text-center text-sm text-gray-500 mt-4">
           <p>Demo Credentials:</p>
-          {userType === "tester" ? (
-            <p>Email: tester@example.com / Password: password</p>
-          ) : (
-            <p>Email: admin@example.com / Password: password</p>
-          )}
+          {userType === "tester" && <p>Email: tester@example.com / Password: password</p>}
+          {userType === "admin" && <p>Email: admin@example.com / Password: password</p>}
+          {userType === "doctor" && <p>Email: doctor@example.com / Password: password (once registered)</p>} {/* Added doctor demo credentials info */}
         </div>
       </form>
     </Tabs>

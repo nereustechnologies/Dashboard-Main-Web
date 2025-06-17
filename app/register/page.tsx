@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { User, Mail, Lock } from "lucide-react"
+import Image from "next/image" // Import Image component
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -32,7 +33,6 @@ export default function RegisterPage() {
     setLoading(true)
     setError("")
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match")
       setLoading(false)
@@ -40,16 +40,31 @@ export default function RegisterPage() {
     }
 
     try {
-      // In a real app, this would call a server action or API
-      // For demo, just simulate a successful registration
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: "doctor", // Registering user as a doctor
+        }),
+      })
 
-      setTimeout(() => {
-        alert(`Registration successful for ${formData.name} (${formData.email})`)
-        router.push("/login")
-      }, 1000)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Registration failed")
+      }
+
+      alert(`Registration successful for Dr. ${formData.name} (${formData.email}). Please login.`)
+      router.push("/login")
     } catch (error) {
       console.error("Registration error:", error)
-      setError("An error occurred during registration")
+      setError(error instanceof Error ? error.message : "An error occurred during registration")
+    } finally {
       setLoading(false)
     }
   }
@@ -57,19 +72,21 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-black p-4">
       <div className="w-full max-w-md">
-        <Link href="/" className="flex justify-center mb-8">
-          <h1 className="text-2xl font-bold text-primary">Sensor Dashboard</h1>
+        <Link href="/" className="flex justify-center mb-6">
+          {/* Using the Nereus logo similar to the login page */}
+          <Image src="/logo.svg" alt="Nereus Technologies Logo" width={70} height={80} />
         </Link>
 
-        <Card className="border-primary/20 bg-card">
+        <Card className="border-[#00D4EF]/20 bg-black text-white">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-primary">Create Account</CardTitle>
+            <CardTitle className="text-2xl font-bold text-[#00D4EF]">Create Doctor Account</CardTitle>
+            <p className="text-gray-400 mt-1">Register to access the Doctor Dashboard.</p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="flex items-center gap-2">
-                  <User size={16} className="text-primary" />
+                <Label htmlFor="name" className="flex items-center gap-2 text-gray-300">
+                  <User size={16} className="text-[#00D4EF]" />
                   Full Name
                 </Label>
                 <Input
@@ -78,13 +95,14 @@ export default function RegisterPage() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="bg-secondary border-border"
+                  className="bg-gray-900 border-gray-700 text-white placeholder-gray-500"
+                  placeholder="e.g., Dr. Jane Doe"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail size={16} className="text-primary" />
+                <Label htmlFor="email" className="flex items-center gap-2 text-gray-300">
+                  <Mail size={16} className="text-[#00D4EF]" />
                   Email
                 </Label>
                 <Input
@@ -94,13 +112,14 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="bg-secondary border-border"
+                  className="bg-gray-900 border-gray-700 text-white placeholder-gray-500"
+                  placeholder="doctor@example.com"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="flex items-center gap-2">
-                  <Lock size={16} className="text-primary" />
+                <Label htmlFor="password" className="flex items-center gap-2 text-gray-300">
+                  <Lock size={16} className="text-[#00D4EF]" />
                   Password
                 </Label>
                 <Input
@@ -110,13 +129,14 @@ export default function RegisterPage() {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="bg-secondary border-border"
+                  className="bg-gray-900 border-gray-700 text-white"
+                  placeholder="••••••••"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="flex items-center gap-2">
-                  <Lock size={16} className="text-primary" />
+                <Label htmlFor="confirmPassword" className="flex items-center gap-2 text-gray-300">
+                  <Lock size={16} className="text-[#00D4EF]" />
                   Confirm Password
                 </Label>
                 <Input
@@ -126,23 +146,24 @@ export default function RegisterPage() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   required
-                  className="bg-secondary border-border"
+                  className="bg-gray-900 border-gray-700 text-white"
+                  placeholder="••••••••"
                 />
               </div>
 
               {error && (
-                <div className="p-3 text-sm bg-red-500/20 border border-red-500 rounded text-red-500">{error}</div>
+                <div className="p-3 text-sm bg-red-900/30 border border-red-700 rounded text-red-400">{error}</div>
               )}
 
               <div className="pt-2">
-                <Button type="submit" className="w-full bg-primary text-black hover:bg-primary/90" disabled={loading}>
-                  {loading ? "Creating Account..." : "Register"}
+                <Button type="submit" className="w-full bg-[#00D4EF] text-black hover:bg-[#00D4EF]/90" disabled={loading}>
+                  {loading ? "Creating Account..." : "Register as Doctor"}
                 </Button>
               </div>
 
               <div className="text-center text-sm text-gray-500 mt-4">
                 Already have an account?{" "}
-                <Link href="/login" className="text-primary hover:underline">
+                <Link href="/login" className="text-[#00D4EF] hover:underline">
                   Login
                 </Link>
               </div>

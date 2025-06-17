@@ -15,7 +15,7 @@ model User {
   name      String
   email     String    @unique
   password  String
-  role      String // "admin" or "tester"
+  role      String // "admin", "tester", or "doctor"
   adminId   String? // For testers, references the admin who created them
   admin     User?     @relation("AdminToTesters", fields: [adminId], references: [id])
   testers   User[]    @relation("AdminToTesters")
@@ -38,6 +38,9 @@ model Customer {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   tests         Test[]
+  sectionEvaluations SectionEvaluation[]
+  trainingPurposes  TrainingPurpose[]
+  movementSignature MovementSignature?
 }
 
 model Test {
@@ -77,6 +80,7 @@ model TestRating {
   testId           String   @unique
   test             Test     @relation(fields: [testId], references: [id])
   createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt @default(now())
 }
 // New model to store paths to S3 files for each exercise
 model ExerciseAssetFile {
@@ -87,9 +91,81 @@ model ExerciseAssetFile {
   fileType          String   // Describes the content (e.g., "exercise_events", "raw_sensor_left_thigh", "raw_sensor_combined")
   s3PathRaw         String   // S3 path/URL for the raw uploaded CSV
   s3PathProcessed   String?  // S3 path/URL for the processed CSV (initially null)
+  analysisResults   Json?    // to store additional analysis results from the processing API
   status            String   @default("uploaded") // e.g., "uploaded", "processing_pending", "processed", "error"
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
   @@index([exerciseId])
+}
+
+/// --------------------------------------------------------------------
+/// 1. ENUMS – keep the string literals out of tables for consistency
+/// --------------------------------------------------------------------
+enum EvalSection {
+  mobility
+  strength
+  endurance
+}
+
+enum TrainingCategory {
+  expand
+  improve
+  injury
+}  // (1, 2, 3 in the spec)
+
+/// --------------------------------------------------------------------
+/// 2. SECTION-EVALUATION  (Mobility / Strength / Endurance)
+///    – one row per section per customer
+/// --------------------------------------------------------------------
+model SectionEvaluation {
+  id          String      @id @default(uuid())
+  customerId  String
+  customer    Customer    @relation(fields: [customerId], references: [id])
+
+  section     EvalSection
+  dropdowns   Json        // stores all dropdown values
+  comments    Json        // observation / recommendation / notes
+  textLabels  Json?       // stores the custom labels for text fields (optional)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@unique([customerId, section])   // ⇒ ▸ first submit = create ▸ next = update
+}
+
+/// --------------------------------------------------------------------
+/// 3. TRAINING-WITH-PURPOSE  (3 × 3 suggestions)
+///    – one row per suggestion; each category owns its own Save button
+/// --------------------------------------------------------------------
+model TrainingPurpose {
+  id          String          @id @default(uuid())
+  customerId  String
+  customer    Customer        @relation(fields: [customerId], references: [id])
+
+  category    TrainingCategory
+  slot        Int             // 0-based position inside its tab (0-2)
+  title       String
+  paragraph   String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([customerId, category, slot])  // unique per suggestion slot
+}
+
+/// --------------------------------------------------------------------
+/// 4. MOVEMENT-SIGNATURE  (identity + 1-10 rating bar)
+///    – one row per customer
+/// --------------------------------------------------------------------
+model MovementSignature {
+  id          String   @id @default(uuid())
+  customerId  String   @unique
+  customer    Customer @relation(fields: [customerId], references: [id])
+
+  identity    String   // Mobility-Dominant / Strength-Dominant / …
+  rating      Int      // 1-10
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

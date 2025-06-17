@@ -11,34 +11,47 @@ export async function POST(request: NextRequest) {
         // This should only be accessible by authorized administrators
 
         // Create admin user with hashed password
-        const hashedPassword = await hash("password", 10);
-        await prisma.user.upsert({
-            where: { email: "admin@example.com" },
-            update: {},
-            create: {
-                name: "Admin User",
-                email: "admin@example.com",
-                password: hashedPassword,
-                role: "admin",
-            },
-        });
+        const hashedPassword = await hash("password", 10); // Common password for all demo users
+        // const adminUser = await prisma.user.upsert({
+        //     where: { email: "admin@example.com" },
+        //     update: {},
+        //     create: {
+        //         name: "Admin User",
+        //         email: "admin@example.com",
+        //         password: hashedPassword,
+        //         role: "admin",
+        //     },
+        // });
 
-        // Create a tester user for demonstration
+        // // Create a tester user for demonstration
+        // await prisma.user.upsert({
+        //     where: { email: "tester@example.com" },
+        //     update: {},
+        //     create: {
+        //         name: "Test User",
+        //         email: "tester@example.com",
+        //         password: hashedPassword,
+        //         role: "tester",
+        //         adminId: adminUser.id, // Associate tester with the created admin
+        //     },
+        // });
+
+        // Create a doctor user for demonstration
         await prisma.user.upsert({
-            where: { email: "tester@example.com" },
+            where: { email: "doctor@example.com" },
             update: {},
             create: {
-                name: "Test User",
-                email: "tester@example.com",
-                password: hashedPassword,
-                role: "tester",
-                adminId: (await prisma.user.findUnique({ where: { email: "admin@example.com" } }))?.id,
+                name: "Doctor User",
+                email: "doctor@example.com",
+                password: hashedPassword, // Use the same hashed password for demo purposes
+                role: "doctor",
+                // adminId: adminUser.id, // Optional: Associate doctor with an admin if needed
             },
         });
 
         return NextResponse.json({ 
             success: true, 
-            message: "Database initialized successfully" 
+            message: "Database initialized successfully with admin, tester, and doctor users." 
         });
     } catch (error) {
         console.error("Error during database initialization:", error);

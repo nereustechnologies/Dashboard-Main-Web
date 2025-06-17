@@ -3,6 +3,42 @@ import prisma from "@/lib/prisma"
 import { verifyAuth } from "@/lib/auth"
 import fs from "fs"
 
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const user = await verifyAuth(request)
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { id: testId } = await params
+
+    const test = await prisma.test.findUnique({
+      where: { id: testId },
+      include: {
+        customer: true,
+        tester: { select: { name: true, id: true } }, // Select specific fields from tester
+        exercises: true, // Include exercises related to the test
+        // ratings: true, // Include ratings if needed
+      },
+    })
+
+    if (!test) {
+      return NextResponse.json({ error: "Test not found" }, { status: 404 })
+    }
+
+    // Authorization: Admins and Doctors can see any test. Testers can only see their own tests.
+    if (user.role !== "admin" && user.role !== "doctor" && test.testerId !== user.id) {
+      return NextResponse.json({ error: "Forbidden: You do not have permission to view this test" }, { status: 403 })
+    }
+
+    return NextResponse.json({ test })
+  } catch (error) {
+    console.error("Error fetching test details:", error)
+    const errorMessage = error instanceof Error ? error.message : "An internal server error occurred"
+    return NextResponse.json({ error: "Failed to fetch test details", details: errorMessage }, { status: 500 })
+  }
+}
+
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Verify authentication
@@ -29,36 +65,6 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ error: "You do not have permission to delete this test" }, { status: 403 })
     }
 
-    // Find the associated zip file to delete it
-    const zipFile = await prisma.zipFile.findFirst({
-      where: {
-        testId: testId,
-      },
-    })
-
-    // Delete the zip file from disk if it exists
-    if (zipFile && fs.existsSync(zipFile.filePath)) {
-      fs.unlinkSync(zipFile.filePath)
-    }
-
-    // Delete the zip file record from the database
-    if (zipFile) {
-      await prisma.zipFile.delete({
-        where: {
-          id: zipFile.id,
-        },
-      })
-    }
-
-    // Delete the test's related data
-    // First delete exercise data (if any)
-    await prisma.exerciseData.deleteMany({
-      where: {
-        exercise: {
-          testId: testId,
-        },
-      },
-    })
 
     // Delete the exercises
     await prisma.exercise.deleteMany({

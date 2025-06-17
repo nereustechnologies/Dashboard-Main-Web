@@ -135,9 +135,7 @@ export function prepareExerciseEventsCSV(
   ];
 
   const csvContent = csvRows.join('\n');
-  const dateStr = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-  const sanitizedCustomerName = customerData.name.replace(/\s+/g, '_'); // Replace spaces with underscores
-  const fileName = `${sanitizedCustomerName}_${exerciseId}_events_${dateStr}.csv`;
+  const fileName = `events.csv`;
   
   return { fileName, csvContent };
 }
@@ -215,7 +213,7 @@ export interface IndividualSensorCSV {
 export function prepareIndividualSensorDataCSVs(
   exerciseId: string,
   sensorData: SensorDataPoint[],
-  customerData: { name: string; id: string }
+  // customerData: { name: string; id: string }
 ): IndividualSensorCSV[] {
   if (!sensorData || sensorData.length === 0) {
     console.log(`No raw sensor data to prepare for ${exerciseId}.`);
