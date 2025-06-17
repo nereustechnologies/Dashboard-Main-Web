@@ -19,7 +19,7 @@ function awsSlugify(text: string) {
     .toString()
     .trim()
     .toLowerCase()
-    .replace(/\s+/g, "-") // Replace spaces with hyphen for AWS URLs
+    .replace(/[\s_]+/g, "-") // Replace spaces and underscores with hyphen for AWS URLs
     .replace(/[^\w-]+/g, "") // Remove non-word chars except hyphen
 }
 
