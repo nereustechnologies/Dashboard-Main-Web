@@ -164,9 +164,9 @@ model MovementSignature {
   customer    Customer @relation(fields: [customerId], references: [id])
 
   identity    String   // Mobility-Dominant / Strength-Dominant / …
-  mobilityRating Int   // 1-10
-  enduranceRating Int  // 1-10
-  strengthRating Int   // 1-10
+  mobilityRating Int   @default(5) // Default to middle rating
+  enduranceRating Int  @default(5) // Default to middle rating
+  strengthRating Int   @default(5) // Default to middle rating
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
