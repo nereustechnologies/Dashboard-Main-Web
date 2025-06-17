@@ -13,6 +13,16 @@ function slugify(text: string) {
     .replace(/[^\w_]+/g, "") // Remove non-word chars except underscore
 }
 
+// Helper to convert exercise names like "Knee Flexion" → "knee-flexion" for AWS URLs
+function awsSlugify(text: string) {
+  return text
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-") // Replace spaces with hyphen for AWS URLs
+    .replace(/[^\w-]+/g, "") // Remove non-word chars except hyphen
+}
+
 export async function POST(request: Request) {
   try {
     const { customerId, testId, exerciseName } = await request.json()
@@ -22,11 +32,12 @@ export async function POST(request: Request) {
     }
 
     const exerciseSlug = slugify(exerciseName) // e.g. knee_flexion
+    const awsExerciseSlug = awsSlugify(exerciseName) // e.g. knee-flexion
     const bucket = "neureusbucketproto"
     const s3Prefix = `${customerId}/${testId}/${exerciseSlug}`
 
     // Call the AWS API Gateway endpoint specific to the exercise
-    const awsUrl = `https://91uqh2n4kb.execute-api.us-east-1.amazonaws.com/v1/${exerciseSlug}`
+    const awsUrl = `https://91uqh2n4kb.execute-api.us-east-1.amazonaws.com/v1/${awsExerciseSlug}`
 
     const awsResp = await fetch(awsUrl, {
       method: "POST",

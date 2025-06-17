@@ -16,6 +16,7 @@ function PatientDashboard() {
   const params = useParams()
   const testId = params.id as string
 
+  // Keep track of selected exercise by name
   const [selectedExercise, setSelectedExercise] = useState<string>("knee_flexion")
   const [sidebarOpen, setSidebarOpen] = useState(true) // From new structure
   const [test, setTest] = useState<any>(null) // Existing state
@@ -48,6 +49,10 @@ function PatientDashboard() {
 
         const data = await response.json()
         setTest(data.test)
+        // Set initial selected exercise to the first exercise returned from backend if not already selected.
+        if (data.test.exercises && data.test.exercises.length > 0) {
+          setSelectedExercise(data.test.exercises[0].name)
+        }
       } catch (err) {
         console.error("Error fetching test details:", err)
         setError(err instanceof Error ? err.message : "An unknown error occurred")
@@ -120,7 +125,7 @@ function PatientDashboard() {
 
       <div className="flex flex-1 overflow-hidden">
         <ExerciseSidebar
-          exercises={Object.keys(exerciseData)}
+          exercises={test.exercises.map((ex: any) => ex.name)}
           selectedExercise={selectedExercise}
           onSelectExercise={handleExerciseSelect}
           isOpen={sidebarOpen}
@@ -142,10 +147,16 @@ function PatientDashboard() {
                 {/* ExerciseContent using mock data */}
                 <section aria-labelledby="exercise-guide-heading">
                   <div className="rounded-lg border border-gray-700 p-4">
-                    <ExerciseContent
-                      exerciseData={exerciseData[selectedExercise as keyof typeof exerciseData]}
-                      exerciseName={selectedExercise}
-                    />
+                    {(() => {
+                      const exerciseObj = test.exercises.find((ex: any) => ex.name === selectedExercise)
+                      return (
+                        <ExerciseContent
+                          exerciseData={exerciseData[selectedExercise as keyof typeof exerciseData]}
+                          exerciseName={selectedExercise}
+                          exerciseId={exerciseObj?.id}
+                        />
+                      )
+                    })()}
                   </div>
                 </section>
               </div>
