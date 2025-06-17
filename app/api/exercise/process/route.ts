@@ -42,14 +42,26 @@ export async function POST(request: Request) {
     const awsResp = await fetch(awsUrl, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({ bucket, s3Prefix }),
+      body: JSON.stringify({
+        bucket,
+        s3Prefix
+      })
     })
 
     if (!awsResp.ok) {
       const err = await awsResp.text()
       console.error("AWS processing failed:", err)
+      // Log more details about the request for debugging
+      console.error("Request details:", {
+        url: awsUrl,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: { bucket, s3Prefix }
+      })
       return NextResponse.json({ error: "AWS processing failed", details: err }, { status: 502 })
     }
 
