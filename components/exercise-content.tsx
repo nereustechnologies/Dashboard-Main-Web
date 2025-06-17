@@ -36,10 +36,12 @@ export function ExerciseContent({ exerciseData, exerciseName, exerciseId }: Exer
 
         // Transform analysisResults (key/value pairs) → array for rendering
         if (analysisResults && typeof analysisResults === "object") {
-          const entries = Object.entries(analysisResults).map(([name, value]) => ({
-            name,
-            value: value as string | number,
-          }))
+          const entries = Object.entries(analysisResults)
+            .filter(([name]) => name !== "output_key") // omit S3 key from UI
+            .map(([name, value]) => ({
+              name,
+              value: value as string | number,
+            }))
           setCalculatedData(entries)
         }
 
@@ -145,14 +147,14 @@ export function ExerciseContent({ exerciseData, exerciseName, exerciseId }: Exer
 
             {/* CSV */}
             {csvData.length > 0 && (
-              <TabsContent value="csv">
-                <Card>
+              <TabsContent value="csv" className="h-[calc(100vh-12rem)]">
+                <Card className="h-full">
                   <CardHeader className="pb-3">
                     <CardTitle>Processed CSV Data</CardTitle>
                     <CardDescription>Data returned from processing pipeline</CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="w-full overflow-auto">
+                  <CardContent className="h-[calc(100%-5rem)] overflow-hidden">
+                    <div className="h-full overflow-auto">
                       <table className="min-w-full text-sm text-left">
                         <thead className="sticky top-0 bg-background">
                           <tr>

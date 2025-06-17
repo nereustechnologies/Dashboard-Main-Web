@@ -18,7 +18,9 @@ interface MovementSignatureFormProps {
 
 export function MovementSignatureForm({ customerId }: MovementSignatureFormProps) {
   const [identity, setIdentity] = useState<string>("")
-  const [rating, setRating] = useState<number>(0)
+  const [mobilityRating, setMobilityRating] = useState<number>(0)
+  const [enduranceRating, setEnduranceRating] = useState<number>(0)
+  const [strengthRating, setStrengthRating] = useState<number>(0)
 
   const handleSave = async () => {
     try {
@@ -29,7 +31,13 @@ export function MovementSignatureForm({ customerId }: MovementSignatureFormProps
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ customerId, identity, rating }),
+        body: JSON.stringify({ 
+          customerId, 
+          identity, 
+          mobilityRating,
+          enduranceRating,
+          strengthRating 
+        }),
       })
       alert("Movement Signature saved!")
     } catch (err) {
@@ -37,6 +45,31 @@ export function MovementSignatureForm({ customerId }: MovementSignatureFormProps
       alert("Failed to save data")
     }
   }
+
+  const RatingBar = ({ 
+    value, 
+    onChange, 
+    label 
+  }: { 
+    value: number; 
+    onChange: (value: number) => void; 
+    label: string 
+  }) => (
+    <div className="space-y-1">
+      <label className="text-sm">{label} (1-10)</label>
+      <div className="flex gap-1">
+        {Array.from({ length: 10 }, (_, i) => (
+          <button
+            key={i}
+            type="button"
+            aria-label={`Rate ${i + 1}`}
+            onClick={() => onChange(i + 1)}
+            className={`h-4 flex-1 rounded-sm ${i < value ? "bg-[#00D4EF]" : "bg-gray-700"}`}
+          />
+        ))}
+      </div>
+    </div>
+  )
 
   return (
     <Card className="mt-6">
@@ -63,20 +96,22 @@ export function MovementSignatureForm({ customerId }: MovementSignatureFormProps
           </Select>
         </div>
 
-        {/* Rating bar */}
-        <div className="space-y-1">
-          <label className="text-sm">Rating (1-10)</label>
-          <div className="flex gap-1">
-            {Array.from({ length: 10 }, (_, i) => (
-              <button
-                key={i}
-                type="button"
-                aria-label={`Rate ${i + 1}`}
-                onClick={() => setRating(i + 1)}
-                className={`h-4 flex-1 rounded-sm ${i < rating ? "bg-[#00D4EF]" : "bg-gray-700"}`}
-              />
-            ))}
-          </div>
+        <div className="space-y-4">
+          <RatingBar 
+            value={mobilityRating} 
+            onChange={setMobilityRating} 
+            label="Mobility Rating" 
+          />
+          <RatingBar 
+            value={enduranceRating} 
+            onChange={setEnduranceRating} 
+            label="Endurance Rating" 
+          />
+          <RatingBar 
+            value={strengthRating} 
+            onChange={setStrengthRating} 
+            label="Strength Rating" 
+          />
         </div>
       </CardContent>
     </Card>
