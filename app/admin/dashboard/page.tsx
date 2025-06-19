@@ -54,9 +54,18 @@ export default function AdminDashboard() {
               <p className="text-gray-400">Welcome, {user?.name || "Admin"}</p>
             </div>
           </div>
+          <div>
+          <Button
+      variant="outline"
+      onClick={() => router.push("/admin/dashboard/booking")}
+      className="border-[#00D4EF] text-[#00D4EF] m-2"
+    >
+      Booking Dashboard
+    </Button>
           <Button variant="outline" onClick={handleLogout} className="border-[#00D4EF] text-[#00D4EF]">
             Logout
           </Button>
+          </div>
         </header>
 
         <Tabs defaultValue="testers">

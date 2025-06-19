@@ -28,6 +28,7 @@ model Customer {
   id            String    @id @default(uuid())
   name          String
   age           Int
+  UniqueId      String? @unique
   gender        String
   height        Float
   weight        Float
@@ -170,4 +171,101 @@ model MovementSignature {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Temp {
+  id               String   @id @default(uuid())
+  fullName         String
+  age              Int
+  gender           Gender
+  email            String   
+  whatsapp         String
+  SessionNo    Int    
+  medicalHistory   String?  // Optional
+  whyMove          String
+  fitnessGoal      String
+  consentAgreement Boolean  @default(true)
+  ageConfirmation  Boolean
+  paymentStatus String
+  timeSlot  TimeSlot @relation("TimeSlotToTemp", fields: [timeSlotId], references: [id])
+  timeSlotId String
+  createdAt        DateTime  @default(now())
+}
+
+model Client {
+  id               String   @id @default(uuid())
+  fullName         String
+  age              Int
+  gender           Gender
+  email            String   @unique
+  whatsapp         String
+  medicalHistory   String?  // Optional
+  whyMove          String
+  fitnessGoal      String
+  uniqueId         String   @unique
+  createdAt        DateTime  @default(now())
+  Booking          Booking[]
+}
+
+model SlotDate {
+  id         String   @id @default(uuid())
+  date       DateTime
+  locationId String
+  location   Location  @relation(fields: [locationId], references: [id])
+  timeSlots  TimeSlot[]  // 1:N relation
+}
+model Location {
+  id       String   @id @default(uuid())
+  name     String
+  address  String
+  link     String?   // <-- new field to store Google Maps or other location link
+  dates    SlotDate[]  // 1:N relation
+}
+
+
+model TimeSlot {
+  id         String   @id @default(uuid())
+  startTime  DateTime
+  endTime    DateTime
+  count      Int       
+  slotDateId String
+  slotDate   SlotDate @relation(fields: [slotDateId], references: [id])
+  bookings   Booking[]
+  temps      Temp[]     @relation("TimeSlotToTemp")
+}
+
+model Booking {
+  id        String   @id @default(uuid())
+  orderId   String  
+  clientId    String
+  client      Client     @relation(fields: [clientId], references: [id])
+  clientSessionNo Int 
+  consentAgreement Boolean  @default(true)
+  ageConfirmation  Boolean
+  paymentId        String
+  paymentStatus    PaymentStatus? @default(PENDING)
+  invoiceNumber Int      @default(autoincrement())
+  timeSlot  TimeSlot @relation(fields: [timeSlotId], references: [id])
+  timeSlotId String
+  createdAt DateTime @default(now())
+}
+
+
+model Config {
+  id        String   @id @default(uuid())
+  price     Int
+  updatedAt DateTime @updatedAt
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUND
 }

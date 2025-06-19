@@ -5,18 +5,37 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { User, Calendar, Ruler, Weight, Moon, Activity, Pizza, Smile } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  User,
+  Calendar,
+  Ruler,
+  Weight,
+  Moon,
+  Activity,
+  Pizza,
+  Smile,
+  Loader2,
+} from "lucide-react"
+import { unique } from "next/dist/build/utils"
 
 interface CustomerFormProps {
   onSubmit: (data: any) => void
 }
 
 export default function CustomerForm({ onSubmit }: CustomerFormProps) {
+  const [clientId, setClientId] = useState("")
   const [formData, setFormData] = useState({
+    uniqueId:"",
     name: "",
     age: "",
-    gender: "male",
+    gender: "",
     height: "",
     weight: "",
     sleepLevels: "",
@@ -25,6 +44,8 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
     mood: "good",
   })
   const [loading, setLoading] = useState(false)
+  const [fetchingClient, setFetchingClient] = useState(false)
+  const [clientFetched, setClientFetched] = useState(false)
   const [error, setError] = useState("")
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,18 +57,49 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const prefillWithDummyData = () => {
-    setFormData({
-      name: `Marshal Mathers - ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`,
-      age: "42", 
-      gender: "male",
-      height: "178",
-      weight: "82",
-      sleepLevels: "7",
-      activityLevel: "moderately_active",
-      calorieIntake: "2400",
-      mood: "good",
-    })
+  const fetchClientData = async () => {
+    setError("")
+    setClientFetched(false)
+    setFetchingClient(true)
+
+    const token = localStorage.getItem("token")
+    if (!token) {
+      setError("Authentication required")
+      setFetchingClient(false)
+      return
+    }
+
+    try {
+      const response = await fetch("/api/customers/fetchInfo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ uniqueId: clientId })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Client not found")
+      }
+
+      console.log("Fetched client data:", data)
+
+      setFormData((prev) => ({
+        ...prev,
+        name: data.name,
+        age: data.age.toString(),
+        gender: data.gender,
+      }))
+  
+      setClientFetched(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error fetching client data")
+    } finally {
+      setFetchingClient(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,13 +108,9 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
     setError("")
 
     try {
-      // Get token from localStorage
       const token = localStorage.getItem("token")
-      if (!token) {
-        throw new Error("Authentication required")
-      }
+      if (!token) throw new Error("Authentication required")
 
-      // Send customer data to API
       const response = await fetch("/api/customers", {
         method: "POST",
         headers: {
@@ -70,14 +118,15 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
+          uniqueId: clientId,
           name: formData.name,
-          age: Number.parseInt(formData.age),
+          age: Number(formData.age),
           gender: formData.gender,
-          height: Number.parseFloat(formData.height),
-          weight: Number.parseFloat(formData.weight),
-          sleepLevels: Number.parseFloat(formData.sleepLevels),
+          height: Number(formData.height),
+          weight: Number(formData.weight),
+          sleepLevels: Number(formData.sleepLevels),
           activityLevel: formData.activityLevel,
-          calorieIntake: Number.parseInt(formData.calorieIntake),
+          calorieIntake: Number(formData.calorieIntake),
           mood: formData.mood,
         }),
       })
@@ -85,14 +134,12 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create customer")
+        throw new Error(data.error || "Failed to save data")
       }
 
-      // Pass the customer data to the parent component
       onSubmit(data.customer)
     } catch (error) {
-      console.error("Error creating customer:", error)
-      setError(error instanceof Error ? error.message : "An error occurred while creating the customer")
+      setError(error instanceof Error ? error.message : "An error occurred while submitting")
     } finally {
       setLoading(false)
     }
@@ -101,173 +148,176 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
+        {/* Step 1: Enter client ID */}
         <div className="space-y-2">
-          <Label htmlFor="name" className="flex items-center gap-2">
+          <Label htmlFor="clientId" className="flex items-center gap-2">
             <User size={16} className="text-primary" />
-            Full Name
+            Client ID
           </Label>
           <Input
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
+            id="clientId"
+            name="clientId"
+            value={clientId}
+            onChange={(e) => setClientId(e.target.value)}
             required
             className="bg-secondary border-border"
           />
+          <Button type="button" onClick={fetchClientData} className="mt-2" disabled={fetchingClient}>
+            {fetchingClient ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Fetching...
+              </>
+            ) : (
+              "Fetch Client Info"
+            )}
+          </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="age" className="flex items-center gap-2">
-              <Calendar size={16} className="text-primary" />
-              Age
-            </Label>
-            <Input
-              id="age"
-              name="age"
-              type="number"
-              value={formData.age}
-              onChange={handleChange}
-              required
-              className="bg-secondary border-border"
-            />
-          </div>
+        {clientFetched && (
+          <>
+            {/* Pre-filled and read-only fields */}
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                readOnly
+                className="bg-muted text-muted-foreground"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="gender" className="flex items-center gap-2">
-              <User size={16} className="text-primary" />
-              Gender
-            </Label>
-            <Select defaultValue={formData.gender} onValueChange={(value) => handleSelectChange("gender", value)}>
-              <SelectTrigger className="bg-secondary border-border">
-                <SelectValue placeholder="Select gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="age">Age</Label>
+                <Input
+                  id="age"
+                  name="age"
+                  value={formData.age}
+                  readOnly
+                  className="bg-muted text-muted-foreground"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gender">Gender</Label>
+                <Input
+                  id="gender"
+                  name="gender"
+                  value={formData.gender}
+                  readOnly
+                  className="bg-muted text-muted-foreground"
+                />
+              </div>
+            </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="height" className="flex items-center gap-2">
-              <Ruler size={16} className="text-primary" />
-              Height (cm)
-            </Label>
-            <Input
-              id="height"
-              name="height"
-              type="number"
-              value={formData.height}
-              onChange={handleChange}
-              required
-              className="bg-secondary border-border"
-            />
-          </div>
+            {/* Editable fields */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="height">Height (cm)</Label>
+                <Input
+                  id="height"
+                  name="height"
+                  value={formData.height}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="weight">Weight (kg)</Label>
+                <Input
+                  id="weight"
+                  name="weight"
+                  value={formData.weight}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="weight" className="flex items-center gap-2">
-              <Weight size={16} className="text-primary" />
-              Weight (kg)
-            </Label>
-            <Input
-              id="weight"
-              name="weight"
-              type="number"
-              value={formData.weight}
-              onChange={handleChange}
-              required
-              className="bg-secondary border-border"
-            />
-          </div>
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="sleepLevels">Sleep (hrs/day)</Label>
+              <Input
+                id="sleepLevels"
+                name="sleepLevels"
+                value={formData.sleepLevels}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="sleepLevels" className="flex items-center gap-2">
-            <Moon size={16} className="text-primary" />
-            Sleep Levels (hours/day)
-          </Label>
-          <Input
-            id="sleepLevels"
-            name="sleepLevels"
-            type="number"
-            value={formData.sleepLevels}
-            onChange={handleChange}
-            required
-            className="bg-secondary border-border"
-          />
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="activityLevel">Activity Level</Label>
+              <Select
+                defaultValue={formData.activityLevel}
+                onValueChange={(value) =>
+                  handleSelectChange("activityLevel", value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="moderately_active">
+                    Moderately Active
+                  </SelectItem>
+                  <SelectItem value="not_active">Not Active</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="activityLevel" className="flex items-center gap-2">
-            <Activity size={16} className="text-primary" />
-            Activity Level
-          </Label>
-          <Select
-            defaultValue={formData.activityLevel}
-            onValueChange={(value) => handleSelectChange("activityLevel", value)}
-          >
-            <SelectTrigger className="bg-secondary border-border">
-              <SelectValue placeholder="Select activity level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="moderately_active">Moderately Active</SelectItem>
-              <SelectItem value="not_active">Not Active</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="calorieIntake">Calorie Intake</Label>
+              <Input
+                id="calorieIntake"
+                name="calorieIntake"
+                value={formData.calorieIntake}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="calorieIntake" className="flex items-center gap-2">
-            <Pizza size={16} className="text-primary" />
-            Calorie Intake (per day)
-          </Label>
-          <Input
-            id="calorieIntake"
-            name="calorieIntake"
-            type="number"
-            value={formData.calorieIntake}
-            onChange={handleChange}
-            required
-            className="bg-secondary border-border"
-          />
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="mood">Mood</Label>
+              <Select
+                defaultValue={formData.mood}
+                onValueChange={(value) => handleSelectChange("mood", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="excellent">Excellent</SelectItem>
+                  <SelectItem value="good">Good</SelectItem>
+                  <SelectItem value="neutral">Neutral</SelectItem>
+                  <SelectItem value="tired">Tired</SelectItem>
+                  <SelectItem value="stressed">Stressed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="mood" className="flex items-center gap-2">
-            <Smile size={16} className="text-primary" />
-            Current Mood
-          </Label>
-          <Select defaultValue={formData.mood} onValueChange={(value) => handleSelectChange("mood", value)}>
-            <SelectTrigger className="bg-secondary border-border">
-              <SelectValue placeholder="Select mood" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="excellent">Excellent</SelectItem>
-              <SelectItem value="good">Good</SelectItem>
-              <SelectItem value="neutral">Neutral</SelectItem>
-              <SelectItem value="tired">Tired</SelectItem>
-              <SelectItem value="stressed">Stressed</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+            {error && (
+              <div className="p-2 text-sm text-red-500 border border-red-500 bg-red-500/10 rounded">
+                {error}
+              </div>
+            )}
 
-      {error && <div className="p-3 text-sm bg-red-500/20 border border-red-500 rounded text-red-500">{error}</div>}
-
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={prefillWithDummyData}>
-          Prefill
-        </Button>
-        <Button type="submit" className="bg-primary text-black hover:bg-primary/90" disabled={loading}>
-          {loading ? "Saving..." : "Next: Connect Sensor"}
-        </Button>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Next: Connect Sensor"
+                )}
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </form>
   )
 }
-

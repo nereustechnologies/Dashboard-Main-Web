@@ -11,11 +11,14 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, age, gender, height, weight, sleepLevels, activityLevel, calorieIntake, mood } = body
+    const { name, age, gender, height, weight, sleepLevels, activityLevel, calorieIntake, mood,uniqueId } = body
+
+    console.log(uniqueId);
 
     // Create the customer
     const customer = await prisma.customer.create({
       data: {
+        UniqueId:uniqueId,
         name,
         age,
         gender,
