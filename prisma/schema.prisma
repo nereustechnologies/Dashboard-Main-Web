@@ -28,7 +28,7 @@ model Customer {
   id            String    @id @default(uuid())
   name          String
   age           Int
-  UniqueId      String? @unique
+  UniqueId      String? 
   gender        String
   height        Float
   weight        Float
