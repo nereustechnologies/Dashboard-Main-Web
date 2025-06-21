@@ -28,7 +28,7 @@ interface TimeSlot {
   id: string
   startTime: string
   endTime: string
-  participantLimit: number
+  count: number
   slotDate: {
     date: string
     location: {
@@ -48,13 +48,22 @@ const cache = {
   }
 }
 
+
 // Cache duration in milliseconds (5 minutes)
 const CACHE_DURATION = 5 * 60 * 1000
 
 export default function AddTimeSlot() {
+    const [newLocation, setNewLocation] = useState({
+  name: "",
+  address: "",
+  link: ""
+})
   const router = useRouter()
   const [locations, setLocations] = useState<Location[]>([])
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
+  const [locationSuccess, setLocationSuccess] = useState(false)
+const [slotSuccess, setSlotSuccess] = useState(false)
+
   const [loading, setLoading] = useState(false)
   const [isLoadingLocations, setIsLoadingLocations] = useState(true)
   const [user, setUser] = useState<any>(null)
@@ -65,7 +74,7 @@ export default function AddTimeSlot() {
     locationId: '',
     startTime: '',
     endTime: '',
-    participantLimit: ''
+    count: ''
   })
 
 
@@ -180,13 +189,16 @@ export default function AddTimeSlot() {
         },
         body: JSON.stringify({
           ...formData,
-          participantLimit: parseInt(formData.participantLimit)
+          count: parseInt(formData.count)
         }),
       })
 
       const data = await response.json()
 
       if (response.ok) {
+        setSlotSuccess(true)
+setTimeout(() => setSlotSuccess(false), 3000)
+
         // Update cache with new time slot
         const slotsResponse = await fetch('/api/admin/timeslots',{
               headers: {
@@ -194,6 +206,7 @@ export default function AddTimeSlot() {
           },
         })
         if (slotsResponse.ok) {
+            
           const slotsData = await slotsResponse.json()
           cache.timeSlots = slotsData
           cache.lastFetch.timeSlots = Date.now()
@@ -205,7 +218,7 @@ export default function AddTimeSlot() {
           locationId: '',
           startTime: '',
           endTime: '',
-          participantLimit: ''
+          count: ''
         })
       } else {
         throw new Error(data.error || 'Failed to create time slot')
@@ -256,7 +269,79 @@ export default function AddTimeSlot() {
   )
 
   return (
+    
     <div className="max-w-6xl mx-auto space-y-8">
+        <Card className="p-6">
+  <h2 className="text-xl font-semibold mb-4">Add New Location</h2>
+  <form
+    onSubmit={async (e) => {
+      e.preventDefault()
+      setError(null)
+      setLoading(true)
+
+      try {
+        const token = localStorage.getItem("token")
+        const res = await fetch("/api/admin/locations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: newLocation.name,
+            address: newLocation.address,
+            link: newLocation.link,
+          }),
+        })
+     
+        if (!res.ok) {
+          const errorData = await res.json()
+          throw new Error(errorData.error || "Failed to create location")
+        }
+        setLocationSuccess(true)
+setTimeout(() => setLocationSuccess(false), 3000)
+
+
+        const added = await res.json()
+        setLocations((prev) => [...prev, added])
+        setFormData((prev) => ({ ...prev, locationId: added.id }))
+        setNewLocation({ name: "", address: "", link: "" })
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }}
+    className="space-y-4"
+  >
+    <Input
+      placeholder="Location Name"
+      value={newLocation.name}
+      onChange={(e) => setNewLocation({ ...newLocation, name: e.target.value })}
+      required
+    />
+    <Input
+      placeholder="Address"
+      value={newLocation.address}
+      onChange={(e) => setNewLocation({ ...newLocation, address: e.target.value })}
+      required
+    />
+    <Input
+      placeholder="Google Maps Link (optional)"
+      value={newLocation.link}
+      onChange={(e) => setNewLocation({ ...newLocation, link: e.target.value })}
+    />
+    <Button type="submit" className="w-full" disabled={loading}>
+      {loading ? "Creating..." : "Add Location"}
+    </Button>
+  </form>
+</Card>
+{locationSuccess && (
+  <Alert variant="default" className="mb-4 border-green-600 text-green-800">
+    <AlertDescription>Location added successfully!</AlertDescription>
+  </Alert>
+)}
+
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Add Time Slot</h1>
         <Button variant="outline" onClick={() => router.push('/admin')}>
@@ -271,6 +356,11 @@ export default function AddTimeSlot() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
+          {slotSuccess && (
+  <Alert variant="default" className="mb-4 border-green-600 text-green-800">
+    <AlertDescription>Time slot created successfully!</AlertDescription>
+  </Alert>
+)}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -333,12 +423,12 @@ export default function AddTimeSlot() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Participant Limit</label>
+              <label className="block text-sm font-medium mb-1">Count</label>
               <Input
                 type="number"
                 min="1"
-                value={formData.participantLimit}
-                onChange={(e) => setFormData({ ...formData, participantLimit: e.target.value })}
+                value={formData.count}
+                onChange={(e) => setFormData({ ...formData, count: e.target.value })}
                 required
               />
             </div>
@@ -369,7 +459,7 @@ export default function AddTimeSlot() {
                       <TableRow>
                         <TableHead>Location</TableHead>
                         <TableHead>Time</TableHead>
-                        <TableHead>Participants</TableHead>
+                        <TableHead>slots left</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -379,7 +469,7 @@ export default function AddTimeSlot() {
                           <TableCell>
                             {format(new Date(slot.startTime), 'h:mm a')} - {format(new Date(slot.endTime), 'h:mm a')}
                           </TableCell>
-                          <TableCell>{slot.participantLimit}</TableCell>
+                          <TableCell>{slot.count}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

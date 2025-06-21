@@ -28,7 +28,7 @@ model Customer {
   id            String    @id @default(uuid())
   name          String
   age           Int
-  UniqueId      String? 
+  UniqueId      String?
   gender        String
   height        Float
   weight        Float
@@ -197,12 +197,12 @@ model Client {
   fullName         String
   age              Int
   gender           Gender
-  email            String   @unique
+  email            String  
   whatsapp         String
   medicalHistory   String?  // Optional
   whyMove          String
   fitnessGoal      String
-  uniqueId         String   @unique
+  uniqueId         String   
   createdAt        DateTime  @default(now())
   Booking          Booking[]
 }

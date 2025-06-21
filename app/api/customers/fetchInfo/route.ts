@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing uniqueId in request body" }, { status: 400 })
     }
 
-    const client = await prisma.client.findUnique({
+    const client = await prisma.client.findFirst({
       where: { uniqueId },
       select: {
         id: true,

@@ -110,13 +110,12 @@ export async function POST(request: NextRequest) {
 
     // Insert TimeSlot
     const timeSlotInsert = await prisma.$queryRaw<any[]>`
-      INSERT INTO "TimeSlot" (id, "startTime", "endTime", "participantLimit", count, "slotDateId")
+      INSERT INTO "TimeSlot" (id, "startTime", "endTime", "count", "slotDateId")
       VALUES (
         gen_random_uuid(),
         ${new Date(`${date}T${startTime}`)},
         ${new Date(`${date}T${endTime}`)},
         ${participantLimit},
-        0,
         ${slotDateId}
       )
       RETURNING *;

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -45,6 +45,7 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
   })
   const [loading, setLoading] = useState(false)
   const [fetchingClient, setFetchingClient] = useState(false)
+  const [clientOptions, setClientOptions] = useState<any[]>([])
   const [clientFetched, setClientFetched] = useState(false)
   const [error, setError] = useState("")
 
@@ -53,6 +54,15 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+   useEffect(() => {
+  const fetchClients = async () => {
+    const res = await fetch("/api/todayBooking")
+    const data = await res.json()
+    setClientOptions(data.clients || [])
+  }
+  fetchClients()
+}, [])
+  
   const handleSelectChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
@@ -154,14 +164,20 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
             <User size={16} className="text-primary" />
             Client ID
           </Label>
-          <Input
-            id="clientId"
-            name="clientId"
-            value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
-            required
-            className="bg-secondary border-border"
-          />
+          <Select
+  onValueChange={(val) => setClientId(val)}
+>
+  <SelectTrigger>
+    <SelectValue placeholder="Select Client" />
+  </SelectTrigger>
+  <SelectContent>
+    {clientOptions.map((client) => (
+      <SelectItem key={client.id} value={client.uniqueId}>
+        {`${client.uniqueId} - ${client.fullName} (${client.whatsapp})`}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
           <Button type="button" onClick={fetchClientData} className="mt-2" disabled={fetchingClient}>
             {fetchingClient ? (
               <>
