@@ -344,9 +344,7 @@ setTimeout(() => setLocationSuccess(false), 3000)
 
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Add Time Slot</h1>
-        <Button variant="outline" onClick={() => router.push('/admin')}>
-          Back to Dashboard
-        </Button>
+       
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
