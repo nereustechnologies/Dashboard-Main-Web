@@ -108,6 +108,7 @@ export function ExerciseSidebar({
             {[
               { key: "training_purpose", label: "Training with Purpose" },
               { key: "movement_signature", label: "Movement Signature" },
+               { key: "scoresToBeat", label: "Scores To Beat" },
             ].map(({ key, label }) => (
               <button
                 key={key}

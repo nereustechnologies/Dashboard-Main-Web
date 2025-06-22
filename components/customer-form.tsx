@@ -295,7 +295,7 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="mood">Mood</Label>
+              <Label htmlFor="mood">How you feel before the workout:</Label>
               <Select
                 defaultValue={formData.mood}
                 onValueChange={(value) => handleSelectChange("mood", value)}
@@ -304,11 +304,13 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="neutral">Neutral</SelectItem>
-                  <SelectItem value="tired">Tired</SelectItem>
-                  <SelectItem value="stressed">Stressed</SelectItem>
+                  <SelectItem value="energized">Energized – Alert, Ready to Go</SelectItem>
+<SelectItem value="zone">In the Zone – Focused, Flowing</SelectItem>
+<SelectItem value="neutral">Neutral – Steady, Unmoved</SelectItem>
+<SelectItem value="tired">Tired – Drained, Heavy</SelectItem>
+<SelectItem value="stressed">Stressed – Tense, On Edge</SelectItem>
+<SelectItem value="low">Feeling Low – Down, Disconnected</SelectItem>
+
                 </SelectContent>
               </Select>
             </div>

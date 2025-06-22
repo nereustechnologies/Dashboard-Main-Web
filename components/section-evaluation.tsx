@@ -21,23 +21,23 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
   // Configuration for strength section dropdowns
   const strengthFieldOptions: Record<string, string[]> = {
     "Squat Depth Rating": ["Deep", "Parallel", "Partial"],
-    "Repetition Consistency (Squat)": ["Satisfactory", "Inconsistent"],
-    "Stability (Squat)": ["Good", "Satisfactory", "Poor"],
+    "Repetition Consistency (Squat)": [ "Good", "Satisfactory", "Needs Improvement"],
+    "Stability (Squat)": [ "Good", "Satisfactory", "Needs Improvement"],
     "Fatigue Score (Squat)": ["1", "2", "3", "4", "5"],
-    "Lunge Depth Rating": ["Deep", "Shallow", "Incomplete"],
-    "Repetition Consistency (Lunge)": ["Satisfactory", "Inconsistent"],
-    "Stability (Lunge)": ["Good", "Satisfactory", "Poor"],
+    "Lunge Depth Rating": [ "Good", "Satisfactory", "Needs Improvement"],
+    "Repetition Consistency (Lunge)": [ "Good", "Satisfactory", "Needs Improvement"],
+    "Stability (Lunge)": [ "Good", "Satisfactory", "Needs Improvement"],
     "Fatigue Score (Lunge)": ["1", "2", "3", "4", "5"],
-    "Core Strength Rating (Plank)": ["1", "2", "3", "4", "5"],
+    // "Core Strength Rating (Plank)": ["1", "2", "3", "4", "5"],
   }
 
   // Configuration for mobility section dropdowns
   const mobilityFieldOptions: Record<string, string[]> = {
-    "Range of Motion": ["Excellent", "Good", "Satisfactory", "Needs Improvement"],
+    "Range of Motion": [ "Good", "Satisfactory", "Needs Improvement"],
     "Quadriceps Stretch": ["Good", "Satisfactory", "Needs Improvement"],
     "Hip Stability": ["Good", "Satisfactory", "Needs Improvement"],
-    "Calf Flexibility": ["Good", "Needs Improvement"],
-    "Ankle Mobility": ["Good", "Needs Improvement"],
+    "Calf Flexibility": ["Good","Satisfactor", "Needs Improvement"],
+    "Ankle Mobility": ["Good","Satisfactor", "Needs Improvement"],
   }
 
   const dropdownFields: string[] = (() => {
@@ -46,8 +46,8 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
     return [] // endurance
   })()
 
-  const baseTextFields = ["Observation", "Recommendation"]
-  const textFields = section === "mobility" ? [...baseTextFields, "Additional Notes"] : baseTextFields
+  const baseTextFields = ["Inference Title", "Inference Title"]
+  const textFields = section === "mobility" ? [...baseTextFields, "Inference Title"] : baseTextFields
 
   const [dropdownValues, setDropdownValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
@@ -176,7 +176,7 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
             <Textarea
               value={textValues[field]}
               onChange={(e) => handleTextChange(field, e.target.value)}
-              placeholder={`Enter ${textLabels[field].toLowerCase()}...`}
+              placeholder={`Enter Inference`}
             />
           </div>
         ))}

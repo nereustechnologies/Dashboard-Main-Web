@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       id: ts.id,
       startTime: ts.startTime,
       endTime: ts.endTime,
-      participantLimit: ts.participantLimit,
+     
       count: ts.count,
       slotDate: {
         id: ts.slotDate_id,
@@ -73,16 +73,16 @@ export async function POST(request: NextRequest) {
                 return NextResponse.json({ error: "Only admins can access this endpoint" }, { status: 403 })
               }
     const body = await request.json()
-    const { date, locationId, startTime, endTime, participantLimit } = body
+    const { date, locationId, startTime, endTime, count } = body
 
-    if (!date || !locationId || !startTime || !endTime || !participantLimit) {
+    if (!date || !locationId || !startTime || !endTime || !count) {
       return new NextResponse(
         JSON.stringify({ error: 'All fields are required' }), 
         { status: 400 }
       )
     }
 
-    if (participantLimit < 1) {
+    if (count < 1) {
       return new NextResponse(
         JSON.stringify({ error: 'Participant limit must be at least 1' }), 
         { status: 400 }
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
         gen_random_uuid(),
         ${new Date(`${date}T${startTime}`)},
         ${new Date(`${date}T${endTime}`)},
-        ${participantLimit},
+        ${count},
         ${slotDateId}
       )
       RETURNING *;
@@ -142,7 +142,6 @@ export async function POST(request: NextRequest) {
       id: ts.id,
       startTime: ts.startTime,
       endTime: ts.endTime,
-      participantLimit: ts.participantLimit,
       count: ts.count,
       slotDate: {
         id: ts.slotDate_id,

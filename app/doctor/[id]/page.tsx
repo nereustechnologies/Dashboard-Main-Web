@@ -10,6 +10,7 @@ import { SectionEvaluation } from "@/components/section-evaluation"
 import { exerciseData } from "@/lib/data" // Mock data for exercises
 import { TrainingPurposeForm } from "@/components/training-purpose-form"
 import { MovementSignatureForm } from "@/components/movement-signature-form"
+import { ScoresToBeat } from "@/components/scoresToBeat-form"
 
 function PatientDashboard() {
   const router = useRouter()
@@ -108,7 +109,7 @@ function PatientDashboard() {
               <Menu className="h-5 w-5" />
             </button>
             <div className="h-8 w-8 rounded-md bg-[#00D4EF]"></div> {/* Placeholder logo */}
-            <h1 className="text-xl md:text-2xl font-bold text-[#00D4EF]">Patient Dashboard</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-[#00D4EF]">Doctor Dashboard</h1>
           </div>
           <div className="flex items-center gap-4">
             <span className="hidden sm:inline text-gray-400">Welcome, Dr. Smith</span> {/* Placeholder name */}
@@ -122,6 +123,7 @@ function PatientDashboard() {
           </div>
         </div>
       </header>
+      
 
       <div className="flex flex-1 overflow-hidden">
         <ExerciseSidebar
@@ -140,7 +142,10 @@ function PatientDashboard() {
             <div className="px-4 md:px-6">
               <MovementSignatureForm customerId={test.customerId} />
             </div>
-          ) : (
+          ) : selectedExercise==="scoresToBeat" ?(
+
+            <ScoresToBeat customerId={test.customerId} />
+          ):(
             <div className="w-full grid lg:grid-cols-2 items-start">
               {/* Left column: Exercise content */}
               <div className="lg:col-span-1">

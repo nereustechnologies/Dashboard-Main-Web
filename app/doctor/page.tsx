@@ -29,7 +29,7 @@ export default function DoctorDashboardPage() {
             <div>
               <h1 className="text-2xl font-bold text-[#00D4EF]">Doctor Dashboard</h1>
               {/* You might want to display the doctor's name here */}
-              <p className="text-gray-400">Review patient test results.</p>
+
             </div>
           </div>
           {/* Add a logout button or other actions if needed */}
