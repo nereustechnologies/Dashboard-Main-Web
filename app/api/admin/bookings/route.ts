@@ -14,6 +14,7 @@ type RawBooking = {
   fitnessGoal: string
   whyMove: string
   uniqueId: string
+  clientSessionNo: number
   startTime: Date
   endTime: Date
   slotDate: Date
@@ -25,16 +26,14 @@ export async function GET(request: NextRequest) {
   console.time("⏱ Bookings + Locations Query")
 
   try {
+    const admin = await verifyAuth(request)
+    if (!admin) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
-     const admin = await verifyAuth(request)
-        if (!admin) {
-          return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-        }
-    
-        // Check if user is an admin
-        if (admin.role !== "admin") {
-          return NextResponse.json({ error: "Only admins can access this endpoint" }, { status: 403 })
-        }
+    if (admin.role !== "admin") {
+      return NextResponse.json({ error: "Only admins can access this endpoint" }, { status: 403 })
+    }
 
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date')
@@ -45,6 +44,7 @@ export async function GET(request: NextRequest) {
           b.id,
           b."paymentStatus",
           b."consentAgreement",
+          b."clientSessionNo",
           u."fullName",
           u.email,
           u.age,
@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
           b.id,
           b."paymentStatus",
           b."consentAgreement",
+          b."clientSessionNo",
           u."fullName",
           u.email,
           u.age,
@@ -110,6 +111,7 @@ export async function GET(request: NextRequest) {
       whyMove: booking.whyMove,
       consent: booking.consentAgreement,
       uniqueId: booking.uniqueId,
+      clientSessionNo: booking.clientSessionNo,
       paymentStatus: booking.paymentStatus?.toLowerCase(),
       slotDate: {
         date: booking.slotDate.toISOString(),

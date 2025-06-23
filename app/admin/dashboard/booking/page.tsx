@@ -8,7 +8,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { format } from 'date-fns'
-import { CalendarIcon, X } from 'lucide-react'
+import { CalendarIcon, X, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -24,6 +24,7 @@ interface Booking {
   fitnessGoal: string
   whyMove: string
   uniqueId: string
+  clientSessionNo: number
   consent: boolean
   paymentStatus: 'pending' | 'paid' | 'failed'
   slotDate: {
@@ -51,26 +52,21 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-
-   const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<any>(null)
   const router = useRouter()
 
   useEffect(() => {
-    // Check if user is logged in
     const token = localStorage.getItem("token")
     const userData = localStorage.getItem("user")
-
     if (!token || !userData) {
       router.push("/login")
       return
     }
-
     const parsedUser = JSON.parse(userData)
     if (parsedUser.role !== "admin") {
       router.push("/login")
       return
     }
-
     setUser(parsedUser)
     setIsLoading(false)
   }, [router])
@@ -80,20 +76,11 @@ export default function AdminDashboard() {
       setIsLoading(true)
       setError(null)
       try {
-         const token = localStorage.getItem("token")
-        if (!token) {
-          throw new Error("Authentication required")
-        }
-        const response = await fetch('/api/admin/bookings',{
-             headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const token = localStorage.getItem("token")
+        const response = await fetch('/api/admin/bookings', {
+          headers: { Authorization: `Bearer ${token}` },
         })
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch data')
-        }
-
+        if (!response.ok) throw new Error('Failed to fetch data')
         const data = await response.json()
         setBookings(data.bookings)
         setLocations(data.locations)
@@ -104,7 +91,6 @@ export default function AdminDashboard() {
         setIsLoading(false)
       }
     }
-
     fetchData()
   }, [])
 
@@ -115,14 +101,12 @@ export default function AdminDashboard() {
 
   const filteredBookings = bookings.filter(booking => {
     const bookingDate = new Date(booking.slotDate.date)
-    const matchesDate = !selectedDate || 
-      (bookingDate.getFullYear() === selectedDate.getFullYear() &&
-       bookingDate.getMonth() === selectedDate.getMonth() &&
-       bookingDate.getDate() === selectedDate.getDate())
-    
-    const matchesLocation = selectedLocation === 'all' || 
-      booking.slotDate.location.name === selectedLocation
-
+    const matchesDate = !selectedDate || (
+      bookingDate.getFullYear() === selectedDate.getFullYear() &&
+      bookingDate.getMonth() === selectedDate.getMonth() &&
+      bookingDate.getDate() === selectedDate.getDate()
+    )
+    const matchesLocation = selectedLocation === 'all' || booking.slotDate.location.name === selectedLocation
     return matchesDate && matchesLocation
   })
 
@@ -166,49 +150,31 @@ export default function AdminDashboard() {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className={cn(
-                  "w-[200px] justify-start text-left font-normal",
-                  !selectedDate && "text-muted-foreground"
-                )}
+                className={cn("w-[200px] justify-start text-left font-normal", !selectedDate && "text-muted-foreground")}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {selectedDate ? format(selectedDate, "PPP") : "All Dates"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                initialFocus
-              />
+              <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} initialFocus />
             </PopoverContent>
           </Popover>
 
-          <Select
-            value={selectedLocation}
-            onValueChange={setSelectedLocation}
-          >
+          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="All Locations" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Locations</SelectItem>
               {locations.map((location) => (
-                <SelectItem key={location.id} value={location.name}>
-                  {location.name}
-                </SelectItem>
+                <SelectItem key={location.id} value={location.name}>{location.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
 
           {(selectedDate || selectedLocation) && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={clearFilters}
-              className="h-10 w-10"
-            >
+            <Button variant="ghost" size="icon" onClick={clearFilters} className="h-10 w-10">
               <X className="h-4 w-4" />
             </Button>
           )}
@@ -228,27 +194,23 @@ export default function AdminDashboard() {
               <TableHead>Age</TableHead>
               <TableHead>Gender</TableHead>
               <TableHead>Payment</TableHead>
+              <TableHead>Session No</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredBookings.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                   No bookings found
                 </TableCell>
               </TableRow>
             ) : (
               filteredBookings.map((booking) => (
                 <TableRow key={booking.id}>
-                   <TableCell>
-                    {booking.uniqueId}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(booking.slotDate.date).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    {formatTime(booking.slotDate.timeSlot.startTime)} - {formatTime(booking.slotDate.timeSlot.endTime)}
-                  </TableCell>
+                  <TableCell>{booking.uniqueId}</TableCell>
+                  <TableCell>{new Date(booking.slotDate.date).toLocaleDateString()}</TableCell>
+                  <TableCell>{formatTime(booking.slotDate.timeSlot.startTime)} - {formatTime(booking.slotDate.timeSlot.endTime)}</TableCell>
                   <TableCell>{booking.slotDate.location.name}</TableCell>
                   <TableCell>{booking.name}</TableCell>
                   <TableCell>
@@ -260,15 +222,38 @@ export default function AdminDashboard() {
                   <TableCell>{booking.age}</TableCell>
                   <TableCell>{booking.gender}</TableCell>
                   <TableCell>
-                    <Badge 
-                      variant={
-                        booking.paymentStatus === 'paid' ? 'default' :
-                        booking.paymentStatus === 'failed' ? 'destructive' :
-                        'secondary'
-                      }
-                    >
+                    <Badge variant={
+                      booking.paymentStatus === 'paid' ? 'default' :
+                      booking.paymentStatus === 'failed' ? 'destructive' :
+                      'secondary'}>
                       {booking.paymentStatus}
                     </Badge>
+                  </TableCell>
+                  <TableCell>{booking.clientSessionNo}</TableCell>
+                  <TableCell>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="text-red-500 hover:text-red-700"
+                      onClick={async () => {
+                        const confirmDelete = confirm("Are you sure you want to delete this booking?")
+                        if (!confirmDelete) return
+                        try {
+                          const token = localStorage.getItem("token")
+                          const res = await fetch(`/api/admin/bookings/${booking.id}`, {
+                            method: 'DELETE',
+                            headers: { Authorization: `Bearer ${token}` },
+                          })
+                          if (!res.ok) throw new Error("Failed to delete booking")
+                          setBookings(prev => prev.filter(b => b.id !== booking.id))
+                        } catch (err) {
+                          console.error("Delete failed:", err)
+                          alert("Failed to delete booking.")
+                        }
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -278,4 +263,4 @@ export default function AdminDashboard() {
       </Card>
     </div>
   )
-} 
+}
