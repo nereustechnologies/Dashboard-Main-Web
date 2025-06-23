@@ -74,8 +74,9 @@ model TestRating {
   mobility         Int
   strength         Int
   endurance        Int
-  feedback         String?
-  customerFeedback String?
+  observation      String?
+  RPE              Int
+  FeltAfterWorkOut String
   testId           String   @unique
   createdAt        DateTime @default(now())
   updatedAt        DateTime @default(now()) @updatedAt
@@ -275,3 +276,4 @@ enum PaymentStatus {
   FAILED
   REFUND
 }
+

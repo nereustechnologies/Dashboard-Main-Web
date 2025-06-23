@@ -4,7 +4,13 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select"
 import { Star, FileText } from "lucide-react"
 
 interface TestRatingProps {
@@ -19,24 +25,24 @@ export default function TestRating({ onSubmit, onBack, customerData, testId }: T
   const [mobilityRating, setMobilityRating] = useState("3")
   const [strengthRating, setStrengthRating] = useState("3")
   const [enduranceRating, setEnduranceRating] = useState("3")
-  const [feedback, setFeedback] = useState("")
-  const [customerFeedback, setCustomerFeedback] = useState("")
+  const [observation, setObservation] = useState("")
+  const [rpe, setRPE] = useState("5")
+  const [feltAfter, setFeltAfter] = useState("Satisfied – solid effort, no regrets")
 
   const handleSubmit = async () => {
     const ratings = {
-      overall: Number.parseInt(overallRating),
-      mobility: Number.parseInt(mobilityRating),
-      strength: Number.parseInt(strengthRating),
-      endurance: Number.parseInt(enduranceRating),
-      feedback,
-      customerFeedback,
+      overall: parseInt(overallRating),
+      mobility: parseInt(mobilityRating),
+      strength: parseInt(strengthRating),
+      endurance: parseInt(enduranceRating),
+      observation,
+      RPE: parseInt(rpe),
+      FeltAfterWorkOut: feltAfter,
     }
 
     try {
       const token = localStorage.getItem("token")
-      if (!token) {
-        throw new Error("Authentication required. Please log in again.")
-      }
+      if (!token) throw new Error("Authentication required. Please log in again.")
 
       const response = await fetch("/api/ratings", {
         method: "POST",
@@ -44,10 +50,7 @@ export default function TestRating({ onSubmit, onBack, customerData, testId }: T
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          testId: testId,
-          ratings: ratings,
-        }),
+        body: JSON.stringify({ testId, ratings }),
       })
 
       if (!response.ok) {
@@ -65,7 +68,6 @@ export default function TestRating({ onSubmit, onBack, customerData, testId }: T
   }
 
   const downloadReport = () => {
-    // Create a simple report
     const reportContent = `
 Nereus Fitness Test Report
 =========================
@@ -83,15 +85,13 @@ Test Ratings:
 - Mobility: ${mobilityRating}/5
 - Strength: ${strengthRating}/5
 - Endurance: ${enduranceRating}/5
+- RPE: ${rpe}/10
+- Felt After Workout: ${feltAfter}
 
-Tester Feedback:
-${feedback || "No feedback provided."}
-
-Customer Feedback:
-${customerFeedback || "No feedback provided."}
+Observation:
+${observation || "No feedback provided."}
     `
 
-    // Create and download the file
     const blob = new Blob([reportContent], { type: "text/plain;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
@@ -118,91 +118,74 @@ ${customerFeedback || "No feedback provided."}
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="overallRating">Overall Rating (1-5)</Label>
+            <Label>Overall Rating (1–5)</Label>
             <Select value={overallRating} onValueChange={setOverallRating}>
-              <SelectTrigger className="bg-gray-900 border-gray-700">
-                <SelectValue placeholder="Select rating" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">1 - Poor</SelectItem>
-                <SelectItem value="2">2 - Fair</SelectItem>
-                <SelectItem value="3">3 - Good</SelectItem>
-                <SelectItem value="4">4 - Very Good</SelectItem>
-                <SelectItem value="5">5 - Excellent</SelectItem>
-              </SelectContent>
+              <SelectTrigger className="bg-gray-900 border-gray-700"><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>{[1,2,3,4,5].map(v => <SelectItem key={v} value={v.toString()}>{v}</SelectItem>)}</SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="mobilityRating">Mobility Rating (1-5)</Label>
+            <Label>Mobility Rating (1–5)</Label>
             <Select value={mobilityRating} onValueChange={setMobilityRating}>
-              <SelectTrigger className="bg-gray-900 border-gray-700">
-                <SelectValue placeholder="Select rating" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">1 - Poor</SelectItem>
-                <SelectItem value="2">2 - Fair</SelectItem>
-                <SelectItem value="3">3 - Good</SelectItem>
-                <SelectItem value="4">4 - Very Good</SelectItem>
-                <SelectItem value="5">5 - Excellent</SelectItem>
-              </SelectContent>
+              <SelectTrigger className="bg-gray-900 border-gray-700"><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>{[1,2,3,4,5].map(v => <SelectItem key={v} value={v.toString()}>{v}</SelectItem>)}</SelectContent>
             </Select>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="strengthRating">Strength Rating (1-5)</Label>
+            <Label>Strength Rating (1–5)</Label>
             <Select value={strengthRating} onValueChange={setStrengthRating}>
-              <SelectTrigger className="bg-gray-900 border-gray-700">
-                <SelectValue placeholder="Select rating" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">1 - Poor</SelectItem>
-                <SelectItem value="2">2 - Fair</SelectItem>
-                <SelectItem value="3">3 - Good</SelectItem>
-                <SelectItem value="4">4 - Very Good</SelectItem>
-                <SelectItem value="5">5 - Excellent</SelectItem>
-              </SelectContent>
+              <SelectTrigger className="bg-gray-900 border-gray-700"><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>{[1,2,3,4,5].map(v => <SelectItem key={v} value={v.toString()}>{v}</SelectItem>)}</SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="enduranceRating">Endurance Rating (1-5)</Label>
+            <Label>Endurance Rating (1–5)</Label>
             <Select value={enduranceRating} onValueChange={setEnduranceRating}>
-              <SelectTrigger className="bg-gray-900 border-gray-700">
-                <SelectValue placeholder="Select rating" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="1">1 - Poor</SelectItem>
-                <SelectItem value="2">2 - Fair</SelectItem>
-                <SelectItem value="3">3 - Good</SelectItem>
-                <SelectItem value="4">4 - Very Good</SelectItem>
-                <SelectItem value="5">5 - Excellent</SelectItem>
-              </SelectContent>
+              <SelectTrigger className="bg-gray-900 border-gray-700"><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>{[1,2,3,4,5].map(v => <SelectItem key={v} value={v.toString()}>{v}</SelectItem>)}</SelectContent>
             </Select>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="feedback">Tester Feedback</Label>
-          <Textarea
-            id="feedback"
-            placeholder="Enter your observations and feedback about the test"
-            className="bg-gray-900 border-gray-700 min-h-[100px]"
-            value={feedback}
-            onChange={(e) => setFeedback(e.target.value)}
-          />
+          <Label>RPE (Rate of Perceived Exertion 1–10)</Label>
+          <Select value={rpe} onValueChange={setRPE}>
+            <SelectTrigger className="bg-gray-900 border-gray-700"><SelectValue placeholder="Select RPE" /></SelectTrigger>
+            <SelectContent>{[...Array(10).keys()].map(i => {
+              const val = (i+1).toString()
+              return <SelectItem key={val} value={val}>{val}</SelectItem>
+            })}</SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="customerFeedback">Customer Feedback</Label>
+          <Label>How did you feel after the workout?</Label>
+          <Select value={feltAfter} onValueChange={setFeltAfter}>
+            <SelectTrigger className="bg-gray-900 border-gray-700"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Exhausted – wiped, hit your limit">Exhausted</SelectItem>
+              <SelectItem value="Tired – fatigued, but manageable">Tired</SelectItem>
+              <SelectItem value="Satisfied – solid effort, no regrets">Satisfied</SelectItem>
+              <SelectItem value="At Ease – clear-headed">At Ease</SelectItem>
+              <SelectItem value="Uplifted – emotionally light and positive">Uplifted</SelectItem>
+              <SelectItem value="Charged – body lit up and mind clear">Charged</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="observation">Observation</Label>
           <Textarea
-            id="customerFeedback"
-            placeholder="Enter any feedback from the customer"
+            id="observation"
+            placeholder="Enter your observations and feedback about the test"
             className="bg-gray-900 border-gray-700 min-h-[100px]"
-            value={customerFeedback}
-            onChange={(e) => setCustomerFeedback(e.target.value)}
+            value={observation}
+            onChange={(e) => setObservation(e.target.value)}
           />
         </div>
 
@@ -215,9 +198,7 @@ ${customerFeedback || "No feedback provided."}
       </div>
 
       <div className="flex justify-between mt-6">
-        <Button variant="outline" onClick={onBack}>
-          Back
-        </Button>
+        <Button variant="outline" onClick={onBack}>Back</Button>
         <Button type="submit" onClick={handleSubmit} className="bg-primary hover:bg-primary/80 text-black">
           Submit Review
         </Button>
@@ -225,4 +206,3 @@ ${customerFeedback || "No feedback provided."}
     </div>
   )
 }
-

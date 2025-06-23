@@ -18,30 +18,35 @@ export async function POST(request: NextRequest) {
 
     // Check if a rating for this test already exists
     const existingRating = await prisma.testRating.findUnique({
-      where: { testId: testId },
+      where: { testId },
     })
 
     if (existingRating) {
-      // Optionally, you can either update the existing rating or return an error
-      // For now, let's return an error to prevent duplicates
-      return NextResponse.json({ error: "Ratings for this test have already been submitted." }, { status: 409 })
+      return NextResponse.json(
+        { error: "Ratings for this test have already been submitted." },
+        { status: 409 }
+      )
     }
 
     const newRating = await prisma.testRating.create({
       data: {
-        testId: testId,
+        testId,
         overall: ratings.overall,
         mobility: ratings.mobility,
         strength: ratings.strength,
         endurance: ratings.endurance,
-        feedback: ratings.feedback,
-        customerFeedback: ratings.customerFeedback,
+        observation: ratings.observation,
+        RPE: ratings.RPE,
+        FeltAfterWorkOut: ratings.FeltAfterWorkOut,
       },
     })
 
     return NextResponse.json(newRating, { status: 201 })
   } catch (error) {
-    console.error("Error submitting rating:", error)
-    return NextResponse.json({ error: "An error occurred while submitting the rating" }, { status: 500 })
+    console.error("❌ Error submitting rating:", error)
+    return NextResponse.json(
+      { error: "An error occurred while submitting the rating" },
+      { status: 500 }
+    )
   }
-} 
+}
