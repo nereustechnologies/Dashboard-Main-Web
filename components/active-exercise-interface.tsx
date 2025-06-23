@@ -41,8 +41,7 @@ export function ActiveExerciseInterface({
       squats: "Squats",
       lunges: "Lunges",
       plank_hold: "Plank Hold",
-      sprint: "50m Sprint",
-      shuttle_run: "5-10-5 Shuttle Run",
+      stepUp: "Step Ups",
     }
     return names[exerciseId] || exerciseId
   }
@@ -176,53 +175,17 @@ export function ActiveExerciseInterface({
           </div>
         )
 
-      case "sprint":
+      case "stepUp":
         return (
           <div className="space-y-2">
-            <Button onClick={() => onRecordAction("Sprint Started")} className={buttonClass("Sprint Started")}>
-              Sprint Started
+            <Button onClick={() => onRecordAction("steUp started")} className={buttonClass("stepUp started")}>
+              Start Step Ups
             </Button>
-            <Button
-              onClick={() => onRecordAction("Sprinting")}
-              className={coloredButtonClass("Sprinting", "bg-purple-600 hover:bg-purple-700")}
-            >
-              Sprinting
-            </Button>
-            <Button
-              onClick={() => onRecordAction("Sprint Ended")}
-              className={coloredButtonClass("Sprint Ended", "bg-red-600 hover:bg-red-700")}
-            >
-              Sprint Ended
-            </Button>
+            
           </div>
         )
 
-      case "shuttle_run":
-        return (
-          <div className="space-y-2">
-            <Button onClick={() => onRecordAction("Run Started")} className={buttonClass("Run Started")}>
-              Run Started
-            </Button>
-            <Button
-              onClick={() => onRecordAction("Sprinting")}
-              className={coloredButtonClass("Sprinting", "bg-purple-600 hover:bg-purple-700")}
-            >
-              Sprinting
-            </Button>
-            <Button
-              onClick={() => onRecordAction("Direction Changed")}
-              className={coloredButtonClass("Direction Changed", "bg-yellow-600 hover:bg-yellow-700")}
-            >
-              Direction Changed
-            </Button>
-            <Button
-              onClick={() => onRecordAction("Sprint Ended")}
-              className={coloredButtonClass("Sprint Ended", "bg-red-600 hover:bg-red-700")}
-            >
-              Sprint Ended
-            </Button>
-          </div>
-        )
+     
 
       default:
         return null
@@ -251,8 +214,7 @@ export function ActiveExerciseInterface({
             {activeExercise !== "squats" &&
               activeExercise !== "lunges" &&
               activeExercise !== "plank_hold" &&
-              activeExercise !== "sprint" &&
-              activeExercise !== "shuttle_run" && (
+              activeExercise !== "stepUp" && (
                 <>
                   <Label className="mb-2 block">Leg</Label>
                   <div className="space-y-2 mb-4"> {/* Added mb-4 for spacing when leg section is shown */}

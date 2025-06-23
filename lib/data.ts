@@ -213,7 +213,7 @@ export const exerciseData: Record<string, ExerciseData> = {
     summary:
       "Patient has shown remarkable improvement in plank hold duration, progressing from 15 seconds in Week 1 to 90 seconds by Week 6. They have met all weekly targets after the initial week. Form quality has improved from 6/10 to 8/10. The patient has been very consistent with their exercises, completing 90% of prescribed sessions. The progress has been steady throughout the 6-week period with consistent gains each week.",
   },
-  sprint: {
+  stepUp: {
     lastUpdated: "June 7, 2025",
     chartData: {
       progress: [

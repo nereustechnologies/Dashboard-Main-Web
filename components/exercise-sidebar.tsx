@@ -46,8 +46,8 @@ export function ExerciseSidebar({
               squats: "strength",
               lunges: "strength",
               plank_hold: "endurance",
-              sprint: "endurance",
-              shuttle_run: "endurance",
+              stepUp: "endurance",
+
             }
 
             const orderedCategories: Array<{ key: string; label: string }> = [

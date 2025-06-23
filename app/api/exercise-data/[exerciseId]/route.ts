@@ -66,7 +66,7 @@ export async function GET(request: NextRequest, { params }: { params: { exercise
     } else if (exerciseId === "plank_hold") {
       csvHeaders = ["Timestamp", "Hip Angle (°)", "Phase Label", "Hold Duration (s)"]
       exerciseData = generatePlankHoldData()
-    } else if (exerciseId === "sprint") {
+    } else if (exerciseId === "stepUp") {
       csvHeaders = [
         "Timestamp",
         "Velocity (m/s)",
@@ -75,19 +75,9 @@ export async function GET(request: NextRequest, { params }: { params: { exercise
         "Cadence (steps/min)",
         "Phase Label",
       ]
-      exerciseData = generateSprintData()
-    } else if (exerciseId === "shuttle_run") {
-      csvHeaders = [
-        "Timestamp",
-        "Velocity (m/s)",
-        "Acceleration (m/s²)",
-        "Stride Length (m)",
-        "Cadence (steps/min)",
-        "Phase Label",
-        "Rep Count",
-      ]
-      exerciseData = generateShuttleRunData()
-    } else {
+      exerciseData = generateStepUpData()
+    } 
+    else {
       // Generic format for other exercises
       csvHeaders = ["Timestamp", "Action", "Leg", "Rep Count"]
       exerciseData = generateGenericExerciseData()
@@ -422,7 +412,7 @@ function generatePlankHoldData() {
   ]
 }
 
-function generateSprintData() {
+function generateStepUpData() {
   return [
     {
       Timestamp: "00:00:01",
@@ -430,7 +420,7 @@ function generateSprintData() {
       "Acceleration (m/s²)": 1.2,
       "Stride Length (m)": 1.1,
       "Cadence (steps/min)": 160,
-      "Phase Label": "Sprint Started",
+      "Phase Label": "step Ups Started",
     },
     {
       Timestamp: "00:00:02",
@@ -438,7 +428,7 @@ function generateSprintData() {
       "Acceleration (m/s²)": 2.0,
       "Stride Length (m)": 1.3,
       "Cadence (steps/min)": 170,
-      "Phase Label": "Sprinting",
+      "Phase Label": "",
     },
     {
       Timestamp: "00:00:03",
@@ -446,7 +436,7 @@ function generateSprintData() {
       "Acceleration (m/s²)": 3.1,
       "Stride Length (m)": 1.5,
       "Cadence (steps/min)": 180,
-      "Phase Label": "Sprinting",
+      "Phase Label": "",
     },
     {
       Timestamp: "00:00:04",
@@ -454,7 +444,7 @@ function generateSprintData() {
       "Acceleration (m/s²)": 2.8,
       "Stride Length (m)": 1.6,
       "Cadence (steps/min)": 185,
-      "Phase Label": "Sprinting",
+      "Phase Label": "",
     },
     {
       Timestamp: "00:00:05",
@@ -462,7 +452,7 @@ function generateSprintData() {
       "Acceleration (m/s²)": 1.5,
       "Stride Length (m)": 1.7,
       "Cadence (steps/min)": 190,
-      "Phase Label": "Sprinting",
+      "Phase Label": "",
     },
     {
       Timestamp: "00:00:06",
@@ -470,7 +460,7 @@ function generateSprintData() {
       "Acceleration (m/s²)": 0.5,
       "Stride Length (m)": 1.75,
       "Cadence (steps/min)": 192,
-      "Phase Label": "Sprinting",
+      "Phase Label": "",
     },
     {
       Timestamp: "00:00:07",
@@ -478,105 +468,12 @@ function generateSprintData() {
       "Acceleration (m/s²)": -1.2,
       "Stride Length (m)": 1.6,
       "Cadence (steps/min)": 185,
-      "Phase Label": "Sprint Ended",
+      "Phase Label": "",
     },
   ]
 }
 
-function generateShuttleRunData() {
-  return [
-    {
-      Timestamp: "00:00:01",
-      "Velocity (m/s)": 2.5,
-      "Acceleration (m/s²)": 1.2,
-      "Stride Length (m)": 1.1,
-      "Cadence (steps/min)": 160,
-      "Phase Label": "Run Started",
-      "Rep Count": 1,
-    },
-    {
-      Timestamp: "00:00:02",
-      "Velocity (m/s)": 4.2,
-      "Acceleration (m/s²)": 2.0,
-      "Stride Length (m)": 1.3,
-      "Cadence (steps/min)": 170,
-      "Phase Label": "Sprinting",
-      "Rep Count": 1,
-    },
-    {
-      Timestamp: "00:00:03",
-      "Velocity (m/s)": 6.5,
-      "Acceleration (m/s²)": 3.1,
-      "Stride Length (m)": 1.5,
-      "Cadence (steps/min)": 180,
-      "Phase Label": "Sprinting",
-      "Rep Count": 1,
-    },
-    {
-      Timestamp: "00:00:04",
-      "Velocity (m/s)": 8.2,
-      "Acceleration (m/s²)": 2.8,
-      "Stride Length (m)": 1.6,
-      "Cadence (steps/min)": 185,
-      "Phase Label": "Direction Changed",
-      "Rep Count": 1,
-    },
-    {
-      Timestamp: "00:00:05",
-      "Velocity (m/s)": 7.5,
-      "Acceleration (m/s²)": 2.1,
-      "Stride Length (m)": 1.4,
-      "Cadence (steps/min)": 180,
-      "Phase Label": "Sprinting",
-      "Rep Count": 1,
-    },
-    {
-      Timestamp: "00:00:06",
-      "Velocity (m/s)": 8.1,
-      "Acceleration (m/s²)": 2.9,
-      "Stride Length (m)": 1.6,
-      "Cadence (steps/min)": 185,
-      "Phase Label": "Sprint Ended",
-      "Rep Count": 1,
-    },
-    {
-      Timestamp: "00:00:11",
-      "Velocity (m/s)": 2.5,
-      "Acceleration (m/s²)": 1.2,
-      "Stride Length (m)": 1.1,
-      "Cadence (steps/min)": 160,
-      "Phase Label": "Run Started",
-      "Rep Count": 2,
-    },
-    {
-      Timestamp: "00:00:12",
-      "Velocity (m/s)": 4.2,
-      "Acceleration (m/s²)": 2.0,
-      "Stride Length (m)": 1.3,
-      "Cadence (steps/min)": 170,
-      "Phase Label": "Sprinting",
-      "Rep Count": 2,
-    },
-    {
-      Timestamp: "00:00:13",
-      "Velocity (m/s)": 6.5,
-      "Acceleration (m/s²)": 3.1,
-      "Stride Length (m)": 1.5,
-      "Cadence (steps/min)": 180,
-      "Phase Label": "Sprinting",
-      "Rep Count": 2,
-    },
-    {
-      Timestamp: "00:00:14",
-      "Velocity (m/s)": 8.2,
-      "Acceleration (m/s²)": 2.8,
-      "Stride Length (m)": 1.6,
-      "Cadence (steps/min)": 185,
-      "Phase Label": "Direction Changed",
-      "Rep Count": 2,
-    },
-  ]
-}
+
 
 function generateGenericExerciseData() {
   return [

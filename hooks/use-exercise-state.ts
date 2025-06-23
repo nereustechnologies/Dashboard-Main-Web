@@ -22,8 +22,8 @@ const initialExercises = {
   ],
   endurance: [
     { id: "plank_hold", name: "Plank Hold", completed: false },
-    { id: "sprint", name: "50m Sprint", completed: false },
-    { id: "shuttle_run", name: "5-10-5 Shuttle Run", completed: false },
+    { id: "stepUp", name: "Step Ups", completed: false },
+
   ],
 }
 

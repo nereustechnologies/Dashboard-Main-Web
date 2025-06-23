@@ -123,11 +123,11 @@ export default function NewTest() {
 
           {step === 1 && <CustomerForm onSubmit={handleCustomerSubmit} />}
 
-          {step === 2 && <SensorConnect onConnect={handleSensorConnect} customerData={customerData} />}
+          {/* {step ===  && <SensorConnect onConnect={handleSensorConnect} customerData={customerData} />} */}
 
-          {step === 3 && <TestExercises onComplete={handleTestComplete} customerData={customerData} testId={testId} />}
+          {step === 2 && <TestExercises onComplete={handleTestComplete} customerData={customerData} testId={testId} />}
 
-          {step === 4 && (
+          {step === 3 && (
             <TestRating onSubmit={handleRatingSubmit} onBack={() => setStep(3)} customerData={customerData} testId={testId} />
           )}
         </CardContent>

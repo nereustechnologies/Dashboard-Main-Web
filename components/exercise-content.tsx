@@ -87,6 +87,7 @@ export function ExerciseContent({ exerciseData, exerciseName, exerciseId }: Exer
           "squats",
           "lunges",
           "plank_hold",
+          "stepUp"
         ] as const
         const graphSupported = graphSupportedExercises.includes(exerciseName as any)
 

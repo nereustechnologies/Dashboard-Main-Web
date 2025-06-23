@@ -161,8 +161,8 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
     ],
     endurance: [
       { id: "plank_hold", name: "Plank Hold", completed: false },
-      { id: "sprint", name: "50m Sprint", completed: false },
-      { id: "shuttle_run", name: "5-10-5 Shuttle Run", completed: false },
+      { id: "stepUp", name: "step Ups", completed: false },
+     
     ],
   }
 
@@ -421,17 +421,12 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
       } else if (activeExercise === "plank_hold") {
         exerciseData.hipAngle = "-";
         exerciseData.holdDuration = 0;
-      } else if (activeExercise === "sprint") {
+      } else if (activeExercise === "stepUp") {
         exerciseData.velocity = "0";
         exerciseData.acceleration = "0";
         exerciseData.strideLength = "0";
         exerciseData.cadence = "0";
-      } else if (activeExercise === "shuttle_run") {
-        exerciseData.velocity = "0";
-        exerciseData.acceleration = "0";
-        exerciseData.strideLength = "0";
-        exerciseData.cadence = "0";
-      }
+      } 
     } else {
       // Add exercise-specific fields based on exercise type for non-skipped actions
       const repCount = calculateRepCount()
@@ -481,7 +476,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
           phaseLabel: action,
           holdDuration: action === "Hold Ended" ? timer : action === "Holding" ? timer - 1 : 1,
         }
-      } else if (activeExercise === "sprint") {
+      } else if (activeExercise === "stepUp") {
         exerciseData = {
           ...exerciseData,
           velocity: generateRandomValue(2.5, 9.3),
@@ -490,17 +485,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
           cadence: generateRandomValue(160, 192),
           phaseLabel: action,
         }
-      } else if (activeExercise === "shuttle_run") {
-        exerciseData = {
-          ...exerciseData,
-          velocity: generateRandomValue(2.5, 8.2),
-          acceleration: generateRandomValue(-2.3, 3.1),
-          strideLength: generateRandomValue(1.0, 1.6),
-          cadence: generateRandomValue(160, 185),
-          phaseLabel: action,
-          repCount,
-        }
-      }
+      } 
     }
 
     try {
@@ -553,7 +538,7 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
     // Simple logic to determine rep count based on actions recorded
     const actionsForExercise = exerciseData.filter((data) => data.exerciseId === activeExercise && data.action !== "Exercise Skipped")
     const endActions = actionsForExercise.filter(
-      (data) => data.action === "Rep Ended" || data.action === "Hold Ended" || data.action === "Sprint Ended",
+      (data) => data.action === "Rep Ended" || data.action === "Hold Ended" || data.action === "stepUp ended",
     )
 
     return endActions.length + 1
@@ -1038,8 +1023,8 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
                 {activeExercise === "squats" && "Squats"}
                 {activeExercise === "lunges" && "Lunges"}
                 {activeExercise === "plank_hold" && "Plank Hold"}
-                {activeExercise === "sprint" && "50m Sprint"}
-                {activeExercise === "shuttle_run" && "5-10-5 Shuttle Run"}
+                {activeExercise === "stepUp" && "step Ups"}
+
               </span>
               <span className="text-xl font-mono flex items-center gap-2">
                 <Clock size={18} className="text-[#00D4EF]" />
@@ -1196,57 +1181,30 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
                     </div>
                   )}
 
-                  {activeExercise === "sprint" && (
+                  {activeExercise === "stepUp" && (
                     <div className="space-y-2">
                       <Button
-                        onClick={() => recordAction("Sprint Started")}
-                        className={`w-full ${lastAction === "Sprint Started" ? "bg-blue-600 hover:bg-blue-700 ring-2 ring-white ring-offset-2 ring-offset-gray-900" : "bg-gray-700 hover:bg-gray-600 text-white"}`}
+                        onClick={() => recordAction("stepUp Started")}
+                        className={`w-full ${lastAction === "stepUp Started" ? "bg-blue-600 hover:bg-blue-700 ring-2 ring-white ring-offset-2 ring-offset-gray-900" : "bg-gray-700 hover:bg-gray-600 text-white"}`}
                       >
-                        Sprint Started
+                        step Ups Started
                       </Button>
                       <Button
-                        onClick={() => recordAction("Sprinting")}
-                        className={`w-full ${lastAction === "Sprinting" ? "bg-purple-600 hover:bg-purple-700 ring-2 ring-white ring-offset-2 ring-offset-gray-900" : "bg-gray-700 hover:bg-gray-600 text-white"}`}
+                        onClick={() => recordAction("steppingUp")}
+                        className={`w-full ${lastAction === "steppingUp" ? "bg-purple-600 hover:bg-purple-700 ring-2 ring-white ring-offset-2 ring-offset-gray-900" : "bg-gray-700 hover:bg-gray-600 text-white"}`}
                       >
-                        Sprinting
+                        Stepping Up
                       </Button>
                       <Button
-                        onClick={() => recordAction("Sprint Ended")}
-                        className={`w-full ${lastAction === "Sprint Ended" ? "bg-red-600 hover:bg-red-700 ring-2 ring-white ring-offset-2 ring-offset-gray-900" : "bg-gray-700 hover:bg-gray-600 text-white"}`}
+                        onClick={() => recordAction("stepUp Ended")}
+                        className={`w-full ${lastAction === "stepUp Ended" ? "bg-red-600 hover:bg-red-700 ring-2 ring-white ring-offset-2 ring-offset-gray-900" : "bg-gray-700 hover:bg-gray-600 text-white"}`}
                       >
-                        Sprint Ended
+                        Step Ups Ended
                       </Button>
                     </div>
                   )}
 
-                  {activeExercise === "shuttle_run" && (
-                    <div className="space-y-2">
-                      <Button
-                        onClick={() => recordAction("Run Started")}
-                        className={`w-full ${lastAction === "Run Started" ? "bg-blue-600 hover:bg-blue-700 ring-2 ring-white ring-offset-2 ring-offset-gray-900" : "bg-gray-700 hover:bg-gray-600 text-white"}`}
-                      >
-                        Run Started
-                      </Button>
-                      <Button
-                        onClick={() => recordAction("Sprinting")}
-                        className={`w-full ${lastAction === "Sprinting" ? "bg-purple-600 hover:bg-purple-700 ring-2 ring-white ring-offset-2 ring-offset-gray-900" : "bg-gray-700 hover:bg-gray-600 text-white"}`}
-                      >
-                        Sprinting
-                      </Button>
-                      <Button
-                        onClick={() => recordAction("Direction Changed")}
-                        className={`w-full ${lastAction === "Direction Changed" ? "bg-yellow-600 hover:bg-yellow-700 text-black ring-2 ring-black ring-offset-2 ring-offset-gray-900" : "bg-gray-700 hover:bg-gray-600 text-white"}`}
-                      >
-                        Direction Changed
-                      </Button>
-                      <Button
-                        onClick={() => recordAction("Sprint Ended")}
-                        className={`w-full ${lastAction === "Sprint Ended" ? "bg-red-600 hover:bg-red-700 ring-2 ring-white ring-offset-2 ring-offset-gray-900" : "bg-gray-700 hover:bg-gray-600 text-white"}`}
-                      >
-                        Sprint Ended
-                      </Button>
-                    </div>
-                  )}
+                  
                 </div>
               </div>
 

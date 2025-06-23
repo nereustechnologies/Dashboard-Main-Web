@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         category = "mobility"
       } else if (exerciseId.includes("squat") || exerciseId.includes("lunges")) {
         category = "strength"
-      } else if (exerciseId.includes("plank") || exerciseId.includes("sprint") || exerciseId.includes("shuttle")) {
+      } else if (exerciseId.includes("plank") || exerciseId.includes("stepUp")) {
         category = "endurance"
       }
 

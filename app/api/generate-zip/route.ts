@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         ]
       } else if (exerciseId === "plank_hold") {
         headers = ["Timestamp", "Hip Angle (°)", "Phase Label", "Hold Duration (s)"]
-      } else if (exerciseId === "sprint") {
+      } else if (exerciseId === "stepUp") {
         headers = [
           "Timestamp",
           "Velocity (m/s)",
@@ -77,16 +77,7 @@ export async function POST(request: NextRequest) {
           "Cadence (steps/min)",
           "Phase Label",
         ]
-      } else if (exerciseId === "shuttle_run") {
-        headers = [
-          "Timestamp",
-          "Velocity (m/s)",
-          "Acceleration (m/s²)",
-          "Stride Length (m)",
-          "Cadence (steps/min)",
-          "Phase Label",
-          "Rep Count",
-        ]
+      
       } else {
         // Default format for other exercises
         headers = ["Timestamp", "Action", "Leg", "Rep Count"]

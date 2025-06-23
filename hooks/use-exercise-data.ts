@@ -75,17 +75,12 @@ export function useExerciseData() {
       } else if (activeExercise === "plank_hold") {
         exerciseDataItem.hipAngle = "-";
         exerciseDataItem.holdDuration = 0;
-      } else if (activeExercise === "sprint") {
+      } else if (activeExercise === "stepUp") {
         exerciseDataItem.velocity = "0";
         exerciseDataItem.acceleration = "0";
         exerciseDataItem.strideLength = "0";
         exerciseDataItem.cadence = "0";
-      } else if (activeExercise === "shuttle_run") {
-        exerciseDataItem.velocity = "0";
-        exerciseDataItem.acceleration = "0";
-        exerciseDataItem.strideLength = "0";
-        exerciseDataItem.cadence = "0";
-      }
+      } 
     } else {
       // Add exercise-specific fields based on exercise type for non-skipped actions
       const repCount = calculateRepCount(exerciseData, activeExercise)
@@ -131,7 +126,7 @@ export function useExerciseData() {
           phaseLabel: action,
           holdDuration: action === "Hold Ended" ? timer : action === "Holding" ? timer - 1 : 1,
         }
-      } else if (activeExercise === "sprint") {
+      } else if (activeExercise === "stepUp") {
         exerciseDataItem = {
           ...exerciseDataItem,
           velocity: "0", // Was generateRandomValue(2.5, 9.3)
@@ -140,17 +135,7 @@ export function useExerciseData() {
           cadence: "0", // Was generateRandomValue(160, 192)
           phaseLabel: action,
         }
-      } else if (activeExercise === "shuttle_run") {
-        exerciseDataItem = {
-          ...exerciseDataItem,
-          velocity: "0", // Was generateRandomValue(2.5, 8.2)
-          acceleration: "0", // Was generateRandomValue(-2.3, 3.1)
-          strideLength: "0", // Was generateRandomValue(1.0, 1.6)
-          cadence: "0", // Was generateRandomValue(160, 185)
-          phaseLabel: action,
-          repCount,
-        }
-      }
+      } 
     }
 
     try {
@@ -208,7 +193,7 @@ function calculateRepCount(exerciseData: any[], activeExercise: string) {
   // Simple logic to determine rep count based on actions recorded
   const actionsForExercise = exerciseData.filter((data) => data.exerciseId === activeExercise && data.action !== "Exercise Skipped")
   const endActions = actionsForExercise.filter(
-    (data) => data.action === "Rep Ended" || data.action === "Hold Ended" || data.action === "Sprint Ended",
+    (data) => data.action === "Rep Ended" || data.action === "Hold Ended" || data.action === "stepUp Ended",
   )
 
   return endActions.length + 1

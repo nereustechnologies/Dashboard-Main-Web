@@ -31,6 +31,24 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
     // "Core Strength Rating (Plank)": ["1", "2", "3", "4", "5"],
   }
 
+   const enduranceFieldOptions: Record<string, string[]> = {
+  "Stability Score (for Plank Hold)": ["Good", "Satisfactory", "Inconsistent"],
+  "Fatigue Score (for Plank Hold)": [
+    "1 – Fatigues rapidly · Endurance is a major weakness",
+    "2 – Low stamina · Strength drops off early",
+    "3 – Decent base · Fades under sustained effort",
+    "4 – Strong endurance · Holds output well",
+    "5 – Elite stamina · Repeats high effort with ease"
+  ],
+  "Fatigue Score (for Step Ups)": [
+    "1 – Fatigues rapidly · Endurance is a major weakness",
+    "2 – Low stamina · Strength drops off early",
+    "3 – Decent base · Fades under sustained effort",
+    "4 – Strong endurance · Holds output well",
+    "5 – Elite stamina · Repeats high effort with ease"
+  ]
+}
+
   // Configuration for mobility section dropdowns
   const mobilityFieldOptions: Record<string, string[]> = {
     "Range of Motion": [ "Good", "Satisfactory", "Needs Improvement"],
@@ -43,6 +61,7 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
   const dropdownFields: string[] = (() => {
     if (section === "strength") return Object.keys(strengthFieldOptions)
     if (section === "mobility") return Object.keys(mobilityFieldOptions)
+    if (section === "endurance") return Object.keys(enduranceFieldOptions)
     return [] // endurance
   })()
 
@@ -145,7 +164,9 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
                     ? strengthFieldOptions[field]
                     : section === "mobility"
                     ? mobilityFieldOptions[field]
-                    : [
+                    : section === "endurance"
+                    ? enduranceFieldOptions[field]
+                   : [
                         "Excellent",
                         "Good",
                         "Average",

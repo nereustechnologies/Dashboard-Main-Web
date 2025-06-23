@@ -50,6 +50,7 @@ function PatientDashboard() {
 
         const data = await response.json()
         setTest(data.test)
+        console.log(data)
         // Set initial selected exercise to the first exercise returned from backend if not already selected.
         if (data.test.exercises && data.test.exercises.length > 0) {
           setSelectedExercise(data.test.exercises[0].name)
@@ -85,8 +86,8 @@ function PatientDashboard() {
     squats: "strength",
     lunges: "strength",
     plank_hold: "endurance",
-    sprint: "endurance",
-    shuttle_run: "endurance",
+    stepUp: "endurance",
+   
   }
 
   const currentSection = categoryMap[selectedExercise] || "mobility"
@@ -142,7 +143,7 @@ function PatientDashboard() {
             <div className="px-4 md:px-6">
               <MovementSignatureForm customerId={test.customerId} />
             </div>
-          ) : selectedExercise==="scoresToBeat" ?(
+          ) : selectedExercise === "scoresToBeat" ?(
 
             <ScoresToBeat customerId={test.customerId} />
           ):(
