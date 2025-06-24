@@ -35,14 +35,26 @@ export function ExerciseContent({ exerciseData, exerciseName, exerciseId }: Exer
         const { analysisResults, s3PathProcessed } = await res.json()
 
         // Transform analysisResults (key/value pairs) → array for rendering
-        if (analysisResults && typeof analysisResults === "object") {
-          const entries = Object.entries(analysisResults)
-            .filter(([name]) => name !== "output_key") // omit S3 key from UI
+        if (
+          analysisResults &&
+          typeof analysisResults === "object" &&
+          analysisResults.body
+        ) {
+          // Parse the metrics from the JSON string in body
+          let metricsObj;
+          try {
+            metricsObj = JSON.parse(analysisResults.body);
+          } catch (e) {
+            metricsObj = {};
+          }
+          const skipKeys = ["output_key", "status"];
+          const entries = Object.entries(metricsObj)
+            .filter(([name]) => !skipKeys.includes(name.trim().toLowerCase()))
             .map(([name, value]) => ({
               name,
               value: value as string | number,
-            }))
-          setCalculatedData(entries)
+            }));
+          setCalculatedData(entries);
         }
 
         // Helper: Convert "s3://bucket/key" → "https://bucket.s3.amazonaws.com/key" for browser fetch
@@ -122,7 +134,7 @@ export function ExerciseContent({ exerciseData, exerciseName, exerciseId }: Exer
                           <p className="text-sm font-medium text-muted-foreground capitalize">
                             {item.name.toString().replace(/_/g, " ")}
                           </p>
-                         <p className="text-xl md:text-2xl font-bold">
+                         <p className="text-xl md:text-xl font-bold">
   {typeof item.value === "object" ? JSON.stringify(item.value) : item.value}
 </p>
 
