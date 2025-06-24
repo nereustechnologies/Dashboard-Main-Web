@@ -156,10 +156,10 @@ ${observation || "No feedback provided."}
           <Label>RPE (Rate of Perceived Exertion 1–10)</Label>
           <Select value={rpe} onValueChange={setRPE}>
             <SelectTrigger className="bg-gray-900 border-gray-700"><SelectValue placeholder="Select RPE" /></SelectTrigger>
-            <SelectContent>{[...Array(10).keys()].map(i => {
-              const val = (i+1).toString()
-              return <SelectItem key={val} value={val}>{val}</SelectItem>
-            })}</SelectContent>
+            <SelectContent>{Array.from({ length: 10 }, (_, i) => {
+  const val = (i + 1).toString()
+  return <SelectItem key={val} value={val}>{val}</SelectItem>
+})}</SelectContent>
           </Select>
         </div>
 

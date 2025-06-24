@@ -16,6 +16,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <a href="/admin/dashboard/booking" className="text-white hover:text-primary font-semibold transition">Bookings</a>
               <a href="/admin/dashboard/booking/slot" className="text-white hover:text-primary font-semibold transition">Add Time Slot</a>
               <a href="/admin/dashboard/booking/price" className="text-white hover:text-primary font-semibold transition">Session Price</a>
+               <a href="/admin/dashboard/email" className="text-white hover:text-primary font-semibold transition">email</a>
+
             </div>
           </div>
         </div>

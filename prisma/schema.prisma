@@ -184,6 +184,25 @@ model Temp {
   createdAt        DateTime @default(now())
   timeSlot         TimeSlot @relation("TimeSlotToTemp", fields: [timeSlotId], references: [id])
 }
+model EmailLog {
+  id          String   @id @default(uuid())
+  clientId    String
+  emailType   EmailType
+  subject     String
+  status      String   // e.g., SENT, FAILED
+  sentVia     String   // e.g., EMAIL, WHATSAPP
+  sessionDate DateTime
+  createdAt   DateTime @default(now())
+
+  client      Client   @relation(fields: [clientId], references: [id])
+}
+
+enum EmailType {
+  CONFIRMATION
+  REMINDER
+  POST_SESSION
+  REPORT
+}
 
 model Client {
   id             String    @id @default(uuid())
@@ -198,6 +217,7 @@ model Client {
   uniqueId       String
   createdAt      DateTime  @default(now())
   Booking        Booking[]
+   EmailLog       EmailLog[]
 }
 
 model SlotDate {
