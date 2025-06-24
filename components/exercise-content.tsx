@@ -122,7 +122,10 @@ export function ExerciseContent({ exerciseData, exerciseName, exerciseId }: Exer
                           <p className="text-sm font-medium text-muted-foreground capitalize">
                             {item.name.toString().replace(/_/g, " ")}
                           </p>
-                          <p className="text-xl md:text-2xl font-bold">{item.value as any}</p>
+                         <p className="text-xl md:text-2xl font-bold">
+  {typeof item.value === "object" ? JSON.stringify(item.value) : item.value}
+</p>
+
                         </div>
                       ))}
                     </div>

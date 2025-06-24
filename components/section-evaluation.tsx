@@ -18,55 +18,60 @@ interface SectionEvaluationProps {
 }
 
 export function SectionEvaluation({ section, customerId }: SectionEvaluationProps) {
-  // Configuration for strength section dropdowns
+  // Dropdown options
   const strengthFieldOptions: Record<string, string[]> = {
     "Squat Depth Rating": ["Deep", "Parallel", "Partial"],
-    "Repetition Consistency (Squat)": [ "Good", "Satisfactory", "Needs Improvement"],
-    "Stability (Squat)": [ "Good", "Satisfactory", "Needs Improvement"],
+    "Repetition Consistency (Squat)": ["Good", "Satisfactory", "Needs Improvement"],
+    "Stability (Squat)": ["Good", "Satisfactory", "Needs Improvement"],
     "Fatigue Score (Squat)": ["1", "2", "3", "4", "5"],
-    "Lunge Depth Rating": [ "Good", "Satisfactory", "Needs Improvement"],
-    "Repetition Consistency (Lunge)": [ "Good", "Satisfactory", "Needs Improvement"],
-    "Stability (Lunge)": [ "Good", "Satisfactory", "Needs Improvement"],
+    "Lunge Depth Rating": ["Good", "Satisfactory", "Needs Improvement"],
+    "Repetition Consistency (Lunge)": ["Good", "Satisfactory", "Needs Improvement"],
+    "Stability (Lunge)": ["Good", "Satisfactory", "Needs Improvement"],
     "Fatigue Score (Lunge)": ["1", "2", "3", "4", "5"],
-    // "Core Strength Rating (Plank)": ["1", "2", "3", "4", "5"],
   }
 
-   const enduranceFieldOptions: Record<string, string[]> = {
-  "Stability Score (for Plank Hold)": ["Good", "Satisfactory", "Inconsistent"],
-  "Fatigue Score (for Plank Hold)": [
-    "1 – Fatigues rapidly · Endurance is a major weakness",
-    "2 – Low stamina · Strength drops off early",
-    "3 – Decent base · Fades under sustained effort",
-    "4 – Strong endurance · Holds output well",
-    "5 – Elite stamina · Repeats high effort with ease"
-  ],
-  "Fatigue Score (for Step Ups)": [
-    "1 – Fatigues rapidly · Endurance is a major weakness",
-    "2 – Low stamina · Strength drops off early",
-    "3 – Decent base · Fades under sustained effort",
-    "4 – Strong endurance · Holds output well",
-    "5 – Elite stamina · Repeats high effort with ease"
-  ]
-}
+  const enduranceFieldOptions: Record<string, string[]> = {
+    "Stability Score (for Plank Hold)": ["Good", "Satisfactory", "Inconsistent"],
+    "Fatigue Score (for Plank Hold)": [
+      "1 – Fatigues rapidly · Endurance is a major weakness",
+      "2 – Low stamina · Strength drops off early",
+      "3 – Decent base · Fades under sustained effort",
+      "4 – Strong endurance · Holds output well",
+      "5 – Elite stamina · Repeats high effort with ease",
+    ],
+    "Fatigue Score (for Step Ups)": [
+      "1 – Fatigues rapidly · Endurance is a major weakness",
+      "2 – Low stamina · Strength drops off early",
+      "3 – Decent base · Fades under sustained effort",
+      "4 – Strong endurance · Holds output well",
+      "5 – Elite stamina · Repeats high effort with ease",
+    ],
+  }
 
-  // Configuration for mobility section dropdowns
   const mobilityFieldOptions: Record<string, string[]> = {
-    "Range of Motion": [ "Good", "Satisfactory", "Needs Improvement"],
+    "Range of Motion": ["Good", "Satisfactory", "Needs Improvement"],
     "Quadriceps Stretch": ["Good", "Satisfactory", "Needs Improvement"],
     "Hip Stability": ["Good", "Satisfactory", "Needs Improvement"],
-    "Calf Flexibility": ["Good","Satisfactor", "Needs Improvement"],
-    "Ankle Mobility": ["Good","Satisfactor", "Needs Improvement"],
+    "Calf Flexibility": ["Good", "Satisfactory", "Needs Improvement"],
+    "Ankle Mobility": ["Good", "Satisfactory", "Needs Improvement"],
   }
 
   const dropdownFields: string[] = (() => {
     if (section === "strength") return Object.keys(strengthFieldOptions)
     if (section === "mobility") return Object.keys(mobilityFieldOptions)
     if (section === "endurance") return Object.keys(enduranceFieldOptions)
-    return [] // endurance
+    return []
   })()
 
-  const baseTextFields = ["Inference Title", "Inference Title"]
-  const textFields = section === "mobility" ? [...baseTextFields, "Inference Title"] : baseTextFields
+  const baseTextFields = [
+    { key: "inference-title-1", label: "Inference Title" },
+    { key: "inference-title-2", label: "Inference Title" },
+  ]
+
+  const textFields =
+    section === "mobility"
+      ? [...baseTextFields, { key: "inference-title-3", label: "Inference Title" }]
+      : baseTextFields
 
   const [dropdownValues, setDropdownValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
@@ -76,46 +81,46 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
 
   const [textValues, setTextValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
-    textFields.forEach((f) => (init[f] = ""))
+    textFields.forEach(({ key }) => (init[key] = ""))
     return init
   })
 
   const [textLabels, setTextLabels] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
-    textFields.forEach((f) => (init[f] = f))
+    textFields.forEach(({ key, label }) => (init[key] = label))
     return init
   })
 
-  // Reset state when section changes (e.g., navigating across tabs)
   useEffect(() => {
     setDropdownValues(() => {
       const init: Record<string, string> = {}
       dropdownFields.forEach((f) => (init[f] = ""))
       return init
     })
+
     setTextValues(() => {
       const init: Record<string, string> = {}
-      textFields.forEach((f) => (init[f] = ""))
+      textFields.forEach(({ key }) => (init[key] = ""))
       return init
     })
+
     setTextLabels(() => {
       const init: Record<string, string> = {}
-      textFields.forEach((f) => (init[f] = f))
+      textFields.forEach(({ key, label }) => (init[key] = label))
       return init
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [section])
 
   const handleDropdownChange = (field: string, value: string) => {
     setDropdownValues((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleTextChange = (field: string, value: string) => {
-    setTextValues((prev) => ({ ...prev, [field]: value }))
+  const handleTextChange = (key: string, value: string) => {
+    setTextValues((prev) => ({ ...prev, [key]: value }))
   }
 
-  const handleLabelChange = (field: string, value: string) => {
-    setTextLabels((prev) => ({ ...prev, [field]: value }))
+  const handleLabelChange = (key: string, value: string) => {
+    setTextLabels((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleSubmit = async () => {
@@ -127,12 +132,12 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ 
-          customerId, 
-          section, 
-          dropdowns: dropdownValues, 
+        body: JSON.stringify({
+          customerId,
+          section,
+          dropdowns: dropdownValues,
           texts: textValues,
-          textLabels: textLabels 
+          textLabels,
         }),
       })
       alert("Section evaluation saved!")
@@ -148,56 +153,53 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
     <Card>
       <CardHeader className="pb-3">
         <CardTitle>{displayName} Evaluation</CardTitle>
-        <CardDescription>Fill out your assessment for the {displayName} section</CardDescription>
+        <CardDescription>
+          Fill out your assessment for the {displayName} section
+        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4 max-h-[80vh] overflow-y-auto pr-1">
-        {dropdownFields.length > 0 &&
-          dropdownFields.map((field) => (
-            <div key={field} className="flex flex-col gap-1">
-              <label className="text-sm">{field}</label>
-              <Select value={dropdownValues[field]} onValueChange={(val) => handleDropdownChange(field, val)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select rating" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(section === "strength"
-                    ? strengthFieldOptions[field]
-                    : section === "mobility"
-                    ? mobilityFieldOptions[field]
-                    : section === "endurance"
-                    ? enduranceFieldOptions[field]
-                   : [
-                        "Excellent",
-                        "Good",
-                        "Average",
-                        "Poor",
-                        "N/A",
-                      ]
-                  ).map((opt) => (
-                    <SelectItem key={opt} value={opt}>
-                      {opt}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
 
-        {textFields.map((field) => (
+      <CardContent className="space-y-4 max-h-[80vh] overflow-y-auto pr-1">
+        {dropdownFields.map((field) => (
           <div key={field} className="flex flex-col gap-1">
+            <label className="text-sm">{field}</label>
+            <Select
+              value={dropdownValues[field]}
+              onValueChange={(val) => handleDropdownChange(field, val)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select rating" />
+              </SelectTrigger>
+              <SelectContent>
+                {(section === "strength"
+                  ? strengthFieldOptions[field]
+                  : section === "mobility"
+                  ? mobilityFieldOptions[field]
+                  : enduranceFieldOptions[field]
+                ).map((opt) => (
+                  <SelectItem key={opt} value={opt}>
+                    {opt}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ))}
+
+        {textFields.map(({ key }) => (
+          <div key={key} className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <input
                 type="text"
-                value={textLabels[field]}
-                onChange={(e) => handleLabelChange(field, e.target.value)}
+                value={textLabels[key]}
+                onChange={(e) => handleLabelChange(key, e.target.value)}
                 className="text-sm border rounded px-2 py-1 w-48"
                 placeholder="Field label"
               />
             </div>
             <Textarea
-              value={textValues[field]}
-              onChange={(e) => handleTextChange(field, e.target.value)}
-              placeholder={`Enter Inference`}
+              value={textValues[key]}
+              onChange={(e) => handleTextChange(key, e.target.value)}
+              placeholder="Enter Inference"
             />
           </div>
         ))}
@@ -210,4 +212,4 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
       </CardContent>
     </Card>
   )
-} 
+}

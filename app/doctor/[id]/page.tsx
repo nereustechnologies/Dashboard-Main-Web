@@ -11,7 +11,7 @@ import { exerciseData } from "@/lib/data" // Mock data for exercises
 import { TrainingPurposeForm } from "@/components/training-purpose-form"
 import { MovementSignatureForm } from "@/components/movement-signature-form"
 import { ScoresToBeat } from "@/components/scoresToBeat-form"
-
+  ``
 function PatientDashboard() {
   const router = useRouter()
   const params = useParams()
@@ -153,16 +153,25 @@ function PatientDashboard() {
                 {/* ExerciseContent using mock data */}
                 <section aria-labelledby="exercise-guide-heading">
                   <div className="rounded-lg border border-gray-700 p-4">
-                    {(() => {
-                      const exerciseObj = test.exercises.find((ex: any) => ex.name === selectedExercise)
-                      return (
-                        <ExerciseContent
-                          exerciseData={exerciseData[selectedExercise as keyof typeof exerciseData]}
-                          exerciseName={selectedExercise}
-                          exerciseId={exerciseObj?.id}
-                        />
-                      )
-                    })()}
+                 {(() => {
+  const exerciseObj = test.exercises.find((ex: any) => ex.name === selectedExercise)
+
+  // Fallback: Prevent crash if invalid key
+  const exerciseDataForCurrent = exerciseData[selectedExercise as keyof typeof exerciseData]
+
+ return exerciseObj && exerciseDataForCurrent ? (
+  <ExerciseContent
+    exerciseData={exerciseDataForCurrent}
+    exerciseName={selectedExercise}
+    exerciseId={exerciseObj.id}
+  />
+) : (
+  <div className="text-red-500 p-4">
+    Exercise data not found for: <strong>{selectedExercise}</strong>
+  </div>
+)
+})()}
+
                   </div>
                 </section>
               </div>

@@ -117,7 +117,7 @@ ${observation || "No feedback provided."}
 
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label>Overall Rating (1–5)</Label>
             <Select value={overallRating} onValueChange={setOverallRating}>
               <SelectTrigger className="bg-gray-900 border-gray-700"><SelectValue placeholder="Select" /></SelectTrigger>
@@ -149,7 +149,7 @@ ${observation || "No feedback provided."}
               <SelectTrigger className="bg-gray-900 border-gray-700"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>{[1,2,3,4,5].map(v => <SelectItem key={v} value={v.toString()}>{v}</SelectItem>)}</SelectContent>
             </Select>
-          </div>
+          </div> */}
         </div>
 
         <div className="space-y-2">
