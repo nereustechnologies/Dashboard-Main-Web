@@ -1,212 +1,183 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useRouter } from "next/navigation"
+import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
-import { Skeleton } from "@/components/ui/skeleton"
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { startOfDay, format } from 'date-fns'
 
-interface Config {
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { DatePicker } from '@/components/ui/date-picker'
+import { Table, TableHead, TableHeader, TableRow, TableCell, TableBody } from '@/components/ui/table'
+
+interface SlotDate {
   id: string
+  date: string
   price: number
 }
 
-// Cache for price configuration
-const cache = {
-  config: null as Config | null,
-  lastFetch: 0
-}
-
-// Cache duration in milliseconds (5 minutes)
-const CACHE_DURATION = 5 * 60 * 1000
-
-export default function PriceConfig() {
-  const [config, setConfig] = useState<Config | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [isLoadingPrice, setIsLoadingPrice] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [editing, setEditing] = useState(false)
+export default function SlotDatePriceConfig() {
+  const [dates, setDates] = useState<SlotDate[]>([])
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [price, setPrice] = useState('')
-     const [user, setUser] = useState<any>(null)
-
-
-    const router = useRouter()
-  
-    useEffect(() => {
-      // Check if user is logged in
-      const token = localStorage.getItem("token")
-      const userData = localStorage.getItem("user")
-  
-      if (!token || !userData) {
-        router.push("/login")
-        return
-      }
-  
-      const parsedUser = JSON.parse(userData)
-      if (parsedUser.role !== "admin") {
-        router.push("/login")
-        return
-      }
-  
-      setUser(parsedUser)
-      setLoading(false)
-    }, [router])
-  
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [filterDate, setFilterDate] = useState<Date | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
-    const fetchConfig = async () => {
-      setIsLoadingPrice(true)
-      setError(null)
+    const token = localStorage.getItem('token')
+    const userData = localStorage.getItem('user')
+    if (!token || !userData) return router.push('/login')
 
-      try {
+    const parsedUser = JSON.parse(userData)
+    if (parsedUser.role !== 'admin') return router.push('/login')
+  }, [router])
 
-        const token = localStorage.getItem("token")
-        if (!token) {
-          throw new Error("Authentication required")
-        }
-        // Check cache first
-        const now = Date.now()
-        const shouldFetch = !cache.config || (now - cache.lastFetch) > CACHE_DURATION
-
-        if (shouldFetch) {
-          const response = await fetch('/api/admin/config',{
-             headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          })
-          if (!response.ok) {
-            throw new Error('Failed to fetch price configuration')
-          }
-          const data = await response.json()
-          cache.config = data
-          cache.lastFetch = now
-          setConfig(data)
-          setPrice(data?.price?.toString() || '')
-        } else if (cache.config) {
-          setConfig(cache.config)
-          setPrice(cache.config.price.toString())
-        }
-      } catch (error) {
-        console.error('Error fetching config:', error)
-        setError('Failed to load price configuration. Please try again.')
-      } finally {
-        setIsLoadingPrice(false)
-      }
+  const fetchPrices = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch('/api/admin/slotdate', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      setDates(data)
+    } catch (err) {
+      console.error(err)
+      setError('Failed to fetch date prices')
     }
+  }
 
-    fetchConfig()
+  useEffect(() => {
+    fetchPrices()
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
+  const handleSubmit = async () => {
+    if (!selectedDate) return
     try {
-        const token = localStorage.getItem("token")
-        if (!token) {
-          throw new Error("Authentication required")
-        }
-      const response = await fetch('/api/admin/config', {
+      setLoading(true)
+      setError(null)
+      setSuccessMessage(null)
+
+      const token = localStorage.getItem('token')
+      const res = await fetch('/api/admin/slotdate', {
         method: 'PUT',
         headers: {
-
-            Authorization: `Bearer ${token}`,
-          
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          price: parseInt(price)
+          date: startOfDay(selectedDate).toISOString(), // match DB
+          price: parseInt(price),
         }),
       })
 
-      if (response.ok) {
-        const updatedConfig = await response.json()
-        cache.config = updatedConfig
-        cache.lastFetch = Date.now()
-        setConfig(updatedConfig)
-        setEditing(false)
+      const responseData = await res.json()
+
+      if (!res.ok) {
+        setError(responseData.error || 'Failed to update')
       } else {
-        throw new Error('Failed to update price')
+        setSuccessMessage(responseData.message || 'Price updated successfully')
+        setPrice('')
+        setSelectedDate(null)
+        fetchPrices()
       }
-    } catch (error) {
-      console.error('Error updating price:', error)
-      setError('Failed to update price. Please try again.')
+    } catch (err) {
+      console.error(err)
+      setError('Failed to update price')
     } finally {
       setLoading(false)
     }
   }
 
-  // Loading skeleton for the price display
-  const PriceSkeleton = () => (
-    <div className="flex items-center justify-between">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-8 w-32" />
-      </div>
-      <Skeleton className="h-10 w-24" />
-    </div>
-  )
+  const filteredDates = filterDate
+    ? dates.filter(
+        (d) =>
+          startOfDay(new Date(d.date)).toISOString() ===
+          startOfDay(filterDate).toISOString()
+      )
+    : dates
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Session Price</h1>
-      
-      <Card className="p-6">
+    <div className="max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Manage Date-wise Session Price</h1>
+
+      <Card className="p-4 mb-6 space-y-4">
         {error && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        {editing ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Price (₹)</label>
-              <Input
-                type="number"
-                min="0"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="flex space-x-4">
-              <Button type="submit" className="flex-1" disabled={loading}>
-                {loading ? 'Saving...' : 'Save'}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => {
-                  setEditing(false)
-                  setPrice(config?.price?.toString() || '')
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <div className="space-y-4">
-            {isLoadingPrice ? (
-              <PriceSkeleton />
-            ) : (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Current Price</p>
-                  <p className="text-2xl font-bold">₹{config?.price || 0}</p>
-                </div>
-                <Button onClick={() => setEditing(true)}>Edit Price</Button>
-              </div>
-            )}
-          </div>
+        {successMessage && (
+          <Alert variant="default">
+            <AlertDescription>{successMessage}</AlertDescription>
+          </Alert>
         )}
+
+        <DatePicker
+          date={selectedDate ?? undefined}
+          setDate={(date) => setSelectedDate(date ?? null)}
+        />
+
+        <Input
+          placeholder="Enter price (₹)"
+          value={price}
+          type="number"
+          onChange={(e) => setPrice(e.target.value)}
+        />
+
+        <Button onClick={handleSubmit} disabled={loading || !selectedDate || !price}>
+          {loading ? 'Saving...' : 'Save Price for Date'}
+        </Button>
+      </Card>
+
+      {/* Filter */}
+      <div className="mb-4 space-y-1">
+        <label className="text-sm font-medium">Filter by Date</label>
+        <DatePicker
+          date={filterDate ?? undefined}
+          setDate={(date) => setFilterDate(date ?? null)}
+        />
+        {filterDate && (
+          <Button
+            variant="ghost"
+            className="text-sm px-2"
+            onClick={() => setFilterDate(null)}
+          >
+            Clear Filter
+          </Button>
+        )}
+      </div>
+
+      <Card className="p-4">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Date</TableHead>
+              <TableHead>Price (₹)</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredDates.length > 0 ? (
+              filteredDates.map((d) => (
+                <TableRow key={d.id}>
+                  <TableCell>{format(new Date(d.date), 'yyyy-MM-dd')}</TableCell>
+                  <TableCell>{d.price}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={2} className="text-center">
+                  No data available for selected date
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </Card>
     </div>
   )
-} 
+}

@@ -36,9 +36,9 @@ model Customer {
   updatedAt          DateTime            @updatedAt
   UniqueId           String?
   movementSignature  MovementSignature?
+  ScoresToBeat       ScoresToBeat[]
   sectionEvaluations SectionEvaluation[]
   tests              Test[]
-  ScoresToBeat        ScoresToBeat[]
   trainingPurposes   TrainingPurpose[]
 }
 
@@ -74,12 +74,12 @@ model TestRating {
   mobility         Int
   strength         Int
   endurance        Int
-  observation      String?
-  RPE              Int
-  FeltAfterWorkOut String
   testId           String   @unique
   createdAt        DateTime @default(now())
   updatedAt        DateTime @default(now()) @updatedAt
+  FeltAfterWorkOut String
+  RPE              Int
+  observation      String?
   test             Test     @relation(fields: [testId], references: [id])
 }
 
@@ -134,21 +134,19 @@ model TrainingPurpose {
 
   @@unique([customerId, category, slot])
 }
+
 model ScoresToBeat {
-  id          String    @id @default(uuid())
-  customerId  String
-  customer    Customer  @relation(fields: [customerId], references: [id])
+  id         String   @id @default(uuid())
+  customerId String
+  title      String
+  current    Int
+  best       Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  customer   Customer @relation(fields: [customerId], references: [id])
 
-  title       String
-  current     Int
-  best        Int
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@unique([customerId, title])  // ensures one score entry per title per customer
+  @@unique([customerId, title])
 }
-
 
 /// --------------------------------------------------------------------
 /// 4. MOVEMENT-SIGNATURE  (identity + 1-10 rating bar)
@@ -184,28 +182,21 @@ model Temp {
   createdAt        DateTime @default(now())
   timeSlot         TimeSlot @relation("TimeSlotToTemp", fields: [timeSlotId], references: [id])
 }
+
 model EmailLog {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   clientId    String
   emailType   EmailType
   subject     String
-  status      String   // e.g., SENT, FAILED
-  sentVia     String   // e.g., EMAIL, WHATSAPP
+  status      String
+  sentVia     String
   sessionDate DateTime
-  createdAt   DateTime @default(now())
-
-  client      Client   @relation(fields: [clientId], references: [id])
-}
-
-enum EmailType {
-  CONFIRMATION
-  REMINDER
-  POST_SESSION
-  REPORT
+  createdAt   DateTime  @default(now())
+  client      Client    @relation(fields: [clientId], references: [id])
 }
 
 model Client {
-  id             String    @id @default(uuid())
+  id             String     @id @default(uuid())
   fullName       String
   age            Int
   gender         Gender
@@ -215,18 +206,22 @@ model Client {
   whyMove        String
   fitnessGoal    String
   uniqueId       String
-  createdAt      DateTime  @default(now())
+  createdAt      DateTime   @default(now())
   Booking        Booking[]
-   EmailLog       EmailLog[]
+  EmailLog       EmailLog[]
 }
 
 model SlotDate {
   id         String     @id @default(uuid())
   date       DateTime
   locationId String
+  price      Int?
   location   Location   @relation(fields: [locationId], references: [id])
   timeSlots  TimeSlot[]
+
+  @@unique([date, locationId])
 }
+
 
 model Location {
   id      String     @id @default(uuid())
@@ -269,6 +264,13 @@ model Config {
   updatedAt DateTime @updatedAt
 }
 
+enum EmailType {
+  CONFIRMATION
+  REMINDER
+  POST_SESSION
+  REPORT
+}
+
 /// --------------------------------------------------------------------
 /// 1. ENUMS – keep the string literals out of tables for consistency
 /// --------------------------------------------------------------------
@@ -296,4 +298,3 @@ enum PaymentStatus {
   FAILED
   REFUND
 }
-
