@@ -76,6 +76,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Exercise not found" }, { status: 404 })
     }
 
+
+    console.log("s3PathProcessed value:", awsData.output_key)
     // Create new ExerciseAssetFile for processed result
     const processedAsset = await prisma.exerciseAssetFile.create({
       data: {
