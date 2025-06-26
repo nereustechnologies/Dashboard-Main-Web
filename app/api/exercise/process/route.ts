@@ -67,6 +67,23 @@ export async function POST(request: Request) {
 
     const awsData = await awsResp.json() // e.g. { status: "success", output_key: ".../calculated_angles.csv", ... }
 
+    // Log the full AWS response for debugging
+    console.log("AWS response received:", awsData)
+
+    // Parse output_key from awsData.body if present
+    let outputKey = undefined
+    if (awsData.body) {
+      try {
+        const parsedBody = JSON.parse(awsData.body)
+        outputKey = parsedBody.output_key
+      } catch (e) {
+        console.error("Failed to parse awsData.body", e)
+      }
+    }
+
+    // Log the extracted output_key
+    console.log("s3PathProcessed value:", outputKey)
+
     // Find the Exercise record (unique by test & name)
     const exercise = await prisma.exercise.findFirst({
       where: { testId, name: exerciseName },
@@ -76,16 +93,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Exercise not found" }, { status: 404 })
     }
 
-
-    console.log("s3PathProcessed value:", awsData.output_key)
     // Create new ExerciseAssetFile for processed result
     const processedAsset = await prisma.exerciseAssetFile.create({
       data: {
         exerciseId: exercise.id,
-        fileName: awsData.output_key?.split("/").pop() || "processed_output.csv",
+        fileName: outputKey?.split("/").pop() || "processed_output.csv",
         fileType: `processed_result`,
         s3PathRaw: s3Prefix, // original folder
-        s3PathProcessed: awsData.output_key || null,
+        s3PathProcessed: outputKey || null,
         analysisResults: awsData, // store everything else (including output_key etc.)
         status: awsData.status || "processed",
       } as any,
