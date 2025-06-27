@@ -16,6 +16,7 @@ interface ExerciseContentProps {
   exerciseId: string | undefined
 }
 
+
 export function ExerciseContent({ exerciseData, exerciseName, exerciseId }: ExerciseContentProps) {
   const [calculatedData, setCalculatedData] = useState<Array<{ name: string; value: string | number }>>([])
   const [csvData, setCsvData] = useState<string[][]>([])
@@ -155,7 +156,7 @@ export function ExerciseContent({ exerciseData, exerciseName, exerciseId }: Exer
                     <CardDescription>Visual representation of performance</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ExerciseCharts data={exerciseData.chartData} />
+                    <ExerciseCharts data={exerciseData.chartData} csv={csvData} exerciseName={exerciseName} />
                   </CardContent>
                 </Card>
               </TabsContent>

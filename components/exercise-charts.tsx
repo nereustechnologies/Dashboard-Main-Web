@@ -2,6 +2,7 @@
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import type { ExerciseData } from "@/lib/data"
 import {
   Line,
   LineChart,
@@ -32,23 +33,27 @@ interface DistributionDataPoint {
   name: string
   value: number
 }
+interface PlotPoint {
+  time: string
+  value1: number
+  value2?: number
+}
 
 // Union type for any data point
-type ChartDataItem = ProgressDataPoint | ComparisonDataPoint | DistributionDataPoint
+type ChartDataItem = ProgressDataPoint | ComparisonDataPoint | DistributionDataPoint | PlotPoint
 
 // Props for the main component
 interface ChartData {
   progress: ProgressDataPoint[]
   comparison: ComparisonDataPoint[]
   distribution: DistributionDataPoint[]
+   
 }
 
-interface ExerciseChartsProps {
-  data: ChartData
-}
+
 
 // Type for the active tab
-type ActiveTab = "progress" | "comparison" | "distribution"
+type ActiveTab = "progress" | "comparison" | "distribution" |"plot"
 
 // Type for zoomed data structure
 interface ZoomedChartDomain {
@@ -69,12 +74,18 @@ interface ZoomState {
   zoomedData: ZoomedData | null
 }
 
+interface ExerciseChartsProps {
+  data: ChartData
+  csv: string[][]
+  exerciseName: string
+}
 // Type for Recharts mouse event (simplified)
 interface RechartsMouseEvent {
   activeLabel?: string
 }
 
-export function ExerciseCharts({ data }: ExerciseChartsProps) {
+export function ExerciseCharts({ data, csv, exerciseName }: ExerciseChartsProps) {
+  console.log(exerciseName)
   const [activeTab, setActiveTab] = useState<ActiveTab>("progress")
 
   const initialZoomState: ZoomState = {
@@ -221,6 +232,37 @@ export function ExerciseCharts({ data }: ExerciseChartsProps) {
       }))
     }
   }
+  function getPlotChartConfig(exerciseName: string) {
+  switch (exerciseName) {
+    case "lunge_stretch":
+      return {
+        value1: { label: "Overall Hip Angle", color: "hsl(var(--chart-1))" },
+        value2:{}
+      }
+    case "squats":
+      return {
+        value1: { label: "overall hip angle", color: "hsl(var(--chart-1))" },
+        value2:{}
+      }
+    case "lunges":
+      return {
+        value1: { label: "overall hip angle", color: "hsl(var(--chart-1))" },
+        value2:{}
+      }
+    case "plank_hold":
+      return {
+        value1: { label: "hip angles", color: "hsl(var(--chart-1))" },
+        value2:{}
+      }
+
+
+    default:
+      return {
+        value1: { label: "Metric 1", color: "hsl(var(--chart-1))" },
+        value2: { label: "Metric 2", color: "hsl(var(--chart-2))" },
+      }
+  }
+}
 
   const handleMouseUp = () => {
     if (zoomState.refAreaLeft && zoomState.refAreaRight) {
@@ -234,13 +276,15 @@ export function ExerciseCharts({ data }: ExerciseChartsProps) {
     }
   }
 
-  const baseChartData =
-    activeTab === "progress"
-      ? data.progress
-      : activeTab === "comparison"
-      ? data.comparison
-      : data.distribution
-
+const baseChartData: ChartDataItem[] =
+  activeTab === "progress"
+    ? data.progress
+    : activeTab === "comparison"
+    ? data.comparison
+    : activeTab === "distribution"
+    ? data.distribution
+    : [] 
+      
   const displayedChartData: ChartDataItem[] =
     zoomState.isZooming && zoomState.zoomedData ? zoomState.zoomedData.data : baseChartData
 
@@ -264,7 +308,7 @@ export function ExerciseCharts({ data }: ExerciseChartsProps) {
     }
     
     const referenceAreaFillColor = activeTab === "comparison" ? "var(--color-current)" : "var(--color-value)";
-
+   console.log(activeTab)
     switch (activeTab) {
       case "progress":
         return (
@@ -353,10 +397,384 @@ export function ExerciseCharts({ data }: ExerciseChartsProps) {
                 fillOpacity={0.1}
               />
             )}
+
           </BarChart>
         )
+      case "plot":
+    if (exerciseName === "lunge_stretch") {
+  const fullPlotData: PlotPoint[] = [];
+
+  let currentSecond = -1;
+  let secondStartIndex = 0;
+
+  for (let i = 1; i < csv.length; i++) {
+    const [timestamp] = csv[i];
+    const [mins, secs] = timestamp.split(":").map(Number);
+    const timeInSeconds = mins * 60 + secs;
+
+    // If it's a new second or the last row
+    if (timeInSeconds !== currentSecond || i === csv.length - 1) {
+      const group = csv.slice(secondStartIndex, i === csv.length - 1 ? i + 1 : i); // Group of rows with same second
+      const count = group.length;
+
+      group.forEach((row, idx) => {
+        const fractionalTime = currentSecond + (idx / count);
+        fullPlotData.push({
+          time: fractionalTime.toFixed(2),
+          value1: Number(row[5]), // Overall Hip Angle
+          value2: Number(row[6]), // Knee Angle
+        });
+      });
+
+      currentSecond = timeInSeconds;
+      secondStartIndex = i;
+    }
+  }
+
+  const plotData = zoomState.isZooming && zoomState.zoomedData
+    ? (zoomState.zoomedData.data as PlotPoint[])
+    : fullPlotData;
+    const yValues = plotData.flatMap(d => [d.value1, d.value2 ?? d.value1])
+const minY = Math.min(...yValues)
+const maxY = Math.max(...yValues)
+const yPadding = (maxY - minY) * 0.15 || 0.5
+const tightDomain: [number, number] = [minY - yPadding, maxY + yPadding]
+
+
+  return (
+    <LineChart
+      data={plotData}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+    >
+      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+    <XAxis dataKey="time" stroke="#888" 
+       label={{
+    value: "Time (seconds)",
+    position: "insideBottomLeft",
+    offset: -5,
+    style: { textAnchor: "start", fill: "#aaa" },
+  }}
+
+      />
+    <YAxis {...commonAxisProps} domain={tightDomain}
+     label={{
+    value: "Hip Angle (°)",
+    angle: -90,
+    position: "insideLeft",
+    offset: -2,
+    style: { textAnchor: "start", fill: "#aaa" },
+  }}
+    />
+
+      <ChartTooltip content={<ChartTooltipContent />} cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "3 3" }} />
+     <Line
+  type="monotone"
+  dataKey="value1"
+  stroke="white"
+  strokeWidth={1.2}
+  dot={false} // remove dots for clarity
+  isAnimationActive={false}
+/>
+     
+      {zoomState.refAreaLeft && zoomState.refAreaRight && (
+        <ReferenceArea
+          x1={zoomState.refAreaLeft}
+          x2={zoomState.refAreaRight}
+          strokeOpacity={0.3}
+          fill="var(--color-current)"
+          fillOpacity={0.1}
+        />
+      )}
+    </LineChart>
+  );
+}
+  else if(exerciseName=="squats"){
+     const fullPlotData: PlotPoint[] = [];
+
+  let currentSecond = 0;
+  let secondStartIndex = 1;
+
+  for (let i = 1; i < csv.length; i++) {
+    const [timestamp] = csv[i];
+    const [mins, secs] = timestamp.split(":").map(Number);
+    const timeInSeconds = mins * 60 + secs;
+
+    // If it's a new second or the last row
+    if (timeInSeconds !== currentSecond || i === csv.length - 1) {
+      const group = csv.slice(secondStartIndex, i === csv.length - 1 ? i + 1 : i); // Group of rows with same second
+      const count = group.length;
+
+      group.forEach((row, idx) => {
+        const fractionalTime = currentSecond + (idx / count);
+        fullPlotData.push({
+          time: fractionalTime.toFixed(2),
+          value1: Number(row[6]), // Overall Hip Angle
+         
+        });
+      });
+
+      currentSecond = timeInSeconds;
+      secondStartIndex = i;
+    }
+  }
+
+  const plotData = zoomState.isZooming && zoomState.zoomedData
+    ? (zoomState.zoomedData.data as PlotPoint[])
+    : fullPlotData;
+    const yValues = plotData.flatMap(d => [d.value1, d.value2 ?? d.value1])
+const minY = Math.min(...yValues)
+const maxY = Math.max(...yValues)
+const yPadding = (maxY - minY) * 0.15 || 0.5
+const tightDomain: [number, number] = [minY - yPadding, maxY + yPadding]
+
+
+  return (
+    <LineChart
+      data={plotData}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+    >
+      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+    <XAxis dataKey="time" stroke="#888" 
+       label={{
+    value: "Time (seconds)",
+    position: "insideBottomLeft",
+    offset: -5,
+    style: { textAnchor: "start", fill: "#aaa" },
+  }}
+
+      />
+    <YAxis {...commonAxisProps} domain={tightDomain}
+     label={{
+    value: "Hip Angle (°)",
+    angle: -90,
+    position: "insideLeft",
+    offset: -2,
+    style: { textAnchor: "start", fill: "#aaa" },
+  }}
+    />
+      <ChartTooltip content={<ChartTooltipContent />} cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "3 3" }} />
+     <Line
+  type="monotone"
+  dataKey="value1"
+  stroke="white"
+  strokeWidth={1.2}
+  dot={false} // remove dots for clarity
+  isAnimationActive={false}
+/>
+     
+      {zoomState.refAreaLeft && zoomState.refAreaRight && (
+        <ReferenceArea
+          x1={zoomState.refAreaLeft}
+          x2={zoomState.refAreaRight}
+          strokeOpacity={0.3}
+          fill="var(--color-current)"
+          fillOpacity={0.1}
+        />
+      )}
+    </LineChart>
+  );
+  }
+
+  else if(exerciseName=="lunges"){
+     const fullPlotData: PlotPoint[] = [];
+
+  let currentSecond = 0;
+  let secondStartIndex = 1;
+
+  for (let i = 1; i < csv.length; i++) {
+    const [timestamp] = csv[i];
+    const [mins, secs] = timestamp.split(":").map(Number);
+    const timeInSeconds = mins * 60 + secs;
+
+    // If it's a new second or the last row
+    if (timeInSeconds !== currentSecond || i === csv.length - 1) {
+      const group = csv.slice(secondStartIndex, i === csv.length - 1 ? i + 1 : i); // Group of rows with same second
+      const count = group.length;
+
+      group.forEach((row, idx) => {
+        const fractionalTime = currentSecond + (idx / count);
+        fullPlotData.push({
+          time: fractionalTime.toFixed(2),
+          value1: Number(row[6]), // Overall Hip Angle
+         
+        });
+      });
+
+      currentSecond = timeInSeconds;
+      secondStartIndex = i;
+    }
+  }
+
+  const plotData = zoomState.isZooming && zoomState.zoomedData
+    ? (zoomState.zoomedData.data as PlotPoint[])
+    : fullPlotData;
+    const yValues = plotData.flatMap(d => [d.value1, d.value2 ?? d.value1])
+const minY = Math.min(...yValues)
+const maxY = Math.max(...yValues)
+const yPadding = (maxY - minY) * 0.15 || 0.5
+const tightDomain: [number, number] = [minY - yPadding, maxY + yPadding]
+
+
+  return (
+    <LineChart
+      data={plotData}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
+    >
+      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+    <XAxis dataKey="time" stroke="#888" 
+       label={{
+    value: "Time (seconds)",
+    position: "insideBottomLeft",
+    offset: -5,
+    style: { textAnchor: "start", fill: "#aaa" },
+  }}
+
+      />
+    <YAxis {...commonAxisProps} domain={tightDomain}
+     label={{
+    value: "Hip Angle (°)",
+    angle: -90,
+    position: "insideLeft",
+    offset: -2,
+    style: { textAnchor: "start", fill: "#aaa" },
+  }}
+    />
+
+      <ChartTooltip content={<ChartTooltipContent />} cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "3 3" }} />
+     <Line
+  type="monotone"
+  dataKey="value1"
+  stroke="white"
+  strokeWidth={1.2}
+  dot={false} // remove dots for clarity
+  isAnimationActive={false}
+/>
+     
+      {zoomState.refAreaLeft && zoomState.refAreaRight && (
+        <ReferenceArea
+          x1={zoomState.refAreaLeft}
+          x2={zoomState.refAreaRight}
+          strokeOpacity={0.3}
+          fill="var(--color-current)"
+          fillOpacity={0.1}
+        />
+      )}
+    </LineChart>
+  );
+  }
+  else if(exerciseName=="plank_hold"){
+     const fullPlotData: PlotPoint[] = [];
+
+  let currentSecond = 0;
+  let secondStartIndex = 1;
+
+  for (let i = 1; i < csv.length; i++) {
+    const [timestamp] = csv[i];
+    const [sec, millisecs] = timestamp.split(".").map(Number);
+    const timeInSeconds = sec
+
+    // If it's a new second or the last row
+    if (timeInSeconds !== currentSecond || i === csv.length - 1) {
+      const group = csv.slice(secondStartIndex, i === csv.length - 1 ? i + 1 : i); // Group of rows with same second
+      const count = group.length;
+
+      group.forEach((row, idx) => {
+        const fractionalTime = currentSecond + (idx / count);
+        fullPlotData.push({
+          time: fractionalTime.toFixed(2),
+          value1: Number(row[3]), // Overall Hip Angle
+         
+        });
+      });
+
+      currentSecond = timeInSeconds;
+      secondStartIndex = i;
+    }
+  }
+
+  const plotData = zoomState.isZooming && zoomState.zoomedData
+    ? (zoomState.zoomedData.data as PlotPoint[])
+    : fullPlotData;
+    const yValues = plotData.flatMap(d => [d.value1, d.value2 ?? d.value1])
+const minY = Math.min(...yValues)
+const maxY = Math.max(...yValues)
+const yPadding = (maxY - minY) * 0.15 || 0.5
+const tightDomain: [number, number] = [minY - yPadding, maxY + yPadding]
+
+
+  return (
+ 
+  
+    <LineChart
+      data={plotData}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      margin={{ top: 5, right: 10, left: 10, bottom:30 }}
+    >
+
+
+   
+      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+      <XAxis dataKey="time" stroke="#888" 
+       label={{
+    value: "Time (seconds)",
+    position: "insideBottomLeft",
+    offset: -5,
+    style: { textAnchor: "start", fill: "#aaa" },
+  }}
+
+      />
+    <YAxis {...commonAxisProps} domain={tightDomain}
+     label={{
+    value: "Hip Angle (°)",
+    angle: -90,
+    position: "insideLeft",
+    offset: -2,
+    style: { textAnchor: "start", fill: "#aaa" },
+  }}
+    />
+
+      <ChartTooltip content={<ChartTooltipContent />} cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "3 3" }} />
+     <Line
+  type="monotone"
+  dataKey="value1"
+  stroke="white"
+  strokeWidth={1.2}
+  dot={false} // remove dots for clarity
+  isAnimationActive={false}
+/>
+     
+      {zoomState.refAreaLeft && zoomState.refAreaRight && (
+        <ReferenceArea
+          x1={zoomState.refAreaLeft}
+          x2={zoomState.refAreaRight}
+          strokeOpacity={0.3}
+          fill="var(--color-current)"
+          fillOpacity={0.1}
+        />
+      )}
+    </LineChart>
+    
+
+  );
+  }
+      
       default:
-        return null
+        return(
+
+          <div></div>
+        )
+      
     }
   }
 
@@ -375,9 +793,12 @@ export function ExerciseCharts({ data }: ExerciseChartsProps) {
             <TabsTrigger value="progress">Progress Over Time</TabsTrigger>
             <TabsTrigger value="comparison">Current vs Target</TabsTrigger>
             <TabsTrigger value="distribution">Distribution</TabsTrigger>
+            <TabsTrigger value="plot">Exercise Plot</TabsTrigger>
           </TabsList>
 
-          <div className="flex items-center gap-2">
+          
+        </div>
+        <div className="flex items-center gap-2 m-2">
             <Button
               variant="outline"
               size="icon"
@@ -391,7 +812,6 @@ export function ExerciseCharts({ data }: ExerciseChartsProps) {
               {zoomState.isZooming || zoomState.zoomedData ? "Drag to re-zoom, or reset" : "Drag to zoom in"}
             </span>
           </div>
-        </div>
 
         <TabsContent value="progress" className="h-[350px] mt-0">
           <ChartContainer
@@ -444,6 +864,30 @@ export function ExerciseCharts({ data }: ExerciseChartsProps) {
             </ResponsiveContainer>
           </ChartContainer>
         </TabsContent>
+  <TabsContent value="plot" className="h-[350px] mt-0">
+  <ChartContainer
+    config={getPlotChartConfig(exerciseName)}
+    className="h-full w-full"
+  >
+<div
+  style={{
+    overflowX: "scroll",
+    overflowY: "hidden",
+    width: "100%",
+  }}
+>
+  <div style={{ minWidth: "2000px", height: "350px" }}>
+    <ResponsiveContainer width="100%" height="95%" >
+      {renderChart()}
+    </ResponsiveContainer>
+    <div className="text-xs text-muted-foreground italic z-10">
+          ⬅ scroll ➡
+        </div>
+     </div>
+</div>
+  </ChartContainer>
+</TabsContent>
+
       </Tabs>
     </div>
   )

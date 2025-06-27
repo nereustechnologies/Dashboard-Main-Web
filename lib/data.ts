@@ -14,6 +14,7 @@ export interface ExerciseData {
       name: string
       value: number
     }[]
+    
   }
   metrics: {
     name: string
