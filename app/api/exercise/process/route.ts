@@ -5,6 +5,9 @@ const prisma = new PrismaClient()
 
 // Helper to convert exercise names like "Knee Flexion" → "knee_flexion"
 function slugify(text: string) {
+  if(text=="stepUp"){
+    return text
+  }
   return text
     .toString()
     .trim()
