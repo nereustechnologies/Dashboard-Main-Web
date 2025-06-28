@@ -5,13 +5,13 @@ import { Readable } from "stream"
 
 // Build S3 client – fall back to default region/credential chain if env vars are missing
 const s3Client = new S3Client({
-  region: process.env.AWS_S3_REGION || "us-east-1",
+  region: process.env.NAWS_S3_REGION || "us-east-1",
   // Only inject explicit credentials when both values are present; otherwise rely on SDK default chain
-  ...(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+  ...(process.env.NAWS_ACCESS_KEY_ID && process.env.NAWS_SECRET_ACCESS_KEY
     ? {
         credentials: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+          accessKeyId: process.env.NAWS_ACCESS_KEY_ID,
+          secretAccessKey: process.env.NAWS_SECRET_ACCESS_KEY,
         },
       }
     : {}),
@@ -42,7 +42,7 @@ function parseS3Path(rawPath: string): { bucket: string; key: string } | null {
   }
 
   // Otherwise treat as key belonging to default bucket
-  const bucket = (process.env.AWS_S3_BUCKET_NAME || "neureusbucketproto") as string
+  const bucket = (process.env.NAWS_S3_BUCKET_NAME || "neureusbucketproto") as string
   return { bucket, key: rawPath.replace(/^\/*/, "") }
 }
 
