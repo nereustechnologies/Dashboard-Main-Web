@@ -10,8 +10,9 @@ import { SectionEvaluation } from "@/components/section-evaluation"
 import { exerciseData } from "@/lib/data" // Mock data for exercises
 import { TrainingPurposeForm } from "@/components/training-purpose-form"
 import { MovementSignatureForm } from "@/components/movement-signature-form"
-import { ScoresToBeat } from "@/components/scoresToBeat-form"
-  ``
+import { ScoresToBeat } from "@/components/scoresToBeat-form" 
+import { CustomerInfoModal } from "@/components/customer-info-modal"
+
 function PatientDashboard() {
   const router = useRouter()
   const params = useParams()
@@ -113,6 +114,19 @@ function PatientDashboard() {
             <h1 className="text-xl md:text-2xl font-bold text-[#00D4EF]">Doctor Dashboard</h1>
           </div>
           <div className="flex items-center gap-4">
+            {test && (
+              <CustomerInfoModal 
+                test={test}
+                trigger={
+                  <Button 
+                    variant="outline" 
+                    className="border-[#00D4EF] text-[#00D4EF] hover:bg-[#00D4EF]/10"
+                  >
+                    {test.customer?.name || 'Customer Info'}
+                  </Button>
+                }
+              />
+            )}
             <span className="hidden sm:inline text-gray-400">Welcome, Dr. Smith</span> {/* Placeholder name */}
             <Button 
               variant="outline" 

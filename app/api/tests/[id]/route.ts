@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { verifyAuth } from "@/lib/auth"
-import fs from "fs"
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
