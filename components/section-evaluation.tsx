@@ -196,11 +196,18 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
                 placeholder="Field label"
               />
             </div>
-            <Textarea
-              value={textValues[key]}
-              onChange={(e) => handleTextChange(key, e.target.value)}
-              placeholder="Enter Inference"
-            />
+            <div className="relative">
+              <Textarea
+                value={textValues[key]}
+                onChange={(e) => handleTextChange(key, e.target.value)}
+                placeholder="Enter Inference"
+                maxLength={500}
+                className="pr-16"
+              />
+              <div className="absolute bottom-2 right-2 text-xs text-gray-500">
+                {textValues[key].length}/500
+              </div>
+            </div>
           </div>
         ))}
 

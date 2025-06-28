@@ -89,12 +89,18 @@ export function TrainingPurposeForm({ customerId }: TrainingPurposeFormProps) {
                     value={sugg.title}
                     onChange={(e) => handleChange(key, idx, "title", e.target.value)}
                   />
-                  <Textarea
-                    placeholder={`${label} Paragraph ${idx + 1}`}
-                    value={sugg.paragraph}
-                    onChange={(e) => handleChange(key, idx, "paragraph", e.target.value)}
-                    className="min-h-[120px]"
-                  />
+                  <div className="relative">
+                    <Textarea
+                      placeholder={`${label} Paragraph ${idx + 1}`}
+                      value={sugg.paragraph}
+                      onChange={(e) => handleChange(key, idx, "paragraph", e.target.value)}
+                      className="min-h-[120px] pr-16"
+                      maxLength={500}
+                    />
+                    <div className="absolute bottom-2 right-2 text-xs text-gray-500">
+                      {sugg.paragraph.length}/500
+                    </div>
+                  </div>
                 </div>
               ))}
               <div className="flex justify-end">
