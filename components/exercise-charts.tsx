@@ -459,15 +459,22 @@ const tightDomain: [number, number] = [minY - yPadding, maxY + yPadding]
   }}
 
       />
-    <YAxis {...commonAxisProps} domain={tightDomain}
-     label={{
+  <YAxis
+  {...commonAxisProps}
+  domain={tightDomain}
+  tickFormatter={(value) => value.toFixed(2)} // Round ticks to 2 decimals
+  label={{
     value: "Hip Angle (°)",
     angle: -90,
-    position: "insideLeft",
-    offset: -2,
-    style: { textAnchor: "start", fill: "#aaa" },
+    position: "insideLeft", // You can also try "outsideLeft"
+    offset: 10, // Increased for better spacing
+    style: {
+      textAnchor: "start",
+      fill: "#aaa",
+      fontSize: 12,
+    },
   }}
-    />
+/>
 
       <ChartTooltip content={<ChartTooltipContent />} cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "3 3" }} />
      <Line
@@ -549,15 +556,22 @@ const tightDomain: [number, number] = [minY - yPadding, maxY + yPadding]
   }}
 
       />
-    <YAxis {...commonAxisProps} domain={tightDomain}
-     label={{
+  <YAxis
+  {...commonAxisProps}
+  domain={tightDomain}
+  tickFormatter={(value) => value.toFixed(2)} // Round ticks to 2 decimals
+  label={{
     value: "Hip Angle (°)",
     angle: -90,
-    position: "insideLeft",
-    offset: -2,
-    style: { textAnchor: "start", fill: "#aaa" },
+    position: "insideLeft", // You can also try "outsideLeft"
+    offset: 10, // Increased for better spacing
+    style: {
+      textAnchor: "start",
+      fill: "#aaa",
+      fontSize: 12,
+    },
   }}
-    />
+/>
       <ChartTooltip content={<ChartTooltipContent />} cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "3 3" }} />
      <Line
   type="monotone"
@@ -610,16 +624,19 @@ const tightDomain: [number, number] = [minY - yPadding, maxY + yPadding]
       secondStartIndex = i;
     }
   }
+const plotData = zoomState.isZooming && zoomState.zoomedData
+  ? (zoomState.zoomedData.data as PlotPoint[])
+  : fullPlotData;
 
-  const plotData = zoomState.isZooming && zoomState.zoomedData
-    ? (zoomState.zoomedData.data as PlotPoint[])
-    : fullPlotData;
-    const yValues = plotData.flatMap(d => [d.value1, d.value2 ?? d.value1])
-const minY = Math.min(...yValues)
-const maxY = Math.max(...yValues)
-const yPadding = (maxY - minY) * 0.15 || 0.5
-const tightDomain: [number, number] = [minY - yPadding, maxY + yPadding]
+const yValues = plotData.flatMap(d => [d.value1, d.value2 ?? d.value1]);
+const minY = Math.min(...yValues);
+const maxY = Math.max(...yValues);
+const yPadding = (maxY - minY) * 0.15 || 0.5;
 
+const tightDomain: [number, number] = [
+  parseFloat((minY - yPadding).toFixed(2)),
+  parseFloat((maxY + yPadding).toFixed(2))
+];
 
   return (
     <LineChart
@@ -627,7 +644,7 @@ const tightDomain: [number, number] = [minY - yPadding, maxY + yPadding]
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
-      margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
+      margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
     >
       <CartesianGrid strokeDasharray="3 3" stroke="#333" />
     <XAxis dataKey="time" stroke="#888" 
@@ -639,15 +656,23 @@ const tightDomain: [number, number] = [minY - yPadding, maxY + yPadding]
   }}
 
       />
-    <YAxis {...commonAxisProps} domain={tightDomain}
-     label={{
+   <YAxis
+  {...commonAxisProps}
+  domain={tightDomain}
+  tickFormatter={(value) => value.toFixed(2)} // Round ticks to 2 decimals
+  label={{
     value: "Hip Angle (°)",
     angle: -90,
-    position: "insideLeft",
-    offset: -2,
-    style: { textAnchor: "start", fill: "#aaa" },
+    position: "insideLeft", // You can also try "outsideLeft"
+    offset: 10, // Increased for better spacing
+    style: {
+      textAnchor: "start",
+      fill: "#aaa",
+      fontSize: 12,
+    },
   }}
-    />
+/>
+
 
       <ChartTooltip content={<ChartTooltipContent />} cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "3 3" }} />
      <Line
@@ -734,16 +759,22 @@ const tightDomain: [number, number] = [minY - yPadding, maxY + yPadding]
   }}
 
       />
-    <YAxis {...commonAxisProps} domain={tightDomain}
-     label={{
+      <YAxis
+  {...commonAxisProps}
+  domain={tightDomain}
+  tickFormatter={(value) => value.toFixed(2)} // Round ticks to 2 decimals
+  label={{
     value: "Hip Angle (°)",
     angle: -90,
-    position: "insideLeft",
-    offset: -2,
-    style: { textAnchor: "start", fill: "#aaa" },
+    position: "insideLeft", // You can also try "outsideLeft"
+    offset: 10, // Increased for better spacing
+    style: {
+      textAnchor: "start",
+      fill: "#aaa",
+      fontSize: 12,
+    },
   }}
-    />
-
+/>
       <ChartTooltip content={<ChartTooltipContent />} cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "3 3" }} />
      <Line
   type="monotone"
