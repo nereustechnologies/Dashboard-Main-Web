@@ -4,17 +4,17 @@ import prisma from "@/lib/prisma";
 
 // Log the configuration (without sensitive data)
 console.log("S3 Configuration:", {
-  region: process.env.NAWS_S3_REGION,
-  bucket: process.env.NAWS_S3_BUCKET_NAME,
-  hasAccessKey: !!process.env.NAWS_ACCESS_KEY_ID,
-  hasSecretKey: !!process.env.NAWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_S3_REGION,
+  bucket: process.env.AWS_S3_BUCKET_NAME,
+  hasAccessKey: !!process.env.AWS_ACCESS_KEY_ID,
+  hasSecretKey: !!process.env.AWS_SECRET_ACCESS_KEY,
 });
 
 const s3Client = new S3Client({
-  region: process.env.NAWS_S3_REGION,
+  region: process.env.AWS_S3_REGION,
   credentials: {
-    accessKeyId: process.env.NAWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.NAWS_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
   },
   forcePathStyle: true, // This can help with some DNS resolution issues
 });
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
     
-    if (!process.env.NAWS_S3_BUCKET_NAME) {
+    if (!process.env.AWS_S3_BUCKET_NAME) {
       console.error("S3 bucket name is not configured.");
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
@@ -60,13 +60,13 @@ export async function POST(request: Request) {
 
     const s3Key = `${customerId}/${testId}/${fileName}`;
     console.log("Attempting to upload to S3:", {
-      bucket: process.env.NAWS_S3_BUCKET_NAME,
+      bucket: process.env.AWS_S3_BUCKET_NAME,
       key: s3Key,
-      region: process.env.NAWS_S3_REGION,
+      region: process.env.AWS_S3_REGION,
     });
 
     const params = {
-      Bucket: process.env.NAWS_S3_BUCKET_NAME,
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
       Key: s3Key,
       Body: csvContent,
       ContentType: "text/csv",
@@ -81,9 +81,9 @@ export async function POST(request: Request) {
         message: s3Error instanceof Error ? s3Error.message : "Unknown error",
         stack: s3Error instanceof Error ? s3Error.stack : undefined,
         config: {
-          region: process.env.NAWS_S3_REGION,
-          bucket: process.env.NAWS_S3_BUCKET_NAME,
-          endpoint: `https://${process.env.NAWS_S3_BUCKET_NAME}.s3.${process.env.NAWS_S3_REGION}.amazonaws.com`,
+          region: process.env.AWS_S3_REGION,
+          bucket: process.env.AWS_S3_BUCKET_NAME,
+          endpoint: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com`,
         },
       });
       throw s3Error;
@@ -107,9 +107,9 @@ export async function POST(request: Request) {
       error: "Failed to upload file to S3", 
       details: errorMessage,
       config: {
-        region: process.env.NAWS_S3_REGION,
-        bucket: process.env.NAWS_S3_BUCKET_NAME,
-        endpoint: `https://${process.env.NAWS_S3_BUCKET_NAME}.s3.${process.env.NAWS_S3_REGION}.amazonaws.com`,
+        region: process.env.AWS_S3_REGION,
+        bucket: process.env.AWS_S3_BUCKET_NAME,
+        endpoint: `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_S3_REGION}.amazonaws.com`,
       }
     }, { status: 500 });
   }
