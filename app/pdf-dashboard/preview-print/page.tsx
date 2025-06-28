@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Page10Layout from "@/components/Page10Layout";
 import Page11Layout from "@/components/Page11Layout";
@@ -15,7 +15,7 @@ import Page8Layout from "@/components/Page8Layout";
 import Page9Layout from "@/components/Page9Layout";
 import { FitnessReportData } from '@/lib/report-converter';
 
-export default function PreviewPrintPage() {
+function PreviewPrintContent() {
   const [reportData, setReportData] = useState<FitnessReportData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -135,5 +135,24 @@ export default function PreviewPrintPage() {
       <div className="page"><Page11Layout data={reportData.page11} /></div>
       <div className="last-page"><Page12Layout data={reportData.page12} /></div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function PreviewPrintPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <PreviewPrintContent />
+    </Suspense>
   );
 }
