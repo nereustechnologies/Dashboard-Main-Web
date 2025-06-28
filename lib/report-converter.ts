@@ -193,11 +193,25 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
     const exercise = getExerciseData(exerciseName)
     if (!exercise?.assetFiles) return null
     
-    const processedFile = exercise.assetFiles.find((file: any) => 
-      file.fileType === 'processed' && file.analysisResults
+    // Look for any file with analysis results (processed or otherwise)
+    const fileWithAnalysis = exercise.assetFiles.find((file: any) => 
+      file.analysisResults
     )
     
-    return processedFile?.analysisResults || null
+    if (!fileWithAnalysis?.analysisResults) return null
+    
+    let analysisData = fileWithAnalysis.analysisResults
+    
+    // Handle different analysis result formats
+    if (analysisData.body && typeof analysisData.body === 'string') {
+      try {
+        analysisData = JSON.parse(analysisData.body)
+      } catch (e) {
+        // If parsing fails, use the original structure
+      }
+    }
+    
+    return analysisData
   }
   
   // Helper function to create summary items from training purposes
@@ -249,73 +263,73 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
     },
     
     page5: {
-      knee_flexion: {
-        rep_count: kneeFlexionData?.rep_count || '',
-        duration: kneeFlexionData?.duration || '',
-        angle_left: kneeFlexionData?.angle_left || 0,
-        angle_right: kneeFlexionData?.angle_right || 0,
-        rating: mobilityEval?.dropdowns?.knee_flexion_rating || '',
+      knee_flexion: kneeFlexionData || {
+        rep_count: '',
+        duration: '',
+        angle_left: 0,
+        angle_right: 0,
+        rating: '',
       },
-      knee_to_wall: {
-        rep_count: kneeToWallData?.rep_count || '',
-        duration: kneeToWallData?.duration || '',
-        distance_left: kneeToWallData?.distance_left || 0,
-        distance_right: kneeToWallData?.distance_right || 0,
-        rating: mobilityEval?.dropdowns?.knee_to_wall_rating || '',
+      knee_to_wall: kneeToWallData || {
+        rep_count: '',
+        duration: '',
+        distance_left: 0,
+        distance_right: 0,
+        rating: '',
       },
-      lunge_stretch: {
-        rep_count: lungeStretchData?.rep_count || '',
-        hold_duration: lungeStretchData?.hold_duration || '',
-        hip_flexion_left: lungeStretchData?.hip_flexion_left || 0,
-        hip_flexion_right: lungeStretchData?.hip_flexion_right || 0,
-        stability_rating: lungeStretchData?.stability_rating || '',
+      lunge_stretch: lungeStretchData || {
+        rep_count: '',
+        hold_duration: '',
+        hip_flexion_left: 0,
+        hip_flexion_right: 0,
+        stability_rating: '',
       },
       summary: createSummaryItems('expand'),
     },
     
     page6: {
-      squats: {
-        rep_count: squatsData?.rep_count || 0,
-        duration: squatsData?.duration || 0,
-        depth_rating: strengthEval?.dropdowns?.squat_depth || '',
-        consistency: strengthEval?.dropdowns?.squat_consistency || '',
-        stability: strengthEval?.dropdowns?.squat_stability || '',
-        flexion_left: squatsData?.flexion_left || 0,
-        flexion_right: squatsData?.flexion_right || 0,
-        fatigue_score: squatsData?.fatigue_score || '',
+      squats: squatsData || {
+        rep_count: 0,
+        duration: 0,
+        depth_rating: '',
+        consistency: '',
+        stability: '',
+        flexion_left: 0,
+        flexion_right: 0,
+        fatigue_score: '',
       },
-      lunges: {
-        rep_count: lungesData?.rep_count || 0,
-        duration: lungesData?.duration || 0,
-        depth_rating: strengthEval?.dropdowns?.lunge_depth || '',
-        consistency: strengthEval?.dropdowns?.lunge_consistency || '',
-        stability: strengthEval?.dropdowns?.lunge_stability || '',
-        flexion_left: lungesData?.flexion_left || 0,
-        flexion_right: lungesData?.flexion_right || 0,
-        fatigue_score: lungesData?.fatigue_score || '',
+      lunges: lungesData || {
+        rep_count: 0,
+        duration: 0,
+        depth_rating: '',
+        consistency: '',
+        stability: '',
+        flexion_left: 0,
+        flexion_right: 0,
+        fatigue_score: '',
       },
-      core: {
-        hold_duration: plankData?.hold_duration || 0,
-        rating: enduranceEval?.dropdowns?.core_rating || '',
+      core: plankData || {
+        hold_duration: 0,
+        rating: '',
       },
       summary: createSummaryItems('improve'),
     },
     
     page7: {
-      plank: {
-        rep_count: plankData?.rep_count || 0,
-        duration: plankData?.duration || 0,
-        hip_angle: plankData?.hip_angle || 0,
-        stability: enduranceEval?.dropdowns?.plank_stability || '',
+      plank: plankData || {
+        rep_count: 0,
+        duration: 0,
+        hip_angle: 0,
+        stability: '',
       },
-      step_up: {
-        duration: stepUpData?.duration || 0,
-        rep_count: stepUpData?.rep_count || 0,
-        rep_time: stepUpData?.rep_time || 0,
+      step_up: stepUpData || {
+        duration: 0,
+        rep_count: 0,
+        rep_time: 0,
       },
-      sprint: {
-        max_velocity: sprintData?.max_velocity || 0,
-        deceleration: sprintData?.deceleration || 0,
+      sprint: sprintData || {
+        max_velocity: 0,
+        deceleration: 0,
       },
       summary: createSummaryItems('injury'),
     },

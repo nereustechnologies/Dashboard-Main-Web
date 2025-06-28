@@ -105,114 +105,114 @@ export function CustomerInfoModal({ test, trigger }: CustomerInfoModalProps) {
   }
 
   const renderBasicInfo = () => (
-    <Card className="bg-gray-900 border-gray-700">
-      <CardHeader>
-        <CardTitle className="text-[#00D4EF] flex items-center gap-2">
-          <User className="h-5 w-5" />
-          Basic Information
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="text-sm text-gray-400">Name</label>
-            <p className="text-white font-medium">{customer.name}</p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-400">Age</label>
-            <p className="text-white font-medium">{customer.age} years</p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-400">Gender</label>
-            <p className="text-white font-medium capitalize">{customer.gender}</p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-400">Height</label>
-            <p className="text-white font-medium">{customer.height} cm</p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-400">Weight</label>
-            <p className="text-white font-medium">{customer.weight} kg</p>
-          </div>
-          <div>
-            <label className="text-sm text-gray-400">BMI</label>
-            <p className="text-white font-medium">
-              {((customer.weight / Math.pow(customer.height / 100, 2))).toFixed(1)}
-            </p>
-          </div>
-          <div>
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-[#00D4EF] flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Basic Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm text-gray-400">Name</label>
+                  <p className="text-white font-medium">{customer.name}</p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400">Age</label>
+                  <p className="text-white font-medium">{customer.age} years</p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400">Gender</label>
+                  <p className="text-white font-medium capitalize">{customer.gender}</p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400">Height</label>
+                  <p className="text-white font-medium">{customer.height} cm</p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400">Weight</label>
+                  <p className="text-white font-medium">{customer.weight} kg</p>
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400">BMI</label>
+                  <p className="text-white font-medium">
+                    {((customer.weight / Math.pow(customer.height / 100, 2))).toFixed(1)}
+                  </p>
+                </div>
+                <div>
             <label className="text-sm text-gray-400">Unique ID</label>
             <p className="text-white font-medium">{customer.uniqueId || 'N/A'}</p>
-          </div>
-          <div>
+                </div>
+                <div>
             <label className="text-sm text-gray-400">Created</label>
             <p className="text-white font-medium">{formatDate(customer.createdAt)}</p>
-          </div>
-          <div>
+                </div>
+                <div>
             <label className="text-sm text-gray-400">Last Updated</label>
             <p className="text-white font-medium">{formatDate(customer.updatedAt)}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
   )
 
   const renderLifestyleInfo = () => (
-    <Card className="bg-gray-900 border-gray-700">
-      <CardHeader>
-        <CardTitle className="text-[#00D4EF] flex items-center gap-2">
-          <Activity className="h-5 w-5" />
-          Lifestyle Information
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-2">
-            <Activity className="h-4 w-4 text-gray-400" />
-            <div>
-              <label className="text-sm text-gray-400">Activity Level</label>
-              <Badge 
-                className={`${activityLevelColors[customer.activityLevel as keyof typeof activityLevelColors] || 'bg-gray-600'}`}
-              >
-                {customer.activityLevel.replace('_', ' ')}
-              </Badge>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Moon className="h-4 w-4 text-gray-400" />
-            <div>
-              <label className="text-sm text-gray-400">Sleep Level</label>
-              <p className="text-white font-medium">{customer.sleepLevels}/10</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Utensils className="h-4 w-4 text-gray-400" />
-            <div>
-              <label className="text-sm text-gray-400">Calorie Intake</label>
-              <p className="text-white font-medium">{customer.calorieIntake} kcal/day</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Smile className="h-4 w-4 text-gray-400" />
-            <div>
-              <label className="text-sm text-gray-400">Mood</label>
-              <p className="text-white font-medium capitalize">{customer.mood}</p>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+          <Card className="bg-gray-900 border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-[#00D4EF] flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Lifestyle Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-gray-400" />
+                  <div>
+                    <label className="text-sm text-gray-400">Activity Level</label>
+                    <Badge 
+                      className={`${activityLevelColors[customer.activityLevel as keyof typeof activityLevelColors] || 'bg-gray-600'}`}
+                    >
+                      {customer.activityLevel.replace('_', ' ')}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Moon className="h-4 w-4 text-gray-400" />
+                  <div>
+                    <label className="text-sm text-gray-400">Sleep Level</label>
+                    <p className="text-white font-medium">{customer.sleepLevels}/10</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Utensils className="h-4 w-4 text-gray-400" />
+                  <div>
+                    <label className="text-sm text-gray-400">Calorie Intake</label>
+                    <p className="text-white font-medium">{customer.calorieIntake} kcal/day</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Smile className="h-4 w-4 text-gray-400" />
+                  <div>
+                    <label className="text-sm text-gray-400">Mood</label>
+                    <p className="text-white font-medium capitalize">{customer.mood}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
   )
 
   const renderTests = () => (
-    <Card className="bg-gray-900 border-gray-700">
-      <CardHeader>
+            <Card className="bg-gray-900 border-gray-700">
+              <CardHeader>
         <CardTitle className="text-[#00D4EF] flex items-center gap-2">
           <Calendar className="h-5 w-5" />
           All Tests ({customerData?.tests?.length || 0})
         </CardTitle>
-      </CardHeader>
-      <CardContent>
+              </CardHeader>
+              <CardContent>
         <div className="space-y-4">
           {customerData?.tests?.map((test: any) => (
             <div key={test.id} className="border border-gray-700 rounded-lg p-4">
@@ -288,28 +288,84 @@ export function CustomerInfoModal({ test, trigger }: CustomerInfoModalProps) {
               {test.exercises && test.exercises.length > 0 && (
                 <div>
                   <h5 className="text-[#00D4EF] font-medium mb-2">Exercises</h5>
-                  <div className="space-y-2">
+                <div className="space-y-2">
                     {test.exercises.map((exercise: any) => (
-                      <div key={exercise.id} className="flex items-center justify-between p-2 bg-gray-800 rounded">
-                        <div>
-                          <p className="text-white font-medium capitalize">
-                            {exercise.name.replace('_', ' ')}
-                          </p>
-                          <p className="text-sm text-gray-400 capitalize">{exercise.category}</p>
+                      <div key={exercise.id} className="p-3 bg-gray-800 rounded">
+                        <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="text-white font-medium capitalize">
+                          {exercise.name.replace('_', ' ')}
+                        </p>
+                        <p className="text-sm text-gray-400 capitalize">{exercise.category}</p>
+                      </div>
+                          <div className="flex items-center gap-2">
+                      <Badge 
+                        variant={exercise.completed ? 'default' : 'secondary'}
+                        className={exercise.completed ? 'bg-green-600' : 'bg-gray-600'}
+                      >
+                        {exercise.completed ? 'Completed' : 'Pending'}
+                      </Badge>
+                            {exercise.assetFiles && exercise.assetFiles.length > 0 && (
+                              <Badge variant="outline" className="text-[#00D4EF] border-[#00D4EF]">
+                                {exercise.assetFiles.length} files
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge 
-                            variant={exercise.completed ? 'default' : 'secondary'}
-                            className={exercise.completed ? 'bg-green-600' : 'bg-gray-600'}
-                          >
-                            {exercise.completed ? 'Completed' : 'Pending'}
-                          </Badge>
-                          {exercise.assetFiles && exercise.assetFiles.length > 0 && (
-                            <Badge variant="outline" className="text-[#00D4EF] border-[#00D4EF]">
-                              {exercise.assetFiles.length} files
-                            </Badge>
-                          )}
-                        </div>
+                        
+                        {/* Analysis Results */}
+                        {exercise.assetFiles && exercise.assetFiles.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            {exercise.assetFiles.map((file: any) => (
+                              file.analysisResults && (
+                                <div key={file.id} className="p-2 bg-gray-700 rounded text-xs">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[#00D4EF] font-medium">Analysis Results</span>
+                                    <span className="text-gray-400">{file.fileName}</span>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    {(() => {
+                                      try {
+                                        // Handle different analysis result formats
+                                        let analysisData = file.analysisResults;
+                                        
+                                        // If it has a body field with JSON string, parse it
+                                        if (analysisData.body && typeof analysisData.body === 'string') {
+                                          try {
+                                            analysisData = JSON.parse(analysisData.body);
+                                          } catch (e) {
+                                            // If parsing fails, use the original structure
+                                          }
+                                        }
+                                        
+                                        // Filter out unwanted keys and display the metrics
+                                        const skipKeys = ['output_key', 'status', 'body'];
+                                        return Object.entries(analysisData)
+                                          .filter(([key]) => !skipKeys.includes(key.toLowerCase()))
+                                          .map(([key, value]) => (
+                                            <div key={key} className="flex justify-between">
+                                              <span className="text-gray-300 capitalize">
+                                                {key.replace(/_/g, ' ')}:
+                                              </span>
+                                              <span className="text-white font-mono">
+                                                {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                                              </span>
+                                            </div>
+                                          ));
+                                      } catch (error) {
+                                        return (
+                                          <div className="text-red-400 text-xs">
+                                            Error parsing analysis results
+                                          </div>
+                                        );
+                                      }
+                                    })()}
+                                  </div>
+                                </div>
+                              )
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -667,8 +723,8 @@ export function CustomerInfoModal({ test, trigger }: CustomerInfoModalProps) {
         ) : (
           <p className="text-gray-400">No client information available</p>
         )}
-      </CardContent>
-    </Card>
+              </CardContent>
+            </Card>
   )
 
   return (
@@ -709,8 +765,8 @@ export function CustomerInfoModal({ test, trigger }: CustomerInfoModalProps) {
                   TXT
                 </Button>
               </div>
-            )}
-          </div>
+          )}
+        </div>
         </DialogHeader>
         
         {loading ? (

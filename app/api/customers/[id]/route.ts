@@ -25,15 +25,13 @@ export async function GET(
             exercises: {
               include: {
                 assetFiles: {
-                  where: {
-                    fileType: "processed",
-                    status: "processed"
-                  },
                   select: {
                     id: true,
                     fileName: true,
                     fileType: true,
+                    s3PathRaw: true,
                     s3PathProcessed: true,
+                    status: true,
                     analysisResults: true,
                     createdAt: true,
                     updatedAt: true
@@ -84,10 +82,7 @@ export async function GET(
     // Also fetch related Client information if it exists
     const clientInfo = await prisma.client.findFirst({
       where: {
-        OR: [
-          { email: customerInfo.email },
-          { fullName: customerInfo.name }
-        ]
+        fullName: customerInfo.name
       },
       include: {
         Booking: {
