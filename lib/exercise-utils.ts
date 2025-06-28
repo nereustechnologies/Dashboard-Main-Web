@@ -81,8 +81,9 @@ const getExerciseCsvConfig = (exerciseId: string): { headers: string[]; dataKeys
       dataKeys: ["timestamp", "hipAngle", "phaseLabel", "holdDuration"],
     },
     stepUp: {
-      headers: ["Timestamp", "Velocity (m/s)", "Acceleration (m/s²)", "Stride Length (m)", "Cadence (steps/min)", "Phase Label"],
-      dataKeys: ["timestamp", "velocity", "acceleration", "strideLength", "cadence", "phaseLabel"],
+      headers: ["Timestamp", "Knee Angle Left", "Knee Angle Right", "Phase Label", "Rep Count"],
+dataKeys: ["timestamp", "kneeAngleLeft", "kneeAngleRight", "phaseLabel", "repCount"],
+
     },
     
     generic: { // Fallback for other exercises

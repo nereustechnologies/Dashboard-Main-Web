@@ -70,13 +70,12 @@ export async function POST(request: NextRequest) {
         headers = ["Timestamp", "Hip Angle (°)", "Phase Label", "Hold Duration (s)"]
       } else if (exerciseId === "stepUp") {
         headers = [
-          "Timestamp",
-          "Velocity (m/s)",
-          "Acceleration (m/s²)",
-          "Stride Length (m)",
-          "Cadence (steps/min)",
-          "Phase Label",
-        ]
+        "Timestamp",
+        "Knee Angle Left",
+        "Knee Angle Right",
+        "Phase Label",
+        "Rep Count",
+      ]
       
       } else {
         // Default format for other exercises

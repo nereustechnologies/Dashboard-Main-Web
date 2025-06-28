@@ -24,6 +24,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { customerId, testId, fileName, fileType, csvContent } = body;
 
+
     if (!customerId || !testId || !fileName || !fileType || !csvContent) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
       console.error("S3 bucket name is not configured.");
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
+
 
     const exerciseName = fileName.split("/")[0];
     const actualFileName = fileName.split("/").slice(1).join("/");
@@ -42,6 +44,8 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+
+    console.log("ferrefrffr" ,csvContent)
 
     const exercise = await prisma.exercise.findFirst({
       where: { name: exerciseName, testId: testId },
