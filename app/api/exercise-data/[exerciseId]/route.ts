@@ -69,11 +69,10 @@ export async function GET(request: NextRequest, { params }: { params: { exercise
     } else if (exerciseId === "stepUp") {
       csvHeaders = [
         "Timestamp",
-        "Velocity (m/s)",
-        "Acceleration (m/s²)",
-        "Stride Length (m)",
-        "Cadence (steps/min)",
+        "Knee Angle Left",
+        "Knee Angle Right",
         "Phase Label",
+        "Rep Count",
       ]
       exerciseData = generateStepUpData()
     } 
@@ -414,63 +413,57 @@ function generatePlankHoldData() {
 
 function generateStepUpData() {
   return [
-    {
-      Timestamp: "00:00:01",
-      "Velocity (m/s)": 2.5,
-      "Acceleration (m/s²)": 1.2,
-      "Stride Length (m)": 1.1,
-      "Cadence (steps/min)": 160,
-      "Phase Label": "step Ups Started",
-    },
-    {
-      Timestamp: "00:00:02",
-      "Velocity (m/s)": 4.2,
-      "Acceleration (m/s²)": 2.0,
-      "Stride Length (m)": 1.3,
-      "Cadence (steps/min)": 170,
-      "Phase Label": "",
-    },
-    {
-      Timestamp: "00:00:03",
-      "Velocity (m/s)": 6.5,
-      "Acceleration (m/s²)": 3.1,
-      "Stride Length (m)": 1.5,
-      "Cadence (steps/min)": 180,
-      "Phase Label": "",
-    },
-    {
-      Timestamp: "00:00:04",
-      "Velocity (m/s)": 8.2,
-      "Acceleration (m/s²)": 2.8,
-      "Stride Length (m)": 1.6,
-      "Cadence (steps/min)": 185,
-      "Phase Label": "",
-    },
-    {
-      Timestamp: "00:00:05",
-      "Velocity (m/s)": 9.0,
-      "Acceleration (m/s²)": 1.5,
-      "Stride Length (m)": 1.7,
-      "Cadence (steps/min)": 190,
-      "Phase Label": "",
-    },
-    {
-      Timestamp: "00:00:06",
-      "Velocity (m/s)": 9.3,
-      "Acceleration (m/s²)": 0.5,
-      "Stride Length (m)": 1.75,
-      "Cadence (steps/min)": 192,
-      "Phase Label": "",
-    },
-    {
-      Timestamp: "00:00:07",
-      "Velocity (m/s)": 8.8,
-      "Acceleration (m/s²)": -1.2,
-      "Stride Length (m)": 1.6,
-      "Cadence (steps/min)": 185,
-      "Phase Label": "",
-    },
-  ]
+  {
+    Timestamp: "00:00:01",
+    "Knee Angle Left": 45,
+    "Knee Angle Right": 43,
+    "Phase Label": "step Ups Started",
+    "Rep Count": 1,
+  },
+  {
+    Timestamp: "00:00:02",
+    "Knee Angle Left": 52,
+    "Knee Angle Right": 50,
+    "Phase Label": "",
+    "Rep Count": 1,
+  },
+  {
+    Timestamp: "00:00:03",
+    "Knee Angle Left": 58,
+    "Knee Angle Right": 55,
+    "Phase Label": "",
+    "Rep Count": 1,
+  },
+  {
+    Timestamp: "00:00:04",
+    "Knee Angle Left": 62,
+    "Knee Angle Right": 60,
+    "Phase Label": "",
+    "Rep Count": 1,
+  },
+  {
+    Timestamp: "00:00:05",
+    "Knee Angle Left": 59,
+    "Knee Angle Right": 58,
+    "Phase Label": "",
+    "Rep Count": 1,
+  },
+  {
+    Timestamp: "00:00:06",
+    "Knee Angle Left": 55,
+    "Knee Angle Right": 53,
+    "Phase Label": "",
+    "Rep Count": 1,
+  },
+  {
+    Timestamp: "00:00:07",
+    "Knee Angle Left": 48,
+    "Knee Angle Right": 47,
+    "Phase Label": "",
+    "Rep Count": 1,
+  },
+]
+
 }
 
 

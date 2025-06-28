@@ -76,10 +76,9 @@ export function useExerciseData() {
         exerciseDataItem.hipAngle = "-";
         exerciseDataItem.holdDuration = 0;
       } else if (activeExercise === "stepUp") {
-        exerciseDataItem.velocity = "0";
-        exerciseDataItem.acceleration = "0";
-        exerciseDataItem.strideLength = "0";
-        exerciseDataItem.cadence = "0";
+        exerciseDataItem.kneeAngleLeft = "0";
+        exerciseDataItem.KneeAngleRight = "0";
+        exerciseDataItem.repCount = "1";
       } 
     } else {
       // Add exercise-specific fields based on exercise type for non-skipped actions
@@ -129,11 +128,10 @@ export function useExerciseData() {
       } else if (activeExercise === "stepUp") {
         exerciseDataItem = {
           ...exerciseDataItem,
-          velocity: "0", // Was generateRandomValue(2.5, 9.3)
-          acceleration: "0", // Was generateRandomValue(-1.2, 3.1)
-          strideLength: "0", // Was generateRandomValue(1.0, 1.75)
-          cadence: "0", // Was generateRandomValue(160, 192)
+          KneeAngleLeft: "0", // Was generateRandomValue(2.5, 9.3)
+          KneeAngleRight: "0", // Was generateRandomValue(-1.2, 3.1)
           phaseLabel: action,
+          repCount:1
         }
       } 
     }

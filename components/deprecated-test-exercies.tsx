@@ -422,10 +422,9 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
         exerciseData.hipAngle = "-";
         exerciseData.holdDuration = 0;
       } else if (activeExercise === "stepUp") {
-        exerciseData.velocity = "0";
-        exerciseData.acceleration = "0";
-        exerciseData.strideLength = "0";
-        exerciseData.cadence = "0";
+        exerciseData.kneeAngleLeft = "0";
+        exerciseData.KneeAngleRight = "0";
+        exerciseData.repCount = "1";
       } 
     } else {
       // Add exercise-specific fields based on exercise type for non-skipped actions
@@ -477,14 +476,13 @@ export default function TestExercises({ onComplete, customerData }: TestExercise
           holdDuration: action === "Hold Ended" ? timer : action === "Holding" ? timer - 1 : 1,
         }
       } else if (activeExercise === "stepUp") {
-        exerciseData = {
-          ...exerciseData,
-          velocity: generateRandomValue(2.5, 9.3),
-          acceleration: generateRandomValue(-1.2, 3.1),
-          strideLength: generateRandomValue(1.0, 1.75),
-          cadence: generateRandomValue(160, 192),
-          phaseLabel: action,
-        }
+       exerciseData = {
+    ...exerciseData,
+    kneeAngleLeft: generateRandomValue(40, 65),
+    kneeAngleRight: generateRandomValue(40, 65),
+    phaseLabel: action,
+    repCount // or increment as needed
+  }
       } 
     }
 
