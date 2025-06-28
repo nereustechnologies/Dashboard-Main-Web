@@ -21,25 +21,25 @@ export interface Page3Data {
 // Page 5: Mobility
 export interface Page5Data {
   knee_flexion: {
-    rep_count: string;
-    duration: string;
-    angle_left: number;
-    angle_right: number;
-    rating: string;
+    "Rep Count": number;
+    "Total Duration": number;
+    "Max Knee Flexion Left": number;
+    "Max Knee Flexion Right": number;
+    "Max Knee Extension Left": number;
+    "Max Knee Extension Right": number;
   };
   knee_to_wall: {
-    rep_count: string;
-    duration: string;
-    distance_left: number;
-    distance_right: number;
-    rating: string;
+    "Total Time": number;
+    "Max Knee Flexion Left": number;
+    "Max Knee Flexion Right": number;
   };
   lunge_stretch: {
-    rep_count: string;
-    hold_duration: string;
-    hip_flexion_left: number;
-    hip_flexion_right: number;
-    stability_rating: string;
+    "Max Rep Count": number;
+    "Average Hip Flexion Angle": number;
+    "Average Knee Flexion Angle Left": number;
+    "Average Knee Flexion Angle Right": number;
+    "Hold Duration Left (s)": number;
+    "Hold Duration Right (s)": number;
   };
   summary: SummaryItem[];
 }
@@ -47,28 +47,20 @@ export interface Page5Data {
 // Page 6: Strength
 export interface Page6Data {
   squats: {
-    rep_count: number;
-    duration: number;
-    depth_rating: string;
-    consistency: string;
-    stability: string;
-    flexion_left: number;
-    flexion_right: number;
-    fatigue_score: string; // e.g., "2/5"
+    "Rep Count": number;
+    "Left Knee Flexion Avg": number;
+    "Right Knee Flexion Avg": number;
   };
   lunges: {
-    rep_count: number;
-    duration: number;
-    depth_rating: string;
-    consistency: string;
-    stability: string;
-    flexion_left: number;
-    flexion_right: number;
-    fatigue_score: string; // e.g., "2.5/5"
+    "Rep Count": number;
+    "Total Duration": string;
+    "Average Knee Angle Left": number;
+    "Average Knee Angle Right": number;
+    "Average Hip Angle": number;
   };
   core: {
-    hold_duration: number;
-    rating: string; // e.g., "3/5"
+    "Average Hip Angle": number;
+    "Total Hold Duration": string;
   };
   summary: SummaryItem[];
 }
@@ -76,15 +68,13 @@ export interface Page6Data {
 // Page 7: Endurance
 export interface Page7Data {
   plank: {
-    rep_count: number;
-    duration: number;
-    hip_angle: number;
-    stability: string;
+    "Average Hip Angle": number;
+    "Total Hold Duration": string;
   };
   step_up: {
-    duration: number;
-    rep_count: number;
-    rep_time: number;
+    duration?: number;
+    rep_count?: number;
+    rep_time?: number;
   };
   sprint: {
     max_velocity: number;
@@ -126,9 +116,14 @@ export interface Page12Data {
   report_id: string;
 }
 
+// Page 1: Basic info
+export interface Page1Data {
+  name: string;
+}
+
 // The master interface composing all page-specific data structures
 export interface FitnessReportData {
-  page1: { name: string };
+  page1: Page1Data;
   page3: Page3Data;
   page5: Page5Data;
   page6: Page6Data;

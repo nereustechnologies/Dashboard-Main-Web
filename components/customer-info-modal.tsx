@@ -585,6 +585,38 @@ export function CustomerInfoModal({ test, trigger }: CustomerInfoModalProps) {
     }
   }
 
+  const handleDownloadPDF = async () => {
+    if (!customerData) return
+    
+    try {
+      const reportData = convertCustomerDataToReportData(customerData)
+      
+      const response = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: reportData }),
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const filename = generateFilename(customerData.name, 'pdf')
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error downloading PDF:', error)
+      alert('Failed to download PDF file')
+    }
+  }
+
   const renderClientInfo = () => (
     <Card className="bg-gray-900 border-gray-700">
       <CardHeader>
@@ -763,6 +795,15 @@ export function CustomerInfoModal({ test, trigger }: CustomerInfoModalProps) {
                 >
                   <FileDown className="h-4 w-4 mr-2" />
                   TXT
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadPDF}
+                  className="border-green-500 text-green-500 hover:bg-green-500/10"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  PDF
                 </Button>
               </div>
           )}
