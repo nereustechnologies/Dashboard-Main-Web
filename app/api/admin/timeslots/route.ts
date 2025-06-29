@@ -105,22 +105,11 @@ export async function POST(request: NextRequest) {
     const [endHour, endMinute] = endTime.split(':').map(Number)
     const dateObj = new Date(date)
 
-    const startDateTime = new Date(
-      dateObj.getFullYear(),
-      dateObj.getMonth(),
-      dateObj.getDate(),
-      startHour,
-      startMinute
-    )
+  const startDateTime = new Date(`${date}T${startHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}:00`)
+const endDateTime = new Date(`${date}T${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}:00`)
 
-    const endDateTime = new Date(
-      dateObj.getFullYear(),
-      dateObj.getMonth(),
-      dateObj.getDate(),
-      endHour,
-      endMinute
-    )
 
+  
     // Insert TimeSlot
     const timeSlotInsert = await prisma.$queryRaw<any[]>`
       INSERT INTO "TimeSlot" (id, "startTime", "endTime", "count", "slotDateId")
