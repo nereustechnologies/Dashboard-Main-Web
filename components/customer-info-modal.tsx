@@ -604,8 +604,15 @@ export function CustomerInfoModal({ test, trigger }: CustomerInfoModalProps) {
       const result = await response.json()
       
       if (result.success && result.previewUrl) {
-        // Open the preview page in a new tab
-        window.open(result.previewUrl, '_blank')
+        // Handle large data case
+        if (result.isLargeData && result.data) {
+          // Store data in sessionStorage for large data
+          sessionStorage.setItem('pdf-report-data', JSON.stringify(result.data))
+          window.open(result.previewUrl + '?source=session', '_blank')
+        } else {
+          // Open the preview page in a new tab
+          window.open(result.previewUrl, '_blank')
+        }
       } else {
         throw new Error('Failed to generate preview URL')
       }
