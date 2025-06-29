@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import localFont from 'next/font/local';
 import Page10Layout from "@/components/Page10Layout";
 import Page11Layout from "@/components/Page11Layout";
 import Page12Layout from "@/components/Page12Layout";
@@ -15,35 +14,6 @@ import Page7Layout from "@/components/Page7Layout";
 import Page8Layout from "@/components/Page8Layout";
 import Page9Layout from "@/components/Page9Layout";
 import { FitnessReportData } from '@/lib/report-converter';
-
-// Define fonts using Next.js localFont for better Vercel compatibility
-const geranteFont = localFont({
-  src: [
-    {
-      path: '/fonts/Gerante-Regular.woff2',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: '/fonts/Gerante-Regular.woff',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: '/fonts/Gerante-Italic.woff2',
-      weight: '400',
-      style: 'italic',
-    },
-    {
-      path: '/fonts/Gerante-Italic.woff',
-      weight: '400',
-      style: 'italic',
-    },
-  ],
-  variable: '--font-gerante',
-  display: 'swap',
-  preload: true,
-});
 
 function PreviewPrintContent() {
   const [reportData, setReportData] = useState<FitnessReportData | null>(null);
@@ -96,66 +66,21 @@ function PreviewPrintContent() {
   };
 
   useEffect(() => {
-    // Add debugging for Vercel deployment
-    console.log('Preview page loading...');
-    console.log('Search params available:', searchParams.toString());
-    
-    // Check if we should load from sessionStorage
-    const source = searchParams.get('source');
-    
-    if (source === 'session') {
-      console.log('Loading data from sessionStorage...');
-      try {
-        const storedData = sessionStorage.getItem('pdf-report-data');
-        if (storedData) {
-          const parsedData = JSON.parse(storedData);
-          console.log('Successfully loaded data from sessionStorage:', Object.keys(parsedData));
-          setReportData(parsedData);
-          setError(null);
-          setLoading(false);
-          // Clear the stored data after use
-          sessionStorage.removeItem('pdf-report-data');
-          return;
-        } else {
-          console.warn('No data found in sessionStorage');
-          setError('Session data not found. Please try generating the report again.');
-          setLoading(false);
-          return;
-        }
-      } catch (error) {
-        console.error('Error loading data from sessionStorage:', error);
-        setError('Failed to load stored data. Please try generating the report again.');
-        setLoading(false);
-        return;
-      }
-    }
-    
     // Try to get data from URL params
     const dataParam = searchParams.get('data');
     if (!dataParam) {
-      console.warn('No data parameter found in URL');
       setError('No data provided. Please access this page through the proper dashboard link.');
       setLoading(false);
       return;
     }
 
     try {
-      console.log('Attempting to parse data parameter...');
       const parsedData = JSON.parse(decodeURIComponent(dataParam));
-      console.log('Successfully parsed data:', Object.keys(parsedData));
       setReportData(parsedData);
       setError(null);
     } catch (error) {
       console.error('Error parsing data from URL:', error);
-      console.error('Data param length:', dataParam.length);
-      console.error('Data param preview:', dataParam.substring(0, 100) + '...');
-      
-      // Check if it's a URL length issue
-      if (dataParam.length > 8000) {
-        setError('URL too long for this browser/deployment. The report data is too large to pass via URL parameters.');
-      } else {
-        setError('Invalid data format. Please try generating the report again.');
-      }
+      setError('Invalid data format. Please try generating the report again.');
     } finally {
       setLoading(false);
     }
@@ -197,8 +122,43 @@ function PreviewPrintContent() {
   }
 
   return (
-    <div className={`${geranteFont.variable}`} style={{ margin: 0, padding: 0, background: "#0E0E0E" }}>
+    <div style={{ margin: 0, padding: 0, background: "#0E0E0E" }}>
+      {/* Font Preloading */}
+      <link 
+        rel="preload" 
+        href="/fonts/Gerante-Regular.woff2" 
+        as="font" 
+        type="font/woff2" 
+        crossOrigin="anonymous"
+      />
+      <link 
+        rel="preload" 
+        href="/fonts/Gerante-Italic.woff2" 
+        as="font" 
+        type="font/woff2" 
+        crossOrigin="anonymous"
+      />
+      
       <style>{`
+        @font-face {
+          font-family: 'Gerante';
+          src: url('/fonts/Gerante-Regular.woff2') format('woff2'),
+               url('/fonts/Gerante-Regular.woff') format('woff');
+          font-weight: 400;
+          font-style: normal;
+          font-display: swap;
+          unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+      
+        @font-face {
+          font-family: 'Gerante';
+          src: url('/fonts/Gerante-Italic.woff2') format('woff2'),
+               url('/fonts/Gerante-Italic.woff') format('woff');
+          font-weight: 400;
+          font-style: italic;
+          font-display: swap;
+          unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
         * {
           box-sizing: border-box;
         }
@@ -280,7 +240,7 @@ function PreviewPrintContent() {
           
           /* Ensure Gerante font is available for components that use it */
           .font-gerante, [class*="font-gerante"] {
-            font-family: var(--font-gerante), 'Georgia', 'Times New Roman', serif !important;
+            font-family: 'Gerante', 'Georgia', 'Times New Roman', serif !important;
           }
           
           /* Hide scroll bars and other screen elements */
@@ -312,7 +272,7 @@ function PreviewPrintContent() {
           transform: translateY(-2px);
           box-shadow: 0 6px 16px rgba(0, 212, 239, 0.4);
         }
-        @media print {
+                @media print {
           .download-button, .instructions-modal {
             display: none !important;
           }
@@ -401,11 +361,11 @@ function PreviewPrintContent() {
         onClick={handleDownloadPDF}
         title="Click to open print dialog and save as PDF"
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M7 10L12 15L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+           <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+           <path d="M7 10L12 15L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+           <path d="M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+         </svg>
         Download PDF
       </button>
 
