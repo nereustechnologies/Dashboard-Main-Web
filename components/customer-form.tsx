@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState,useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,18 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  User,
-  Calendar,
-  Ruler,
-  Weight,
-  Moon,
-  Activity,
-  Pizza,
-  Smile,
-  Loader2,
-} from "lucide-react"
-import { unique } from "next/dist/build/utils"
+import { Loader2, User } from "lucide-react"
 
 interface CustomerFormProps {
   onSubmit: (data: any) => void
@@ -31,8 +20,9 @@ interface CustomerFormProps {
 
 export default function CustomerForm({ onSubmit }: CustomerFormProps) {
   const [clientId, setClientId] = useState("")
+  const [manualClientId, setManualClientId] = useState("")
   const [formData, setFormData] = useState({
-    uniqueId:"",
+    uniqueId: "",
     name: "",
     age: "",
     gender: "",
@@ -54,15 +44,15 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-   useEffect(() => {
-  const fetchClients = async () => {
-    const res = await fetch("/api/todayBooking")
-    const data = await res.json()
-    setClientOptions(data.clients || [])
-  }
-  fetchClients()
-}, [])
-  
+  useEffect(() => {
+    const fetchClients = async () => {
+      const res = await fetch("/api/todayBooking")
+      const data = await res.json()
+      setClientOptions(data.clients || [])
+    }
+    fetchClients()
+  }, [])
+
   const handleSelectChange = (name: string, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
@@ -73,8 +63,15 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
     setFetchingClient(true)
 
     const token = localStorage.getItem("token")
+    const selectedId = manualClientId || clientId
     if (!token) {
       setError("Authentication required")
+      setFetchingClient(false)
+      return
+    }
+
+    if (!selectedId) {
+      setError("Please select or enter a client ID.")
       setFetchingClient(false)
       return
     }
@@ -86,7 +83,7 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ uniqueId: clientId })
+        body: JSON.stringify({ uniqueId: selectedId }),
       })
 
       const data = await response.json()
@@ -95,15 +92,13 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
         throw new Error(data.error || "Client not found")
       }
 
-      console.log("Fetched client data:", data)
-
       setFormData((prev) => ({
         ...prev,
+        uniqueId: selectedId,
         name: data.name,
         age: data.age.toString(),
         gender: data.gender,
       }))
-  
       setClientFetched(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error fetching client data")
@@ -128,28 +123,23 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          uniqueId: clientId,
-          name: formData.name,
+          ...formData,
           age: Number(formData.age),
-          gender: formData.gender,
           height: Number(formData.height),
           weight: Number(formData.weight),
           sleepLevels: Number(formData.sleepLevels),
-          activityLevel: formData.activityLevel,
           calorieIntake: Number(formData.calorieIntake),
-          mood: formData.mood,
         }),
       })
 
       const data = await response.json()
-
       if (!response.ok) {
         throw new Error(data.error || "Failed to save data")
       }
 
       onSubmit(data.customer)
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "An error occurred while submitting")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred while submitting")
     } finally {
       setLoading(false)
     }
@@ -158,26 +148,36 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        {/* Step 1: Enter client ID */}
+        {/* Step 1: Enter or Select client ID */}
         <div className="space-y-2">
-          <Label htmlFor="clientId" className="flex items-center gap-2">
+          <Label className="flex items-center gap-2">
             <User size={16} className="text-primary" />
-            Client ID
+            Client ID (Select OR Enter)
           </Label>
-          <Select
-  onValueChange={(val) => setClientId(val)}
->
-  <SelectTrigger>
-    <SelectValue placeholder="Select Client" />
-  </SelectTrigger>
-  <SelectContent>
-    {clientOptions.map((client) => (
-      <SelectItem key={client.id} value={client.uniqueId}>
-        {`${client.uniqueId} - ${client.fullName} (${client.whatsapp})`}
-      </SelectItem>
-    ))}
-  </SelectContent>
-</Select>
+
+          <Select onValueChange={val => setClientId(val)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Client" />
+            </SelectTrigger>
+            <SelectContent>
+              {clientOptions.map(client => (
+                <SelectItem key={client.id} value={client.uniqueId}>
+                  {`${client.uniqueId} - ${client.fullName} (${client.whatsapp})`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <div className="pt-2">
+            <Label htmlFor="manualClientId">Or Enter Unique ID</Label>
+            <Input
+              id="manualClientId"
+              placeholder="e.g., NT-0001"
+              value={manualClientId}
+              onChange={e => setManualClientId(e.target.value)}
+            />
+          </div>
+
           <Button type="button" onClick={fetchClientData} className="mt-2" disabled={fetchingClient}>
             {fetchingClient ? (
               <>
@@ -192,134 +192,83 @@ export default function CustomerForm({ onSubmit }: CustomerFormProps) {
 
         {clientFetched && (
           <>
-            {/* Pre-filled and read-only fields */}
+            {/* Autofilled fields */}
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                name="name"
-                value={formData.name}
-                readOnly
-                className="bg-muted text-muted-foreground"
-              />
+              <Label>Name</Label>
+              <Input value={formData.name} readOnly className="bg-muted text-muted-foreground" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
-                <Input
-                  id="age"
-                  name="age"
-                  value={formData.age}
-                  readOnly
-                  className="bg-muted text-muted-foreground"
-                />
+                <Label>Age</Label>
+                <Input value={formData.age} readOnly className="bg-muted text-muted-foreground" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
-                <Input
-                  id="gender"
-                  name="gender"
-                  value={formData.gender}
-                  readOnly
-                  className="bg-muted text-muted-foreground"
-                />
+                <Label>Gender</Label>
+                <Input value={formData.gender} readOnly className="bg-muted text-muted-foreground" />
               </div>
             </div>
 
             {/* Editable fields */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="height">Height (cm)</Label>
-                <Input
-                  id="height"
-                  name="height"
-                  value={formData.height}
-                  onChange={handleChange}
-                  required
-                />
+              <div>
+                <Label>Height (cm)</Label>
+                <Input name="height" value={formData.height} onChange={handleChange} required />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="weight">Weight (kg)</Label>
-                <Input
-                  id="weight"
-                  name="weight"
-                  value={formData.weight}
-                  onChange={handleChange}
-                  required
-                />
+              <div>
+                <Label>Weight (kg)</Label>
+                <Input name="weight" value={formData.weight} onChange={handleChange} required />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="sleepLevels">Sleep (hrs/day)</Label>
-              <Input
-                id="sleepLevels"
-                name="sleepLevels"
-                value={formData.sleepLevels}
-                onChange={handleChange}
-                required
-              />
+            <div>
+              <Label>Sleep (hrs/day)</Label>
+              <Input name="sleepLevels" value={formData.sleepLevels} onChange={handleChange} required />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="activityLevel">Activity Level</Label>
+            <div>
+              <Label>Activity Level</Label>
               <Select
                 defaultValue={formData.activityLevel}
-                onValueChange={(value) =>
-                  handleSelectChange("activityLevel", value)
-                }
+                onValueChange={(val) => handleSelectChange("activityLevel", val)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="moderately_active">
-                    Moderately Active
-                  </SelectItem>
+                  <SelectItem value="moderately_active">Moderately Active</SelectItem>
                   <SelectItem value="not_active">Not Active</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="calorieIntake">Calorie Intake</Label>
-              <Input
-                id="calorieIntake"
-                name="calorieIntake"
-                value={formData.calorieIntake}
-                onChange={handleChange}
-                required
-              />
+            <div>
+              <Label>Calorie Intake</Label>
+              <Input name="calorieIntake" value={formData.calorieIntake} onChange={handleChange} required />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="mood">How you feel before the workout:</Label>
+            <div>
+              <Label>How you feel before the workout:</Label>
               <Select
                 defaultValue={formData.mood}
-                onValueChange={(value) => handleSelectChange("mood", value)}
+                onValueChange={(val) => handleSelectChange("mood", val)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="energized">Energized – Alert, Ready to Go</SelectItem>
-<SelectItem value="zone">In the Zone – Focused, Flowing</SelectItem>
-<SelectItem value="neutral">Neutral – Steady, Unmoved</SelectItem>
-<SelectItem value="tired">Tired – Drained, Heavy</SelectItem>
-<SelectItem value="stressed">Stressed – Tense, On Edge</SelectItem>
-<SelectItem value="low">Feeling Low – Down, Disconnected</SelectItem>
-
+                  <SelectItem value="energized">Energized</SelectItem>
+                  <SelectItem value="zone">In the Zone</SelectItem>
+                  <SelectItem value="neutral">Neutral</SelectItem>
+                  <SelectItem value="tired">Tired</SelectItem>
+                  <SelectItem value="stressed">Stressed</SelectItem>
+                  <SelectItem value="low">Feeling Low</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {error && (
-              <div className="p-2 text-sm text-red-500 border border-red-500 bg-red-500/10 rounded">
-                {error}
-              </div>
-            )}
+            {error && <div className="text-sm text-red-500">{error}</div>}
 
             <div className="flex justify-end">
               <Button type="submit" disabled={loading}>
