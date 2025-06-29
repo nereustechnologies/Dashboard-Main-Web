@@ -16,10 +16,15 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  optimizeFonts: true,
   experimental: {
-    // Keep only essential experimental features for Vercel
+    webpackBuildWorker: true,
+    parallelServerBuildTraces: true,
+    parallelServerCompiles: true,
+    fontLoaders: [
+      { loader: '@next/font/google', options: { subsets: ['latin'] } },
+    ],
   },
-  reactStrictMode: true,
 }
 
 mergeConfig(nextConfig, userConfig)
