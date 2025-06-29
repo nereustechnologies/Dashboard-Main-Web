@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import localFont from 'next/font/local';
 import Page10Layout from "@/components/Page10Layout";
 import Page11Layout from "@/components/Page11Layout";
 import Page12Layout from "@/components/Page12Layout";
@@ -15,35 +14,6 @@ import Page7Layout from "@/components/Page7Layout";
 import Page8Layout from "@/components/Page8Layout";
 import Page9Layout from "@/components/Page9Layout";
 import { FitnessReportData } from '@/lib/report-converter';
-
-// Define fonts using Next.js localFont for better Vercel compatibility
-const geranteFont = localFont({
-  src: [
-    {
-      path: '/fonts/Gerante-Regular.woff2',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: '/fonts/Gerante-Regular.woff',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: '/fonts/Gerante-Italic.woff2',
-      weight: '400',
-      style: 'italic',
-    },
-    {
-      path: '/fonts/Gerante-Italic.woff',
-      weight: '400',
-      style: 'italic',
-    },
-  ],
-  variable: '--font-gerante',
-  display: 'swap',
-  preload: true,
-});
 
 function PreviewPrintContent() {
   const [reportData, setReportData] = useState<FitnessReportData | null>(null);
@@ -197,8 +167,43 @@ function PreviewPrintContent() {
   }
 
   return (
-    <div className={`${geranteFont.variable}`} style={{ margin: 0, padding: 0, background: "#0E0E0E" }}>
+    <div style={{ margin: 0, padding: 0, background: "#0E0E0E" }}>
+      {/* Font Preloading */}
+      <link 
+        rel="preload" 
+        href="/fonts/Gerante-Regular.woff2" 
+        as="font" 
+        type="font/woff2" 
+        crossOrigin="anonymous"
+      />
+      <link 
+        rel="preload" 
+        href="/fonts/Gerante-Italic.woff2" 
+        as="font" 
+        type="font/woff2" 
+        crossOrigin="anonymous"
+      />
+      
       <style>{`
+        @font-face {
+          font-family: 'Gerante';
+          src: url('/fonts/Gerante-Regular.woff2') format('woff2'),
+               url('/fonts/Gerante-Regular.woff') format('woff');
+          font-weight: 400;
+          font-style: normal;
+          font-display: swap;
+          unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+      
+        @font-face {
+          font-family: 'Gerante';
+          src: url('/fonts/Gerante-Italic.woff2') format('woff2'),
+               url('/fonts/Gerante-Italic.woff') format('woff');
+          font-weight: 400;
+          font-style: italic;
+          font-display: swap;
+          unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
         * {
           box-sizing: border-box;
         }
@@ -280,7 +285,7 @@ function PreviewPrintContent() {
           
           /* Ensure Gerante font is available for components that use it */
           .font-gerante, [class*="font-gerante"] {
-            font-family: var(--font-gerante), 'Georgia', 'Times New Roman', serif !important;
+            font-family: 'Gerante', 'Georgia', 'Times New Roman', serif !important;
           }
           
           /* Hide scroll bars and other screen elements */
