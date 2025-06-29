@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
 import { verifyAuth } from "@/lib/auth"
 
+ function toUTC(dateStr: string, hour: number, minute: number) {
+  const local = new Date(dateStr)
+  local.setHours(hour, minute, 0, 0)
+  return new Date(local.getTime() - local.getTimezoneOffset() * 60000)
+}
+
 // GET handler: Fetch all time slots with related slotDate and location
 export async function GET(request: NextRequest) {
   try {
@@ -105,8 +111,10 @@ export async function POST(request: NextRequest) {
     const [endHour, endMinute] = endTime.split(':').map(Number)
     const dateObj = new Date(date)
 
-  const startDateTime = new Date(`${date}T${startHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}:00`)
-const endDateTime = new Date(`${date}T${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}:00`)
+ 
+
+const startDateTime = toUTC(date, startHour, startMinute)
+const endDateTime = toUTC(date, endHour, endMinute)
 
 
   
