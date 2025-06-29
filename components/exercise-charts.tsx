@@ -3,6 +3,8 @@ import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import type { ExerciseData } from "@/lib/data"
+import { Legend } from "recharts"
+
 import {
   Line,
   LineChart,
@@ -254,12 +256,17 @@ export function ExerciseCharts({ data, csv, exerciseName }: ExerciseChartsProps)
         value1: { label: "hip angles", color: "hsl(var(--chart-1))" },
         value2:{}
       }
+    case "stepUp":
+      return {
+       value1: { label: "Left Knee Angle", color: "#FFDB6E" },
+    value2: { label: "Right Knee Angle", color: "#72F6FF" },
+      }
 
 
     default:
       return {
-        value1: { label: "Metric 1", color: "hsl(var(--chart-1))" },
-        value2: { label: "Metric 2", color: "hsl(var(--chart-2))" },
+        value1: { label: "param1", color: "hsl(var(--chart-1))" },
+        value2: { label: "param2", color: "hsl(var(--chart-2))" },
       }
   }
 }
@@ -799,6 +806,129 @@ const tightDomain: [number, number] = [minY - yPadding, maxY + yPadding]
 
   );
   }
+   else if(exerciseName=="stepUp"){
+     const fullPlotData: PlotPoint[] = [];
+
+  let currentSecond = 0;
+  let secondStartIndex = 1;
+
+for (let i = 1; i < csv.length; i++) {
+    const [timestamp] = csv[i];
+    const [mins, secs] = timestamp.split(":").map(Number);
+    const timeInSeconds = mins * 60 + secs;
+
+    // If it's a new second or the last row
+    if (timeInSeconds !== currentSecond || i === csv.length - 1) {
+      const group = csv.slice(secondStartIndex, i === csv.length - 1 ? i + 1 : i); // Group of rows with same second
+      const count = group.length;
+
+      group.forEach((row, idx) => {
+        const fractionalTime = currentSecond + (idx / count);
+        fullPlotData.push({
+          time: fractionalTime.toFixed(2),
+          value1: Number(row[7]), // Overall Hip Angle
+         value2: Number(row[8]),
+        });
+      });
+
+      currentSecond = timeInSeconds;
+      secondStartIndex = i;
+    }
+  }
+
+  const plotData = zoomState.isZooming && zoomState.zoomedData
+    ? (zoomState.zoomedData.data as PlotPoint[])
+    : fullPlotData;
+    const yValues = plotData.flatMap(d => [d.value1, d.value2 ?? d.value1])
+const minY = Math.min(...yValues)
+const maxY = Math.max(...yValues)
+const yPadding = (maxY - minY) * 0.15 || 0.5
+const tightDomain: [number, number] = [minY - yPadding, maxY + yPadding]
+
+
+  return (
+ 
+  
+    <LineChart
+      data={plotData}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      margin={{ top: 5, right: 10, left: 10, bottom:30 }}
+    >
+
+
+   
+      <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+      <XAxis dataKey="time" stroke="#888" 
+       label={{
+    value: "Time (seconds)",
+    position: "insideBottomLeft",
+    offset: -5,
+    style: { textAnchor: "start", fill: "#aaa" },
+  }}
+
+      />
+      <YAxis
+  {...commonAxisProps}
+  domain={tightDomain}
+  tickFormatter={(value) => value.toFixed(2)} // Round ticks to 2 decimals
+  label={{
+    value: "Angle (°)",
+    angle: -90,
+    position: "insideLeft", // You can also try "outsideLeft"
+    offset: 10, // Increased for better spacing
+    style: {
+      textAnchor: "start",
+      fill: "#aaa",
+      fontSize: 12,
+    },
+  }}
+/>
+      <ChartTooltip content={<ChartTooltipContent />} cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "3 3" }} />
+      <Legend
+  verticalAlign="top"
+  iconType="plainline"
+   align="left"
+  wrapperStyle={{
+    color: "#ccc", // Light gray text
+    fontSize: "12px",
+    paddingBottom: "8px",
+  }}
+/>
+   <Line
+  type="monotone"
+  dataKey="value1"
+  name="Left Knee Angle" 
+  stroke="#FFDB6E" // Light Yellow
+  strokeWidth={1.8}
+  dot={false}
+  isAnimationActive={false}
+/>
+<Line
+  type="monotone"
+  dataKey="value2"
+   name="Right Knee Angle" 
+  stroke="#72F6FF" // Light Cyan
+  strokeWidth={1.8}
+  dot={false}
+  isAnimationActive={false}
+/>
+      {zoomState.refAreaLeft && zoomState.refAreaRight && (
+        <ReferenceArea
+          x1={zoomState.refAreaLeft}
+          x2={zoomState.refAreaRight}
+          strokeOpacity={0.3}
+          fill="var(--color-current)"
+          fillOpacity={0.1}
+        />
+      )}
+    </LineChart>
+    
+
+  );
+  }
+      
       
       default:
         return(
