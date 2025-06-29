@@ -16,10 +16,21 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  outputFileTracingIncludes: {
+    "/api/generate-pdf": ["./node_modules/@sparticuz/chromium/**/*"],
+  },
   experimental: {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push({
+        '@sparticuz/chromium': 'commonjs @sparticuz/chromium',
+      });
+    }
+    return config;
   },
 }
 

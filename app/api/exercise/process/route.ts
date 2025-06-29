@@ -38,6 +38,7 @@ export async function POST(request: Request) {
     const awsExerciseSlug = awsSlugify(exerciseName) // e.g. knee-flexion
     const bucket = "neureusbucketproto"
     const s3Prefix = `${customerId}/${testId}/${exerciseSlug}/`
+    console.log(s3Prefix)
 
     // Call the AWS API Gateway endpoint specific to the exercise
     const awsUrl = `https://91uqh2n4kb.execute-api.us-east-1.amazonaws.com/v1/${awsExerciseSlug}`
