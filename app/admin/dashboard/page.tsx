@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import AdminTesters from "@/components/admin-testers"
 import AdminReports from "@/components/admin-reports"
+import DownloadCsvButton from '@/components/WaitListButton'
 import Image from "next/image"
 
 export default function AdminDashboard() {
@@ -54,14 +55,16 @@ export default function AdminDashboard() {
               <p className="text-gray-400">Welcome, {user?.name || "Admin"}</p>
             </div>
           </div>
-          <div>
+          <div className="flex">
           <Button
       variant="outline"
       onClick={() => router.push("/admin/dashboard/booking")}
-      className="border-[#00D4EF] text-[#00D4EF] m-2"
+      className="border-[#00D4EF] text-[#00D4EF] m"
     >
       Booking Dashboard
     </Button>
+    <DownloadCsvButton></DownloadCsvButton>
+    
           <Button variant="outline" onClick={handleLogout} className="border-[#00D4EF] text-[#00D4EF]">
             Logout
           </Button>

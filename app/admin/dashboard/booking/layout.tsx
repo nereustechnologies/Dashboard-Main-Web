@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+import DownloadCsvButton from '@/components/WaitListButton'
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
@@ -18,6 +19,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <a href="/admin/dashboard/booking/price" className="text-white hover:text-primary font-semibold transition">Session Price</a>
                <a href="/admin/dashboard/email" className="text-white hover:text-primary font-semibold transition">email</a>
               <a href="/admin/ManualTestingClient" className="text-white hover:text-primary font-semibold transition">Manual Testing</a>
+              <DownloadCsvButton></DownloadCsvButton>
 
             </div>
           </div>
