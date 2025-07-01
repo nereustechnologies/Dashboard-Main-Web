@@ -29,38 +29,40 @@ export async function GET(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const body = await req.json()
-    const { date, price } = body
-
-    
+    const body = await req.json();
+    const { date, price } = body;
 
     if (!date || price == null) {
-      return NextResponse.json({ error: "Missing date or price" }, { status: 400 })
+      return NextResponse.json({ error: "Missing date or price" }, { status: 400 });
     }
 
-    const parsedDate = new Date(date)
-const start = startOfDay(parsedDate)
-const end = endOfDay(parsedDate)
-   
+    // Parse date as UTC (00:00 UTC of that day)
+    const parsedDate = new Date(`${date}T00:00:00.000Z`);
+    const start = startOfDay(parsedDate);
+    const end = endOfDay(parsedDate);
 
-const updatedSlot = await prisma.slotDate.updateMany({
-  where: {
-    date: {
-      gte: start,
-      lte: end,
-    },
-  },
-  data: {
-    price: price,
-  },
-})
+    const updatedSlot = await prisma.slotDate.updateMany({
+      where: {
+        date: {
+          gte: start,
+          lte: end,
+        },
+      },
+      data: {
+        price: price,
+      },
+    });
+
     if (updatedSlot.count === 0) {
-      return NextResponse.json({ error: "No slot for that day available" }, { status: 404 })
+      return NextResponse.json({ error: "No slot for that day available" }, { status: 404 });
     }
 
-    return NextResponse.json({ message: "Price updated successfully", updatedCount: updatedSlot.count })
+    return NextResponse.json({
+      message: "Price updated successfully",
+      updatedCount: updatedSlot.count,
+    });
   } catch (err) {
-    console.error("Failed to update slot price:", err)
-    return NextResponse.json({ error: "Server error" }, { status: 500 })
+    console.error("Failed to update slot price:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
