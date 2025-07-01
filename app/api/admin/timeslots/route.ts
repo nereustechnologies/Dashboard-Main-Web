@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '../../../../lib/prisma'
 import { verifyAuth } from "@/lib/auth"
 
-function toDateInLocal(dateStr: string, hour: number, minute: number) {
-  const date = new Date(dateStr)
-  date.setHours(hour, minute, 0, 0)
-  return date
+function toUTC(dateStr: string, hour: number, minute: number) {
+  const local = new Date(dateStr)
+  local.setHours(hour, minute, 0, 0)
+  // Convert IST → UTC (subtract 5.5 hours)
+  return new Date(local.getTime() - (330 * 60 * 1000))
 }
 
 
@@ -113,9 +114,9 @@ export async function POST(request: NextRequest) {
     const dateObj = new Date(date)
 
  
+const startDateTime = toUTC(date, startHour, startMinute)
+const endDateTime = toUTC(date, endHour, endMinute)
 
-const startDateTime = toDateInLocal(date, startHour, startMinute)
-const endDateTime = toDateInLocal(date, endHour, endMinute)
 
 
   
