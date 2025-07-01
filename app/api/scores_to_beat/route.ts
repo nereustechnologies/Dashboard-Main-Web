@@ -19,13 +19,6 @@ export async function POST(req: NextRequest) {
         continue // skip incomplete entries
       }
 
-      const currentInt = parseInt(current)
-      const targetInt = parseInt(target)
-
-      if (isNaN(currentInt) || isNaN(targetInt)) {
-        continue // skip invalid scores
-      }
-
       const score = await prisma.scoresToBeat.upsert({
         where: {
           customerId_title: {
@@ -34,14 +27,14 @@ export async function POST(req: NextRequest) {
           },
         },
         update: {
-          current: currentInt,
-          best: targetInt,
+          current: current,
+          best: target,
         },
         create: {
           customerId,
           title,
-          current: currentInt,
-          best: targetInt,
+          current: current,
+          best: target,
         },
       })
 

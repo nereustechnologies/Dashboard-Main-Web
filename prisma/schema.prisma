@@ -112,7 +112,6 @@ model SectionEvaluation {
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   customer   Customer    @relation(fields: [customerId], references: [id])
-
   @@unique([customerId, section])
 }
 
