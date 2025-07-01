@@ -69,7 +69,8 @@ export default function SlotDatePriceConfig() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          date: startOfDay(selectedDate).toISOString(), // match DB
+         date: format(selectedDate, 'yyyy-MM-dd'), // ✅ Send as plain date string
+
           price: parseInt(price),
         }),
       })
