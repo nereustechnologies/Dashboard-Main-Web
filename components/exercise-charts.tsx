@@ -826,8 +826,8 @@ for (let i = 1; i < csv.length; i++) {
         const fractionalTime = currentSecond + (idx / count);
         fullPlotData.push({
           time: fractionalTime.toFixed(2),
-          value1: Number(row[7]), // Overall Hip Angle
-         value2: Number(row[8]),
+          value1: Number(row[6]), // Overall Hip Angle
+         value2: Number(row[7]),
         });
       });
 
