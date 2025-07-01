@@ -12,6 +12,7 @@ import { TrainingPurposeForm } from "@/components/training-purpose-form"
 import { MovementSignatureForm } from "@/components/movement-signature-form"
 import { ScoresToBeat } from "@/components/scoresToBeat-form" 
 import { CustomerInfoModal } from "@/components/customer-info-modal"
+import Image from "next/image"
 
 function PatientDashboard() {
   const router = useRouter()
@@ -110,8 +111,8 @@ function PatientDashboard() {
             >
               <Menu className="h-5 w-5" />
             </button>
-            <div className="h-8 w-8 rounded-md bg-[#00D4EF]"></div> {/* Placeholder logo */}
-            <h1 className="text-xl md:text-2xl font-bold text-[#00D4EF]">Doctor Dashboard</h1>
+            <Image src="/logo.svg" alt="Nereus Technologies Logo" width={40} height={45} />
+              <h1 className="text-xl md:text-2xl font-bold text-[#00D4EF]">Nereus Dashboard</h1>
           </div>
           <div className="flex items-center gap-4">
             {test && (
@@ -127,7 +128,7 @@ function PatientDashboard() {
                 }
               />
             )}
-            <span className="hidden sm:inline text-gray-400">Welcome, Dr. Smith</span> {/* Placeholder name */}
+            <span className="hidden sm:inline text-gray-400">Hello, Doctor!</span> {/* Placeholder name */}
             <Button 
               variant="outline" 
               onClick={handleLogout} 

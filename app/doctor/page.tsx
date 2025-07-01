@@ -21,35 +21,7 @@ export default function DoctorDashboardPage() {
   //   router.push("/doctor/login"); // Or appropriate login page
   // };
 
-  const handleDownloadSamplePDF = async () => {
-    setLoading(true)
-    try {
-      const response = await fetch('/api/generate-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}), // Empty body will use fallback data
-      })
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'sample-fitness-report.pdf'
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    } catch (error) {
-      console.error('Error downloading PDF:', error)
-      alert('Failed to download PDF file')
-    } finally {
-      setLoading(false)
-    }
-  }
+  
 
   return (
     <div className="min-h-screen bg-black p-4">
@@ -63,18 +35,7 @@ export default function DoctorDashboardPage() {
               {/* You might want to display the doctor's name here */}
 
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="outline" 
-              onClick={handleDownloadSamplePDF}
-              disabled={loading}
-              className="border-green-500 text-green-500 hover:bg-green-500/10"
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              {loading ? 'Generating...' : 'Download Sample PDF'}
-            </Button>
-            {/* Add a logout button or other actions if needed */}
+          
             {/* <Button variant="outline" onClick={handleLogout} className="border-[#00D4EF] text-[#00D4EF]">
               Logout
             </Button> */}
