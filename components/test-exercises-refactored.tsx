@@ -36,6 +36,7 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
   const [lastAction, setLastAction] = useState<string | null>(null)
   const [exerciseStartTime, setExerciseStartTime] = useState<number>(0)
   const [stepUpRecordingInterval, setStepUpRecordingInterval] = useState<NodeJS.Timeout | null>(null)
+  const [stepUpStartTime, setStepUpStartTime] = useState<number>(0)
   const {
     exerciseState,
     mobilityCompleted,
@@ -106,6 +107,7 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
       if (stepUpRecordingInterval) {
         clearInterval(stepUpRecordingInterval)
         setStepUpRecordingInterval(null)
+        setStepUpStartTime(0)
       }
 
       const token = localStorage.getItem("token")
@@ -250,6 +252,7 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
     if (stepUpRecordingInterval) {
       clearInterval(stepUpRecordingInterval)
       setStepUpRecordingInterval(null)
+      setStepUpStartTime(0)
     }
 
     // Reset exercise state
@@ -273,6 +276,7 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
     if (stepUpRecordingInterval) {
       clearInterval(stepUpRecordingInterval)
       setStepUpRecordingInterval(null)
+      setStepUpStartTime(0)
     }
     
     setActiveExercise(null)
@@ -291,14 +295,19 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
     // Special handling for stepUp exercise recording
     if (targetExercise === "stepUp") {
       if (action === "Exercise Started") {
-        // Start recording every second for stepUp
+        // Record the start time for stepUp exercise
+        const startTime = Date.now()
+        setStepUpStartTime(startTime)
+        
+        // Start recording every 0.3 seconds for stepUp
         const recordingInterval = setInterval(() => {
-          recordAction("Recording", targetExercise, customerData, timer, currentLeg, testId)
+          // Calculate elapsed time in seconds
+          const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000)
+          recordAction("Recording", targetExercise, customerData, elapsedSeconds, currentLeg, testId)
             .catch(error => console.error("Error recording stepUp data:", error))
         }, 300)
         
-        // Store the interval in a way that can be accessed later
-        // We'll use a ref or state to store this interval
+        // Store the interval
         setStepUpRecordingInterval(recordingInterval)
       } else if (action === "Exercise Stopped") {
         // Stop the recording interval
@@ -306,6 +315,7 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
           clearInterval(stepUpRecordingInterval)
           setStepUpRecordingInterval(null)
         }
+        setStepUpStartTime(0)
       }
     }
 
