@@ -178,14 +178,23 @@ export function ActiveExerciseInterface({
       case "stepUp":
         return (
           <div className="space-y-2">
-            <Button onClick={() => onRecordAction("steUp started")} className={buttonClass("stepUp started")}>
-              Start Step Ups
-            </Button>
-            
+            {!exerciseStarted ? (
+              <Button 
+                onClick={() => onRecordAction("Exercise Started")} 
+                className={coloredButtonClass("Exercise Started", "bg-green-600 hover:bg-green-700")}
+              >
+                Start Exercise
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => onRecordAction("Exercise Stopped")} 
+                className={coloredButtonClass("Exercise Stopped", "bg-red-600 hover:bg-red-700")}
+              >
+                Stop Exercise
+              </Button>
+            )}
           </div>
         )
-
-     
 
       default:
         return null
