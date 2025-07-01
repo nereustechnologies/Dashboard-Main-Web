@@ -76,7 +76,7 @@ export default function Page5Layout({ data }: { data: Page5Data }) {
           className="absolute left-[19px] top-[53px] font-poppins text-[13px] font-medium italic"
           style={{ lineHeight: "1.38", letterSpacing: "-0.01em" }}
         >
-          {data.knee_flexion["Rep Count"] / 2} rep/leg
+          {data.knee_flexion["Rep Count"] / 2} reps
         </p>
         <p
           className="absolute left-[19px] top-[72px] font-poppins text-[13px] font-medium italic"
@@ -130,7 +130,7 @@ export default function Page5Layout({ data }: { data: Page5Data }) {
           className="absolute left-[122px] top-[158px] font-poppins text-[12px] font-light"
           style={{ lineHeight: "1.5em", letterSpacing: "-0.01em" }}
         >
-          Good
+          {data.knee_flexion["Range of Motion"] || "NA"}
         </p>
         <div
           className="absolute w-[194.5px] border-t border-white/45"
@@ -256,32 +256,22 @@ export default function Page5Layout({ data }: { data: Page5Data }) {
           className="absolute left-[19px] top-[139px] font-poppins text-[12px] font-medium"
           style={{ lineHeight: "1.5em", letterSpacing: "-0.01em" }}
         >
-          Calf Flexibility:
-        </p>
-        <p
-          className="absolute left-[108px] top-[139px] font-poppins text-[12px] font-light"
-          style={{ lineHeight: "1.5em", letterSpacing: "-0.01em" }}
-        >
-          Good
-        </p>
-        <img
-          src="/images/brand-arrow-small.svg"
-          alt="arrow"
-          className="absolute left-0 w-[11px]"
-          style={{ top: "160.5px" }}
-        />
-        <p
-          className="absolute left-[19px] top-[154px] font-poppins text-[12px] font-medium"
-          style={{ lineHeight: "1.5em", letterSpacing: "-0.01em" }}
-        >
           Ankle Mobility:
         </p>
         <p
-          className="absolute left-[108px] top-[154px] font-poppins text-[12px] font-light"
+          className="absolute left-[122px] top-[139px] font-poppins text-[12px] font-light"
           style={{ lineHeight: "1.5em", letterSpacing: "-0.01em" }}
         >
-          Good
+          {data.knee_to_wall["Ankle Mobility"] || "NA"}
         </p>
+        <div
+          className="absolute w-[194.5px] border-t border-white/45"
+          style={{
+            left: "0.5px",
+            top: "165px",
+            borderWidth: "0.3px",
+          }}
+        />
       </div>
       <div className="absolute left-[31px] top-[596px] w-[344px] border-t border-[#00DDF9]" />
       <img
@@ -386,7 +376,7 @@ export default function Page5Layout({ data }: { data: Page5Data }) {
           className="absolute left-[19px] top-[33px] font-poppins text-[13px] font-medium italic"
           style={{ lineHeight: "1.38", letterSpacing: "-0.01em" }}
         >
-          {data.lunge_stretch["Max Rep Count"]} rep/leg
+          {data.lunge_stretch["Max Rep Count"]} reps
         </p>
         <p
           className="absolute left-[19px] top-[52px] font-poppins text-[13px] font-medium italic"
@@ -468,7 +458,7 @@ export default function Page5Layout({ data }: { data: Page5Data }) {
           className="absolute left-[141px] top-[162px] font-poppins text-[12px] font-light"
           style={{ lineHeight: "1.5em", letterSpacing: "-0.01em" }}
         >
-          Good
+          {data.lunge_stretch["Quadriceps Stretch"] || "NA"}
         </p>
         <img
           src="/images/brand-arrow-small.svg"
@@ -522,7 +512,7 @@ export default function Page5Layout({ data }: { data: Page5Data }) {
           className="absolute left-[97px] top-[225px] font-poppins text-[12px] font-light"
           style={{ lineHeight: "1.5em", letterSpacing: "-0.01em" }}
         >
-          Good
+          {data.lunge_stretch["Hip Stability"] || "NA"}
         </p>
         <img
           src="/images/brand-arrow-small.svg"

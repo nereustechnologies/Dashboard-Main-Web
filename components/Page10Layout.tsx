@@ -1,4 +1,4 @@
-import { Page10Data } from "@/types/report";
+import { Page10Data } from "@/lib/report-converter";
 
 export default function Page10Layout({ data }: Readonly<{ data: Page10Data }>) {
   // Inline style for dashed lines (not directly possible in Tailwind)

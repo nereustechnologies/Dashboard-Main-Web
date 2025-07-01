@@ -66,7 +66,7 @@ export default function Page7Layout({ data }: { data: Page7Data }) {
           Stability:
         </p>
         <p className="absolute left-[73px] top-[109px] font-poppins text-[12px] font-light leading-[18px]">
-          Good
+          {data.plank.Stability || "NA"}
         </p>
         <img
           src="/images/brand-arrow-small.svg"
@@ -89,7 +89,7 @@ export default function Page7Layout({ data }: { data: Page7Data }) {
           style={{ borderWidth: "0.3px" }}
         />
         <p className="absolute left-[19px] top-[51px] font-poppins text-[13px] font-medium italic leading-[18px]">
-          Duration: {data.step_up.errorType ? "N/A" : "2mins"}
+          Duration: {data.step_up.duration ? `${data.step_up.duration}s` : "N/A"}
         </p>
         <p className="absolute left-[19px] top-[70px] w-[139px] font-poppins text-[9px] italic leading-[12px]">
           Hamstrings, Quadriceps, Glutes
@@ -102,7 +102,7 @@ export default function Page7Layout({ data }: { data: Page7Data }) {
           No. of Reps:
         </p>
         <p className="absolute left-[91px] top-[94px] font-poppins text-[12px] font-light leading-[18px]">
-          {data.step_up.errorType ? "N/A" : "12"}
+          {data.step_up.rep_count ?? "N/A"}
         </p>
         <img
           src="/images/brand-arrow-small.svg"
@@ -114,7 +114,7 @@ export default function Page7Layout({ data }: { data: Page7Data }) {
           Rep time:
         </p>
         <p className="absolute left-[80px] top-[109px] font-poppins text-[12px] font-light leading-[18px]">
-          {data.step_up.errorType ? "N/A" : "1.4s"}
+          {data.step_up.rep_time ? `${data.step_up.rep_time.toFixed(1)}s` : "N/A"}
         </p>
         <img
           src="/images/brand-arrow-small.svg"

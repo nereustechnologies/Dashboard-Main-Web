@@ -591,26 +591,14 @@ export function CustomerInfoModal({ test, trigger }: CustomerInfoModalProps) {
     try {
       const reportData = convertCustomerDataToReportData(customerData)
       
-      const response = await fetch('/api/generate-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: reportData }),
-      })
+      // Save data to session storage
+      sessionStorage.setItem('pdfReportData', JSON.stringify(reportData));
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const result = await response.json()
-      
-      if (result.success && result.previewUrl) {
-        // Open the preview page in a new tab
-        window.open(result.previewUrl, '_blank')
-      } else {
-        throw new Error('Failed to generate preview URL')
-      }
+      // Open the preview page in a new tab
+      window.open('/pdf-dashboard/preview-print', '_blank');
+
     } catch (error) {
-      console.error('Error opening PDF preview:', error)
+      console.error('Error preparing PDF preview:', error)
       alert('Failed to open PDF preview')
     }
   }

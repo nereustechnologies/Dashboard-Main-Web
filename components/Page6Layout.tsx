@@ -53,7 +53,7 @@ export default function Page6Layout({ data }: { data: Page6Data }) {
           Squat Depth Rating:
         </p>
         <p className="absolute left-[141px] top-[105px] font-poppins text-[12px] font-light leading-[18px]">
-          Deep Squat
+          {data.squats["Squat Depth Rating"] || "NA"}
         </p>
         <img
           src="/images/brand-arrow-small.svg"
@@ -66,7 +66,7 @@ export default function Page6Layout({ data }: { data: Page6Data }) {
           Repetition Consistency:
         </p>
         <p className="absolute left-[161px] top-[120px] font-poppins text-[12px] font-light leading-[18px]">
-          Satisfactory
+          {data.squats["Repetition Consistency"] || "NA"}
         </p>
         <img
           src="/images/brand-arrow-small.svg"
@@ -79,7 +79,7 @@ export default function Page6Layout({ data }: { data: Page6Data }) {
           Stability:
         </p>
         <p className="absolute left-[73px] top-[135px] font-poppins text-[12px] font-light leading-[18px]">
-          Good
+          {data.squats["Stability"] || "NA"}
         </p>
         <img
           src="/images/brand-arrow-small.svg"
@@ -116,7 +116,7 @@ export default function Page6Layout({ data }: { data: Page6Data }) {
           Fatigue Score:
         </p>
         <p className="absolute left-[107px] top-[198px] font-poppins text-[12px] font-light leading-[18px]">
-          2/5
+          {data.squats["Fatigue Score"] || "NA"}
         </p>
         <img
           src="/images/brand-arrow-small.svg"
@@ -165,7 +165,7 @@ export default function Page6Layout({ data }: { data: Page6Data }) {
           Lunge Depth Rating:
         </p>
         <p className="absolute left-[141px] top-[105px] font-poppins text-[12px] font-light leading-[18px]">
-          Deep Lunge
+          {data.lunges["Lunge Depth Rating"] || "NA"}
         </p>
         <img
           src="/images/brand-arrow-small.svg"
@@ -178,7 +178,7 @@ export default function Page6Layout({ data }: { data: Page6Data }) {
           Repetition Consistency:
         </p>
         <p className="absolute left-[161px] top-[120px] font-poppins text-[12px] font-light leading-[18px]">
-          Satisfactory
+          {data.lunges["Repetition Consistency"] || "NA"}
         </p>
         <img
           src="/images/brand-arrow-small.svg"
@@ -191,7 +191,7 @@ export default function Page6Layout({ data }: { data: Page6Data }) {
           Stability:
         </p>
         <p className="absolute left-[73px] top-[135px] font-poppins text-[12px] font-light leading-[18px]">
-          Good
+          {data.lunges.Stability || "NA"}
         </p>
         <img
           src="/images/brand-arrow-small.svg"
@@ -228,7 +228,7 @@ export default function Page6Layout({ data }: { data: Page6Data }) {
           Fatigue Score:
         </p>
         <p className="absolute left-[107px] top-[198px] font-poppins text-[12px] font-light leading-[18px]">
-          2.5/5
+          {data.lunges["Fatigue Score"] || "NA"}
         </p>
         <img
           src="/images/brand-arrow-small.svg"

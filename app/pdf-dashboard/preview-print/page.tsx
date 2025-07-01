@@ -66,7 +66,26 @@ function PreviewPrintContent() {
   };
 
   useEffect(() => {
-    // Try to get data from URL params
+    setLoading(true);
+    // Try to get data from session storage first
+    const sessionData = sessionStorage.getItem('pdfReportData');
+
+    if (sessionData) {
+      try {
+        const parsedData = JSON.parse(sessionData);
+        setReportData(parsedData);
+        // Optional: remove the data from session storage after reading it
+        // sessionStorage.removeItem('pdfReportData');
+      } catch (error) {
+        console.error('Error parsing data from session storage:', error);
+        setError('Invalid data format. Please try generating the report again.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Fallback to URL params if session storage is empty
     const dataParam = searchParams.get('data');
     if (!dataParam) {
       setError('No data provided. Please access this page through the proper dashboard link.');
@@ -77,7 +96,6 @@ function PreviewPrintContent() {
     try {
       const parsedData = JSON.parse(decodeURIComponent(dataParam));
       setReportData(parsedData);
-      setError(null);
     } catch (error) {
       console.error('Error parsing data from URL:', error);
       setError('Invalid data format. Please try generating the report again.');

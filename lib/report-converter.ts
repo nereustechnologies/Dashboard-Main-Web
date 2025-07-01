@@ -27,11 +27,13 @@ export interface Page5Data {
     "Max Knee Flexion Right": number;
     "Max Knee Extension Left": number;
     "Max Knee Extension Right": number;
+    "Range of Motion": string;
   };
   knee_to_wall: {
     "Total Time": number;
     "Max Knee Flexion Left": number;
     "Max Knee Flexion Right": number;
+    "Ankle Mobility": string;
   };
   lunge_stretch: {
     "Max Rep Count": number;
@@ -40,6 +42,8 @@ export interface Page5Data {
     "Average Knee Flexion Angle Right": number;
     "Hold Duration Left (s)": number;
     "Hold Duration Right (s)": number;
+    "Quadriceps Stretch": string;
+    "Hip Stability": string;
   };
   summary: SummaryItem[];
 }
@@ -50,6 +54,10 @@ export interface Page6Data {
     "Rep Count": number;
     "Left Knee Flexion Avg": number;
     "Right Knee Flexion Avg": number;
+    "Squat Depth Rating": string;
+    "Repetition Consistency": string;
+    "Stability": string;
+    "Fatigue Score": string;
   };
   lunges: {
     "Rep Count": number;
@@ -57,6 +65,10 @@ export interface Page6Data {
     "Average Knee Angle Left": number;
     "Average Knee Angle Right": number;
     "Average Hip Angle": number;
+    "Lunge Depth Rating": string;
+    "Repetition Consistency": string;
+    "Stability": string;
+    "Fatigue Score": string;
   };
   core: {
     "Average Hip Angle": number;
@@ -70,6 +82,7 @@ export interface Page7Data {
   plank: {
     "Average Hip Angle": number;
     "Total Hold Duration": string;
+    "Stability": string;
   };
   step_up: {
     duration?: number;
@@ -134,6 +147,29 @@ export interface FitnessReportData {
   page12: Page12Data;
 }
 
+// Helper to clean and map exercise data for PDF schema
+function cleanAndMapExerciseData(raw: any, mapping: Record<string, string> = {}): any {
+  if (!raw || typeof raw !== 'object') return null; // Return null if no data
+  
+  const cleaned: any = {};
+  for (const [key, value] of Object.entries(raw)) {
+    // Skip unwanted fields
+    if (
+      key === 'status' ||
+      key === 'output_key' ||
+      key === 'errorType' ||
+      key === 'errorMessage'
+    ) {
+      continue;
+    }
+    
+    // Map field names if needed, otherwise use the original key
+    const mappedKey = mapping[key] || key;
+    cleaned[mappedKey] = value;
+  }
+  return cleaned;
+}
+
 interface CustomerData {
   id: string
   name: string
@@ -164,9 +200,9 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
   const latestRatings = latestTest?.ratings || null
   
   // Get section evaluations
-  const mobilityEval = customerData.sectionEvaluations?.find(e => e.section === 'mobility')
-  const strengthEval = customerData.sectionEvaluations?.find(e => e.section === 'strength')
-  const enduranceEval = customerData.sectionEvaluations?.find(e => e.section === 'endurance')
+  const mobilityEval = customerData.sectionEvaluations?.find(e => e.section === 'mobility')?.dropdowns || {};
+  const strengthEval = customerData.sectionEvaluations?.find(e => e.section === 'strength')?.dropdowns || {};
+  const enduranceEval = customerData.sectionEvaluations?.find(e => e.section === 'endurance')?.dropdowns || {};
   
   // Get movement signature
   const movementSignature = customerData.movementSignature
@@ -229,15 +265,30 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
     }))
   }
   
-  // Extract exercise-specific data
-  const kneeFlexionData = getAnalysisResults('knee_flexion')
-  const kneeToWallData = getAnalysisResults('knee_to_wall')
-  const lungeStretchData = getAnalysisResults('lunge_stretch')
-  const squatsData = getAnalysisResults('squats')
-  const lungesData = getAnalysisResults('lunges')
-  const plankData = getAnalysisResults('plank_hold')
-  const stepUpData = getAnalysisResults('stepUp')
-  const sprintData = getAnalysisResults('sprint')
+  // Field mappings for renaming
+  const squatsMapping = {
+    "Left Knee Flexion Recurring Min": "Left Knee Flexion Avg",
+    "Right Knee Flexion Recurring Min": "Right Knee Flexion Avg",
+  };
+  const lungesMapping = {
+    "Min Knee Angle Left": "Average Knee Angle Left",
+    "Min Knee Angle Right": "Average Knee Angle Right",
+    "Max Hip Angle": "Average Hip Angle",
+  };
+  const stepUpMapping = {
+    "Rep Count": "rep_count",
+    "Total Time (s)": "duration",
+  };
+
+  // Extract and clean/map exercise-specific data
+  const kneeFlexionData = cleanAndMapExerciseData(getAnalysisResults('knee_flexion'));
+  const kneeToWallData = cleanAndMapExerciseData(getAnalysisResults('knee_to_wall'));
+  const lungeStretchData = cleanAndMapExerciseData(getAnalysisResults('lunge_stretch'));
+  const squatsData = cleanAndMapExerciseData(getAnalysisResults('squats'), squatsMapping);
+  const lungesData = cleanAndMapExerciseData(getAnalysisResults('lunges'), lungesMapping);
+  const plankData = cleanAndMapExerciseData(getAnalysisResults('plank_hold'));
+  const stepUpData = cleanAndMapExerciseData(getAnalysisResults('stepUp'), stepUpMapping);
+  const sprintData = cleanAndMapExerciseData(getAnalysisResults('sprint'));
   
   return {
     page1: { 
@@ -258,64 +309,95 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
     },
     
     page5: {
-      knee_flexion: kneeFlexionData || {
-        rep_count: '',
-        duration: '',
-        angle_left: 0,
-        angle_right: 0,
-        rating: '',
+      knee_flexion: kneeFlexionData ? {
+        ...kneeFlexionData,
+        "Range of Motion": mobilityEval["Range of Motion"] || "NA"
+      } : {
+        "Rep Count": 0,
+        "Total Duration": 0,
+        "Max Knee Flexion Left": 0,
+        "Max Knee Flexion Right": 0,
+        "Max Knee Extension Left": 0,
+        "Max Knee Extension Right": 0,
+        "Range of Motion": mobilityEval["Range of Motion"] || "NA",
       },
-      knee_to_wall: kneeToWallData || {
-        rep_count: '',
-        duration: '',
-        distance_left: 0,
-        distance_right: 0,
-        rating: '',
+      knee_to_wall: kneeToWallData ? {
+        ...kneeToWallData,
+        "Ankle Mobility": mobilityEval["Ankle Mobility"] || "NA"
+      } : {
+        "Total Time": 0,
+        "Max Knee Flexion Left": 0,
+        "Max Knee Flexion Right": 0,
+        "Ankle Mobility": mobilityEval["Ankle Mobility"] || "NA",
       },
-      lunge_stretch: lungeStretchData || {
-        rep_count: '',
-        hold_duration: '',
-        hip_flexion_left: 0,
-        hip_flexion_right: 0,
-        stability_rating: '',
+      lunge_stretch: lungeStretchData ? {
+        ...lungeStretchData,
+        "Quadriceps Stretch": mobilityEval["Quadriceps Stretch"] || "NA",
+        "Hip Stability": mobilityEval["Hip Stability"] || "NA"
+      } : {
+        "Max Rep Count": 0,
+        "Average Hip Flexion Angle": 0,
+        "Average Knee Flexion Angle Left": 0,
+        "Average Knee Flexion Angle Right": 0,
+        "Hold Duration Left (s)": 0,
+        "Hold Duration Right (s)": 0,
+        "Quadriceps Stretch": mobilityEval["Quadriceps Stretch"] || "NA",
+        "Hip Stability": mobilityEval["Hip Stability"] || "NA",
       },
       summary: createSummaryItems('expand'),
     },
     
     page6: {
-      squats: squatsData || {
-        rep_count: 0,
-        duration: 0,
-        depth_rating: '',
-        consistency: '',
-        stability: '',
-        flexion_left: 0,
-        flexion_right: 0,
-        fatigue_score: '',
+      squats: squatsData ? {
+        ...squatsData,
+        "Squat Depth Rating": strengthEval["Squat Depth Rating"] || "NA",
+        "Repetition Consistency": strengthEval["Repetition Consistency (Squat)"] || "NA",
+        "Stability": strengthEval["Stability (Squat)"] || "NA",
+        "Fatigue Score": strengthEval["Fatigue Score (Squat)"] || "NA"
+      } : {
+        "Rep Count": 0,
+        "Left Knee Flexion Avg": 0,
+        "Right Knee Flexion Avg": 0,
+        "Squat Depth Rating": strengthEval["Squat Depth Rating"] || "NA",
+        "Repetition Consistency": strengthEval["Repetition Consistency (Squat)"] || "NA",
+        "Stability": strengthEval["Stability (Squat)"] || "NA",
+        "Fatigue Score": strengthEval["Fatigue Score (Squat)"] || "NA",
       },
-      lunges: lungesData || {
-        rep_count: 0,
-        duration: 0,
-        depth_rating: '',
-        consistency: '',
-        stability: '',
-        flexion_left: 0,
-        flexion_right: 0,
-        fatigue_score: '',
+      lunges: lungesData ? {
+        ...lungesData,
+        "Lunge Depth Rating": strengthEval["Lunge Depth Rating"] || "NA",
+        "Repetition Consistency": strengthEval["Repetition Consistency (Lunge)"] || "NA",
+        "Stability": strengthEval["Stability (Lunge)"] || "NA",
+        "Fatigue Score": strengthEval["Fatigue Score (Lunge)"] || "NA"
+      } : {
+        "Rep Count": 0,
+        "Total Duration": "0s",
+        "Average Knee Angle Left": 0,
+        "Average Knee Angle Right": 0,
+        "Average Hip Angle": 0,
+        "Lunge Depth Rating": strengthEval["Lunge Depth Rating"] || "NA",
+        "Repetition Consistency": strengthEval["Repetition Consistency (Lunge)"] || "NA",
+        "Stability": strengthEval["Stability (Lunge)"] || "NA",
+        "Fatigue Score": strengthEval["Fatigue Score (Lunge)"] || "NA",
       },
-      core: plankData || {
-        hold_duration: 0,
-        rating: '',
+      core: plankData ? { // Remap plank data for core section
+        "Average Hip Angle": plankData["Average Hip Angle"] || 0,
+        "Total Hold Duration": plankData["Total Hold Duration"] || "0s",
+      } : {
+        "Average Hip Angle": 0,
+        "Total Hold Duration": "0s",
       },
       summary: createSummaryItems('improve'),
     },
     
     page7: {
-      plank: plankData || {
-        rep_count: 0,
-        duration: 0,
-        hip_angle: 0,
-        stability: '',
+      plank: plankData ? {
+        ...plankData,
+        "Stability": enduranceEval["Stability Score (for Plank Hold)"] || "NA",
+      } : {
+        "Average Hip Angle": 0,
+        "Total Hold Duration": "0s",
+        "Stability": enduranceEval["Stability Score (for Plank Hold)"] || "NA",
       },
       step_up: stepUpData || {
         duration: 0,
