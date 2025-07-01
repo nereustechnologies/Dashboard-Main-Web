@@ -138,8 +138,8 @@ model ScoresToBeat {
   id         String   @id @default(uuid())
   customerId String
   title      String
-  current    Int
-  best       Int
+  current    String
+  best       String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   customer   Customer @relation(fields: [customerId], references: [id])
