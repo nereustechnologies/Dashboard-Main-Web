@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
   try {
-    const { customerId, section, dropdowns, texts, textLabels } = await request.json()
+    const { customerId, section, dropdowns, texts } = await request.json()
 
     if (!customerId || !section) {
       return NextResponse.json({ error: "Missing parameters" }, { status: 400 })
@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
       section,
       dropdowns,
       comments: texts,
-      textLabels,
     }
 
     const record = await prisma.sectionEvaluation.upsert({
@@ -25,7 +24,6 @@ export async function POST(request: NextRequest) {
       update: {
         dropdowns,
         comments: texts,
-        textLabels,
       },
     })
 

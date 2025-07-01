@@ -111,7 +111,6 @@ model SectionEvaluation {
   comments   Json
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
-  textLabels Json?
   customer   Customer    @relation(fields: [customerId], references: [id])
 
   @@unique([customerId, section])

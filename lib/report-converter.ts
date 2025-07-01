@@ -170,6 +170,18 @@ function cleanAndMapExerciseData(raw: any, mapping: Record<string, string> = {})
   return cleaned;
 }
 
+// Helper function to create summary items from section evaluations
+function createSummaryItemsFromEvaluations(evaluations: any[], section: string): SummaryItem[] {
+  const evaluation = evaluations?.find(e => e.section === section);
+  if (!evaluation?.comments || typeof evaluation.comments !== 'object') {
+    return [];
+  }
+  return Object.entries(evaluation.comments).map(([title, paragraph]) => ({
+    title,
+    paragraph: paragraph as string,
+  }));
+}
+
 interface CustomerData {
   id: string
   name: string
@@ -203,6 +215,11 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
   const mobilityEval = customerData.sectionEvaluations?.find(e => e.section === 'mobility')?.dropdowns || {};
   const strengthEval = customerData.sectionEvaluations?.find(e => e.section === 'strength')?.dropdowns || {};
   const enduranceEval = customerData.sectionEvaluations?.find(e => e.section === 'endurance')?.dropdowns || {};
+  
+  // Get section evaluation summaries
+  const mobilitySummary = createSummaryItemsFromEvaluations(customerData.sectionEvaluations, 'mobility');
+  const strengthSummary = createSummaryItemsFromEvaluations(customerData.sectionEvaluations, 'strength');
+  const enduranceSummary = createSummaryItemsFromEvaluations(customerData.sectionEvaluations, 'endurance');
   
   // Get movement signature
   const movementSignature = customerData.movementSignature
@@ -344,7 +361,7 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
         "Quadriceps Stretch": mobilityEval["Quadriceps Stretch"] || "NA",
         "Hip Stability": mobilityEval["Hip Stability"] || "NA",
       },
-      summary: createSummaryItems('expand'),
+      summary: mobilitySummary,
     },
     
     page6: {
@@ -387,7 +404,7 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
         "Average Hip Angle": 0,
         "Total Hold Duration": "0s",
       },
-      summary: createSummaryItems('improve'),
+      summary: strengthSummary,
     },
     
     page7: {
@@ -408,7 +425,7 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
         max_velocity: 0,
         deceleration: 0,
       },
-      summary: createSummaryItems('injury'),
+      summary: enduranceSummary,
     },
     
     page9: {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
@@ -56,40 +56,27 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
     "Ankle Mobility": ["Good", "Satisfactory", "Needs Improvement"],
   }
 
-  const dropdownFields: string[] = (() => {
+  const dropdownFields = useMemo(() => {
     if (section === "strength") return Object.keys(strengthFieldOptions)
     if (section === "mobility") return Object.keys(mobilityFieldOptions)
     if (section === "endurance") return Object.keys(enduranceFieldOptions)
     return []
-  })()
+  }, [section])
 
-  const baseTextFields = [
-    { key: "inference-title-1", label: "Inference Title" },
-    { key: "inference-title-2", label: "Inference Title" },
-  ]
-
-  const textFields =
-    section === "mobility"
+  const textFields = useMemo(() => {
+    const baseTextFields = [
+      { key: "inference-title-1", label: "Inference Title" },
+      { key: "inference-title-2", label: "Inference Title" },
+    ]
+    return section === "mobility"
       ? [...baseTextFields, { key: "inference-title-3", label: "Inference Title" }]
       : baseTextFields
+  }, [section])
 
-  const [dropdownValues, setDropdownValues] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {}
-    dropdownFields.forEach((f) => (init[f] = ""))
-    return init
-  })
-
-  const [textValues, setTextValues] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {}
-    textFields.forEach(({ key }) => (init[key] = ""))
-    return init
-  })
-
-  const [textLabels, setTextLabels] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {}
-    textFields.forEach(({ key, label }) => (init[key] = label))
-    return init
-  })
+  const [dropdownValues, setDropdownValues] = useState<Record<string, string>>({})
+  const [inferences, setInferences] = useState(() =>
+    textFields.map(({ key, label }) => ({ id: key, title: label, value: "" }))
+  )
 
   useEffect(() => {
     setDropdownValues(() => {
@@ -97,35 +84,30 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
       dropdownFields.forEach((f) => (init[f] = ""))
       return init
     })
-
-    setTextValues(() => {
-      const init: Record<string, string> = {}
-      textFields.forEach(({ key }) => (init[key] = ""))
-      return init
-    })
-
-    setTextLabels(() => {
-      const init: Record<string, string> = {}
-      textFields.forEach(({ key, label }) => (init[key] = label))
-      return init
-    })
-  }, [section])
+    setInferences(textFields.map(({ key, label }) => ({ id: key, title: label, value: "" })))
+  }, [section, dropdownFields, textFields])
 
   const handleDropdownChange = (field: string, value: string) => {
     setDropdownValues((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleTextChange = (key: string, value: string) => {
-    setTextValues((prev) => ({ ...prev, [key]: value }))
-  }
-
-  const handleLabelChange = (key: string, value: string) => {
-    setTextLabels((prev) => ({ ...prev, [key]: value }))
+  const handleInferenceChange = (id: string, field: "title" | "value", text: string) => {
+    setInferences((prev) =>
+      prev.map((inf) => (inf.id === id ? { ...inf, [field]: text } : inf))
+    )
   }
 
   const handleSubmit = async () => {
     try {
       const token = localStorage.getItem("token")
+
+      const comments = inferences.reduce((acc, { title, value }) => {
+        if (title) {
+          acc[title] = value
+        }
+        return acc
+      }, {} as Record<string, string>)
+
       await fetch("/api/section-evaluation", {
         method: "POST",
         headers: {
@@ -136,8 +118,7 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
           customerId,
           section,
           dropdowns: dropdownValues,
-          texts: textValues,
-          textLabels,
+          texts: comments,
         }),
       })
       alert("Section evaluation saved!")
@@ -185,27 +166,27 @@ export function SectionEvaluation({ section, customerId }: SectionEvaluationProp
           </div>
         ))}
 
-        {textFields.map(({ key }) => (
-          <div key={key} className="flex flex-col gap-1">
+        {inferences.map(({ id, title, value }) => (
+          <div key={id} className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <input
                 type="text"
-                value={textLabels[key]}
-                onChange={(e) => handleLabelChange(key, e.target.value)}
+                value={title}
+                onChange={(e) => handleInferenceChange(id, "title", e.target.value)}
                 className="text-sm border rounded px-2 py-1 w-48"
                 placeholder="Field label"
               />
             </div>
             <div className="relative">
               <Textarea
-                value={textValues[key]}
-                onChange={(e) => handleTextChange(key, e.target.value)}
+                value={value}
+                onChange={(e) => handleInferenceChange(id, "value", e.target.value)}
                 placeholder="Enter Inference"
                 maxLength={500}
                 className="pr-16"
               />
               <div className="absolute bottom-2 right-2 text-xs text-gray-500">
-                {textValues[key].length}/500
+                {value.length}/500
               </div>
             </div>
           </div>
