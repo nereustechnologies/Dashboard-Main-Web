@@ -171,6 +171,33 @@ export function ExerciseContent({ exerciseData, exerciseName, exerciseId }: Exer
             .map((line) => line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/)) // naive CSV split respecting quotes
           setCsvData(rows)
         }
+<<<<<<< HEAD
+=======
+
+        // Helper: Convert "s3://bucket/key" → "https://bucket.s3.amazonaws.com/key" for browser fetch
+        const transformS3Path = (path: string): string => {
+          // Always proxy through our backend route to avoid CORS / permissions issues
+          return `/api/s3/download?path=${encodeURIComponent(path)}`
+        }
+         console.log
+        // Fetch & parse processed CSV
+        if (s3PathProcessed) {
+          const fetchUrl = transformS3Path(s3PathProcessed)
+          const csvRes = await fetch(fetchUrl, {
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+          })
+          if (csvRes.ok) {
+            const csvText = await csvRes.text()
+            const rows = csvText
+              .trim()
+              .split(/\r?\n/) // split by new line
+              .map((line) => line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/)) // naive CSV split respecting quotes
+            setCsvData(rows)
+          }
+        }
+      } catch (err) {
+        console.error(err)
+>>>>>>> d964253 (delete timeslot)
       }
     } catch (err) {
       console.error(err)
