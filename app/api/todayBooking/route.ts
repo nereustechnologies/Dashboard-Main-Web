@@ -1,12 +1,12 @@
-// /app/api/clients/todayBookings/route.ts
-
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { startOfDay, endOfDay } from "date-fns"
 
 export async function GET() {
   const today = new Date()
-  const clients = await prisma.booking.findMany({
+
+  // Clients who booked for today
+  const bookedClients = await prisma.booking.findMany({
     where: {
       timeSlot: {
         slotDate: {
@@ -29,8 +29,31 @@ export async function GET() {
     },
   })
 
+  // Clients who were manually tested today
+  const manuallyAdded = await prisma.manualClientTest.findMany({
+    where: {
+      createdAt: {
+        gte: startOfDay(today),
+        lte: endOfDay(today),
+      },
+    },
+    select: {
+      client: {
+        select: {
+          id: true,
+          uniqueId: true,
+          fullName: true,
+          whatsapp: true,
+        },
+      },
+    },
+  })
+
+  // Combine and remove duplicates
+  const allClients = [...bookedClients, ...manuallyAdded].map((entry) => entry.client)
+
   const uniqueClients = Array.from(
-    new Map(clients.map((b) => [b.client.id, b.client])).values()
+    new Map(allClients.map((client) => [client.id, client])).values()
   )
 
   return NextResponse.json({ clients: uniqueClients })
