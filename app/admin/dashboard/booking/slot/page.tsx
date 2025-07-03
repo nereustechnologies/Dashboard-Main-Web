@@ -62,6 +62,8 @@ export default function AddTimeSlot() {
   const [locations, setLocations] = useState<Location[]>([])
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
   const [locationSuccess, setLocationSuccess] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+
 const [slotSuccess, setSlotSuccess] = useState(false)
 
   const [loading, setLoading] = useState(false)
@@ -76,6 +78,36 @@ const [slotSuccess, setSlotSuccess] = useState(false)
     endTime: '',
     count: ''
   })
+const handleDeleteSlot = async (slotId: string) => {
+  const confirmed = confirm("Are you sure you want to delete this time slot?")
+  if (!confirmed) return
+
+  try {
+    const token = localStorage.getItem("token")
+    const response = await fetch(`/api/admin/timeslots/${slotId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    const data = await response.json()
+
+  if (!response.ok) {
+  alert(data.error || "Failed to delete time slot")
+  return
+}
+
+    // Remove from local state and cache
+    const updatedTimeSlots = timeSlots.filter((slot) => slot.id !== slotId)
+    cache.timeSlots = updatedTimeSlots
+    cache.lastFetch.timeSlots = Date.now()
+    setTimeSlots(updatedTimeSlots)
+  } catch (error) {
+    console.error("Delete failed:", error)
+    setError(error instanceof Error ? error.message : "Failed to delete slot")
+  }
+}
 
 
   useEffect(() => {
@@ -453,24 +485,35 @@ setTimeout(() => setLocationSuccess(false), 3000)
                     {format(new Date(date), 'MMMM d, yyyy')}
                   </h3>
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Time</TableHead>
-                        <TableHead>slots left</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {groupedTimeSlots[date].map((slot) => (
-                        <TableRow key={slot.id}>
-                          <TableCell>{slot.slotDate.location.name}</TableCell>
-                          <TableCell>
-                            {format(new Date(slot.startTime), 'h:mm a')} - {format(new Date(slot.endTime), 'h:mm a')}
-                          </TableCell>
-                          <TableCell>{slot.count}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
+                   <TableHeader>
+  <TableRow>
+    <TableHead>Location</TableHead>
+    <TableHead>Time</TableHead>
+    <TableHead>Slots Left</TableHead>
+    <TableHead>Actions</TableHead> {/* 👈 new */}
+  </TableRow>
+</TableHeader>
+<TableBody>
+  {groupedTimeSlots[date].map((slot) => (
+    <TableRow key={slot.id}>
+      <TableCell>{slot.slotDate.location.name}</TableCell>
+      <TableCell>
+        {format(new Date(slot.startTime), 'h:mm a')} - {format(new Date(slot.endTime), 'h:mm a')}
+      </TableCell>
+      <TableCell>{slot.count}</TableCell>
+      <TableCell>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => handleDeleteSlot(slot.id)}
+        >
+          Delete
+        </Button>
+      </TableCell>
+    </TableRow>
+  ))}
+</TableBody>
+
                   </Table>
                 </div>
               ))}
