@@ -58,6 +58,20 @@ export default function TestRating({ onSubmit, onBack, customerData, testId }: T
         throw new Error(errorData.error || "Failed to submit ratings.")
       }
 
+      // Mark the test as completed in the backend
+      const completeResp = await fetch("/api/tests/complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ testId }),
+      })
+      if (!completeResp.ok) {
+        const errorData = await completeResp.json()
+        throw new Error(errorData.error || "Failed to mark test as completed.")
+      }
+
       alert("Test completed and data saved successfully!")
       onSubmit()
     } catch (e) {
@@ -131,7 +145,7 @@ ${observation || "No feedback provided."}
               <SelectTrigger className="bg-gray-900 border-gray-700"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>{[1,2,3,4,5].map(v => <SelectItem key={v} value={v.toString()}>{v}</SelectItem>)}</SelectContent>
             </Select>
-          </div>
+          </div> */}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -149,7 +163,7 @@ ${observation || "No feedback provided."}
               <SelectTrigger className="bg-gray-900 border-gray-700"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>{[1,2,3,4,5].map(v => <SelectItem key={v} value={v.toString()}>{v}</SelectItem>)}</SelectContent>
             </Select>
-          </div> */}
+          </div>
         </div>
 
         <div className="space-y-2">

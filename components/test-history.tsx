@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Search, Download, Eye, Calendar, Filter, ChevronDown, Trash } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { toast } from "@/components/ui/use-toast"
+import ContinueTest from "@/components/continue-test"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
 
 export default function TestHistory() {
   const [tests, setTests] = useState<any[]>([])
@@ -15,6 +17,9 @@ export default function TestHistory() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCategory, setFilterCategory] = useState("all")
   const [error, setError] = useState("")
+  const [continueTestId, setContinueTestId] = useState<string | null>(null)
+  const [continueCustomerId, setContinueCustomerId] = useState<string | null>(null)
+  const [showContinueDialog, setShowContinueDialog] = useState(false)
 
   useEffect(() => {
     // Fetch test history from API
@@ -140,6 +145,12 @@ export default function TestHistory() {
     }
   }
 
+  const handleContinueTestClose = (testId: string) => {
+    setShowContinueDialog(false)
+    // Mark the test as completed in local state
+    setTests((prev) => prev.map((test) => test.id === testId ? { ...test, status: 'Completed' } : test))
+  }
+
   return (
     <Card className="border-[#00D4EF]/20 bg-black">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -247,6 +258,21 @@ export default function TestHistory() {
                       >
                         <Trash size={14} />
                       </Button>
+                      {test.status !== "Completed" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setContinueTestId(test.id)
+                            setContinueCustomerId(test.customer?.id)
+                            setShowContinueDialog(true)
+                          }}
+                          className="border-blue-500 text-blue-500"
+                          title="Continue Test"
+                        >
+                          Continue Test
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -254,6 +280,19 @@ export default function TestHistory() {
             </TableBody>
           </Table>
         )}
+        <Dialog open={showContinueDialog} onOpenChange={setShowContinueDialog}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Continue Test</DialogTitle>
+              <DialogClose asChild>
+                <Button variant="ghost" className="absolute right-2 top-2">Close</Button>
+              </DialogClose>
+            </DialogHeader>
+            {continueTestId && continueCustomerId && (
+              <ContinueTest testId={continueTestId} customerId={continueCustomerId} onClose={handleContinueTestClose} />
+            )}
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   )

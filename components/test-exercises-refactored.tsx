@@ -21,9 +21,10 @@ interface TestExercisesProps {
   onComplete: (exerciseData: any) => void
   customerData: any
   testId: string
+  testExerciseData?: any // <-- Add this prop
 }
 
-export default function TestExercises({ onComplete, customerData, testId }: TestExercisesProps) {
+export default function TestExercises({ onComplete, customerData, testId, testExerciseData }: TestExercisesProps) {
   const { step, setStep } = useTestStep()
   const [activeCategory, setActiveCategory] = useState("mobility")
   const [activeExercise, setActiveExercise] = useState<string | null>(null)
@@ -48,6 +49,7 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
 
   const { sensorData, startRecording, stopRecordingAndGetData, clearSensorData } = useBluetooth()
 
+  // Use testExerciseData to initialize exerciseData if provided
   const {
     exerciseData,
     setExerciseData,
@@ -58,6 +60,14 @@ export default function TestExercises({ onComplete, customerData, testId }: Test
     clearExerciseData: clearExerciseLogData,
     recordAction,
   } = useExerciseData()
+
+  // If testExerciseData is provided, initialize state on mount
+  useEffect(() => {
+    if (testExerciseData) {
+      setExerciseData(testExerciseData)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [testExerciseData])
 
   const orderedCategories = ["mobility", "strength", "endurance"]
 

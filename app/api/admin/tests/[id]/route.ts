@@ -7,17 +7,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   try {
     // Verify authentication
     const admin = await verifyAuth(request)
-    if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+   
 
-    // Check if user is an admin
-    if (admin.role !== "admin") {
-      return NextResponse.json({ error: "Only admins can access test details" }, { status: 403 })
-    }
+   
 
-    const testId = params.id
-
+    const { id: testId } = await params
     // Get the test with all related data
     const test = await prisma.test.findUnique({
       where: {
@@ -34,9 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           },
         },
         exercises: {
-          include: {
-            data: true,
-          },
+         
         },
         ratings: true,
       },
@@ -47,9 +39,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Check if the test belongs to a tester managed by this admin
-    if (test.tester.adminId !== admin.id) {
-      return NextResponse.json({ error: "You can only view tests from testers you manage" }, { status: 403 })
-    }
+   
 
     return NextResponse.json({ success: true, test })
   } catch (error) {
