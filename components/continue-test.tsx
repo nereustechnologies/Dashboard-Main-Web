@@ -38,7 +38,7 @@ export default function ContinueTest({ testId, customerId, onClose }: ContinueTe
       }
     }
     fetchTestData()
-    setStep(3) // Start at sensor connect step
+    setStep(2) // Start at sensor connect step
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [testId])
 
