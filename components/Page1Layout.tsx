@@ -91,12 +91,10 @@ export default function Page1Layout({
           </span>
         </div>
         {/* For. Ava Mitchell Box */}
-        <div
-          className="absolute border-[#D1D1D1]/45 border-[0.3px] left-[23px] top-[712px] w-[326px] h-[41px] bg-transparent pt-[6px] pr-[10px] pb-[6px] pl-[71px] flex items-center"
-          style={{ borderRadius: 0 }}
-        >
-          <span className="[font-family:var(--font-poppins)] text-[18px] text-white italic">
-            For. <span className="font-bold text-[#00DDF9]">{data.name}</span>
+       <div className="absolute border-[#D1D1D1]/45 border-[0.3px] left-[23px] top-[712px] bg-transparent pt-[6px] pr-[10px] pb-[6px] pl-[71px] flex items-center"style={{ borderRadius: 0, width: "auto", height: "auto" }}
+       >
+          <span className="[font-family:var(--font-poppins)] text-[18px] text-white italic whitespace-nowrap">
+          For. <span className="font-bold text-[#00DDF9]">{data.name}</span>
           </span>
         </div>
         {/* Brand Arrow */}
