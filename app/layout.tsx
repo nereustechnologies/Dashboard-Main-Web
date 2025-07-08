@@ -1,6 +1,8 @@
 
 import type React from "react"
 import { Inter } from "next/font/google"
+import { BluetoothProvider } from "@/hooks/use-bluetooth";
+
 import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
@@ -21,7 +23,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} bg-black text-white`}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+         <BluetoothProvider>
           {children}
+        </BluetoothProvider>
         </ThemeProvider>
       </body>
     </html>

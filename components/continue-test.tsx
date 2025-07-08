@@ -38,7 +38,7 @@ export default function ContinueTest({ testId, customerId, onClose }: ContinueTe
       }
     }
     fetchTestData()
-    setStep(2) // Start at sensor connect step
+    setStep(3) // Start at sensor connect step
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [testId])
 
@@ -60,7 +60,7 @@ export default function ContinueTest({ testId, customerId, onClose }: ContinueTe
   }
 
   return (
-    <BluetoothProvider>
+ 
       <Card className="border-primary/20 bg-card">
         <CardHeader>
           <CardTitle className="text-xl text-primary">Continue Fitness Test</CardTitle>
@@ -107,6 +107,6 @@ export default function ContinueTest({ testId, customerId, onClose }: ContinueTe
           )}
         </CardContent>
       </Card>
-    </BluetoothProvider>
+   
   )
 } 

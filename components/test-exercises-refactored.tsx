@@ -441,7 +441,7 @@ export default function TestExercises({ onComplete, customerData, testId, testEx
           <TabsTrigger
             value="strength"
             className={strengthCompleted ? "text-green-500" : ""}
-            disabled={!mobilityCompleted || exerciseStarted}
+            disabled={exerciseStarted}
           >
             Strength
             {strengthCompleted && " ✓"}
@@ -449,7 +449,7 @@ export default function TestExercises({ onComplete, customerData, testId, testEx
           <TabsTrigger
             value="endurance"
             className={enduranceCompleted ? "text-green-500" : ""}
-            disabled={!strengthCompleted || exerciseStarted}
+            disabled={exerciseStarted}
           >
             Endurance
             {enduranceCompleted && " ✓"}

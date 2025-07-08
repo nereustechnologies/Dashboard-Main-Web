@@ -148,7 +148,7 @@ ${observation || "No feedback provided."}
           </div> */}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        {/* <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Strength Rating (1–5)</Label>
             <Select value={strengthRating} onValueChange={setStrengthRating}>
@@ -164,7 +164,7 @@ ${observation || "No feedback provided."}
               <SelectContent>{[1,2,3,4,5].map(v => <SelectItem key={v} value={v.toString()}>{v}</SelectItem>)}</SelectContent>
             </Select>
           </div>
-        </div>
+        </div> */}
 
         <div className="space-y-2">
           <Label>RPE (Rate of Perceived Exertion 1–10)</Label>

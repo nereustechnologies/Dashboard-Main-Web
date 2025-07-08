@@ -79,7 +79,7 @@ export default function NewTest() {
   }
 
   return (
-    <BluetoothProvider>
+
       <Card className="border-primary/20 bg-card">
         <CardHeader>
           <CardTitle className="text-xl text-primary">New Fitness Test</CardTitle>
@@ -132,6 +132,6 @@ export default function NewTest() {
           )}
         </CardContent>
       </Card>
-    </BluetoothProvider>
+ 
   )
 }
