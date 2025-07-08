@@ -104,12 +104,12 @@ export default function Page7Layout({ data }: { data: Page7Data }) {
         <p className="absolute left-[91px] top-[94px] font-poppins text-[12px] font-light leading-[18px]">
           {data.step_up.rep_count ?? "N/A"}
         </p>
-        <img
+{/*         <img
           src="/images/brand-arrow-small.svg"
           alt="arrow"
           className="absolute left-0 w-[11px]"
           style={{ top: "100px" }}
-        />
+        /> */}
 {/*         <p className="absolute left-[19px] top-[109px] font-poppins text-[12px] font-medium leading-[18px]">
           Rep time:
         </p>
