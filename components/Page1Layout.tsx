@@ -92,7 +92,7 @@ export default function Page1Layout({
         </div>
         {/* For. Ava Mitchell Box */}
         <div
-          className="absolute border-[#D1D1D1]/45 border-[0.3px] left-[23px] top-[712px] w-[226px] h-[41px] bg-transparent pt-[6px] pr-[10px] pb-[6px] pl-[71px] flex items-center"
+          className="absolute border-[#D1D1D1]/45 border-[0.3px] left-[23px] top-[712px] w-[326px] h-[41px] bg-transparent pt-[6px] pr-[10px] pb-[6px] pl-[71px] flex items-center"
           style={{ borderRadius: 0 }}
         >
           <span className="[font-family:var(--font-poppins)] text-[18px] text-white italic">
