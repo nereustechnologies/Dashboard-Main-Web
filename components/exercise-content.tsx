@@ -67,10 +67,8 @@ function StepUpMetricsEditor({
         throw new Error(errorData.error || "Failed to save metrics")
       }
 
-      toast({
-        title: "Success",
-        description: "Metrics saved successfully.",
-      })
+    alert("Success: Metrics saved successfully.");
+
       onSave()
     } catch (error) {
       console.error(error)
@@ -97,7 +95,7 @@ function StepUpMetricsEditor({
           </Label>
           <Input
             id={metric.name}
-            value={metric.value}
+            value={metric.value ?? ""}
             onChange={(e) => handleChange(metric.name, e.target.value)}
             className="col-span-2"
           />
@@ -220,7 +218,7 @@ export function ExerciseContent({ exerciseData, exerciseName, exerciseId }: Exer
                   <CardDescription>Measured &amp; calculated values</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {exerciseName === 'stepUp' && exerciseId ? (
+                  { exerciseId ? (
                     <StepUpMetricsEditor 
                       initialData={calculatedData} 
                       exerciseId={exerciseId} 
