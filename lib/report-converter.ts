@@ -447,7 +447,7 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
     },
     
     page12: {
-      report_id: `NT-${customerData.uniqueId || customerData.id.slice(-6)}`,
+      report_id: `${customerData.uniqueId || customerData.id.slice(-6)}`,
     },
   }
 }
