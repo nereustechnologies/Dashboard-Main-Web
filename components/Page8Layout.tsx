@@ -140,7 +140,7 @@ export default function Page8Layout() {
                 Thighs parallel to the ground, functional range
               </p>
               <p className="mt-2.5 tracking-tighter">
-                Thighs parallel to the ground, functional range
+                Thighs above parallel, limited depth
               </p>
             </div>
           </div>
