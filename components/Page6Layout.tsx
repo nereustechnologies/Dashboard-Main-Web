@@ -258,7 +258,7 @@ export default function Page6Layout({ data }: { data: Page6Data }) {
         Your Strength Fuels Power. Here's What It Says:
       </p>
       {/* Group 37 */}
-      <p className="absolute left-[39px] top-[695px] h-[46px] w-[241px] font-gerante text-[16px] italic leading-[23px] tracking-[-0.04em] text-white">
+      <p className="absolute left-[39px] top-[695px] max-h-[46px] w-[241px] font-gerante text-[16px] italic leading-[23px] tracking-[-0.04em] text-white">
         {data.summary?.[0]?.title || "Strength Assessment"}
       </p>
       <div
@@ -269,7 +269,7 @@ export default function Page6Layout({ data }: { data: Page6Data }) {
         {data.summary?.[0]?.paragraph || "Good strength foundation established."}
       </p>
       {/* Group 38 */}
-      <p className="absolute left-[348px] top-[675px] h-[69px] w-[241px] font-gerante text-[16px] italic leading-[23px] tracking-[-0.04em] text-white">
+      <p className="absolute left-[348px] top-[675px] max-h-[69px] w-[241px] font-gerante text-[16px] italic leading-[23px] tracking-[-0.04em] text-white">
         {data.summary?.[1]?.title || "Strength Focus"}
       </p>
       <div
