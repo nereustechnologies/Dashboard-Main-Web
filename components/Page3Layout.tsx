@@ -114,11 +114,11 @@ export default function Page3Layout({ data }: { data: Page3Data }) {
 
         {/* User Info Section */}
         <div className="absolute top-[414px] left-[22px] w-[392px] text-[#5E5F5F] font-poppins text-[12px] leading-[1.5] tracking-[-0.01em]">
-          <span className="absolute left-0">{data.name}</span>
-          <span className="absolute left-[120px]">{data.age} y/o</span>
-          <span className="absolute left-[201px]">{data.height} cm</span>
-          <span className="absolute left-[278px]">{data.weight} kg</span>
-          <span className="absolute left-[350px]">{data.gender}</span>
+          <span className="absolute left-0 w-[170px] overflow-hidden text-ellipsis whitespace-nowrap">{data.name}</span>
+          <span className="absolute left-[180px]">{data.age} y/o</span>
+          <span className="absolute left-[250px]">{data.height} cm</span>
+          <span className="absolute left-[310px]">{data.weight} kg</span>
+          <span className="absolute left-[370px]">{data.gender}</span>
         </div>
 
         {/* "Why You Move" Section */}
