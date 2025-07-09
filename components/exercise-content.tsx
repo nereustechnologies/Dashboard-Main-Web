@@ -88,12 +88,12 @@ function StepUpMetricsEditor({
   if (metrics.length === 0) {
     if(exerciseName=="lunge_stretch"){
    setMetrics([
-  { name: "Max Knee Flexion Left", value: "" },
-  { name: "Max Knee Flexion Right", value: "" },
-  { name: "Max Knee Extension Left", value: "" },
-  { name: "Max Knee Extension Right", value: "" },
-  { name: "Rep Count", value: "" },
-  { name: "Total Duration", value: "" }
+  { name: "Average Hip Flexion Angle", value: "" },
+  { name: "Average Knee Flexion Angle Left", value: "" },
+  { name: "Average Knee Flexion Angle Right", value: "" },
+  { name: "Hold Duration Left (s)", value: "" },
+  { name: "Hold Duration Right (s)", value: "" },
+  { name: "Max Rep Count", value: "" }
 ]);
     }
     else if(exerciseName=="knee_flexion"){
