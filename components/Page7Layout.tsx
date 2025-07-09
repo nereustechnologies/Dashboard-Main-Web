@@ -116,12 +116,12 @@ export default function Page7Layout({ data }: { data: Page7Data }) {
         <p className="absolute left-[80px] top-[109px] font-poppins text-[12px] font-light leading-[18px]">
           {data.step_up.rep_time ? `${data.step_up.rep_time.toFixed(1)}s` : "N/A"}
         </p> */}
-        <img
-          src="/images/brand-arrow-small.svg"
-          alt="arrow"
-          className="absolute left-0 w-[11px]"
-          style={{ top: "115px" }}
-        />
+        // <img
+        //   src="/images/brand-arrow-small.svg"
+        //   alt="arrow"
+        //   className="absolute left-0 w-[11px]"
+        //   style={{ top: "115px" }}
+        // />
       </div>
 
       <div
