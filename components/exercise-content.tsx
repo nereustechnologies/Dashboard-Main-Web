@@ -141,6 +141,15 @@ setMetrics([
 ]);
 
     }
+    else if(exerciseName=="knee_to_wall"){
+      setMetrics([
+        
+  { name: "Max Knee Flexion Left", value: "" },
+  { name: "Max Knee Flexion Right", value: "" },
+  { name: "Total Time", value: "" }
+
+      ])
+    }
 
   }
 

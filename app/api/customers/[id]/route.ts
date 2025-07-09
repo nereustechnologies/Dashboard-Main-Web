@@ -2,20 +2,15 @@ import { type NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { verifyAuth } from "@/lib/auth"
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest) {
   try {
-    // Verify authentication
     const user = await verifyAuth(request)
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const customerId = params.id
+    const customerId = request.nextUrl.pathname.split("/").pop() as string
 
-    // Fetch comprehensive customer information
     const customerInfo = await prisma.customer.findUnique({
       where: { id: customerId },
       include: {
