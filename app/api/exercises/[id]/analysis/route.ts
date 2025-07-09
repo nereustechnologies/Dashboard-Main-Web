@@ -2,6 +2,29 @@ import { NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { verifyAuth } from "@/lib/auth"
 
+function slugify(text: string) {
+  if(text=="stepUp"){
+    return text
+  }
+  return text
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_") // Replace spaces with underscore to match folder convention
+    .replace(/[^\w_]+/g, "") // Remove non-word chars except underscore
+}
+
+// Helper to convert exercise names like "Knee Flexion" → "knee-flexion" for AWS URLs
+function awsSlugify(text: string) {
+  return text
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-") // Replace spaces and underscores with hyphen for AWS URLs
+    .replace(/[^\w-]+/g, "") // Remove non-word chars except hyphen
+}
+
+
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Optional: require authentication – adjust as needed
@@ -60,9 +83,31 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     const preferredFile = exercise.assetFiles.find((f) => f.analysisResults || f.s3PathProcessed) || exercise.assetFiles[0]
 
-    if (!preferredFile) {
-      return NextResponse.json({ error: "No asset file found for this exercise to update" }, { status: 404 })
-    }
+    let assetFile = preferredFile;
+
+if (!assetFile) {
+  const exerciseSlug = slugify(exercise.name);
+  const s3PathRaw = `${exercise.testId}/${exercise.id}/${exerciseSlug}/`;
+
+  assetFile = await prisma.exerciseAssetFile.create({
+    data: {
+      exerciseId: exercise.id,
+      fileName: "processed_output.csv",       // Keep consistent
+      fileType: "processed_result",           // Same as AWS-processed files
+      s3PathRaw,
+      s3PathProcessed: null,                  // Because no file is being uploaded
+      analysisResults: {
+        body: JSON.stringify(metrics),        // Store manually patched data
+      },
+      status: "manual",                       // To distinguish from AWS-processed ones
+    },
+  });
+
+  return NextResponse.json({
+    message: "New asset created and metrics saved",
+    created: true,
+  });
+}
 
     const currentAnalysis = (preferredFile.analysisResults ?? { body: "{}" }) as any
 

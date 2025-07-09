@@ -22,11 +22,13 @@ interface ExerciseContentProps {
 
 function StepUpMetricsEditor({
   initialData,
+  exerciseName,
   exerciseId,
   onSave,
 }: {
   initialData: Array<{ name: string; value: string | number }>
   exerciseId: string
+  exerciseName:string
   onSave: () => void
 }) {
   const [metrics, setMetrics] = useState(initialData)
@@ -81,9 +83,65 @@ function StepUpMetricsEditor({
       setIsSaving(false)
     }
   }
+   console.log(metrics)
 
   if (metrics.length === 0) {
-    return <p className="text-sm text-muted-foreground">No metrics available to edit for this exercise.</p>
+    if(exerciseName=="lunge_stretch"){
+   setMetrics([
+  { name: "Max Knee Flexion Left", value: "" },
+  { name: "Max Knee Flexion Right", value: "" },
+  { name: "Max Knee Extension Left", value: "" },
+  { name: "Max Knee Extension Right", value: "" },
+  { name: "Rep Count", value: "" },
+  { name: "Total Duration", value: "" }
+]);
+    }
+    else if(exerciseName=="knee_flexion"){
+      setMetrics([
+  { name: "Max Knee Flexion Left", value: "" },
+  { name: "Max Knee Flexion Right", value: "" },
+  { name: "Max Knee Extension Left", value: "" },
+  { name: "Max Knee Extension Right", value: "" },
+  { name: "Rep Count", value: "" },
+  { name: "Total Duration", value: "" }
+]);
+    }
+     else if(exerciseName=="squats"){
+     setMetrics([
+  { name: "Left Knee Flexion Recurring Min", value: "" },
+  { name: "Right Knee Flexion Recurring Min", value: "" },
+  { name: "Hip Angle Recurring Max", value: "" },
+  { name: "Rep Count", value: "" },
+  { name: "Final Event Timestamp", value: "" }
+]);
+
+
+     }
+     else if(exerciseName=="lunges"){
+      setMetrics([
+  { name: "Min Knee Angle Left", value: "" },
+  { name: "Min Knee Angle Right", value: "" },
+  { name: "Max Hip Angle", value: "" },
+  { name: "Rep Count", value: "" },
+  { name: "Total Duration", value: "" }
+]);
+
+     }
+     else if(exerciseName=="plank_hold"){
+setMetrics([
+  { name: "Average Hip Angle", value: "" },
+  { name: "Total Hold Duration", value: "" }
+]);
+
+     }
+    else if(exerciseName=="stepUp"){
+      setMetrics([
+  { name: "Rep Count", value: "" },
+  { name: "Total Time (s)", value: "" }
+]);
+
+    }
+
   }
 
   return (
@@ -221,6 +279,7 @@ export function ExerciseContent({ exerciseData, exerciseName, exerciseId }: Exer
                   { exerciseId ? (
                     <StepUpMetricsEditor 
                       initialData={calculatedData} 
+                      exerciseName={exerciseName}
                       exerciseId={exerciseId} 
                       onSave={fetchAnalysis}
                     />
