@@ -84,7 +84,7 @@ export default function Page3Layout({ data }: { data: Page3Data }) {
         </div>
 
 {/*         {/* Vector Lines */}
-        <div
+{/*         <div
           className="absolute top-[405px] left-1/2 -translate-x-1/2 w-[393.5px]"
           style={{ borderTop: "1.3px solid #242424" }}
         />
@@ -119,16 +119,16 @@ export default function Page3Layout({ data }: { data: Page3Data }) {
         <div
           className="absolute top-[644px] left-[32.5px] w-[372px]"
           style={{ borderTop: "1.3px solid #242424" }}
-        />
+        /> */}
 
         {/* User Info Section */}
-        <div className="absolute top-[414px] left-[22px] w-[392px] text-[#5E5F5F] font-poppins text-[12px] leading-[1.5] tracking-[-0.01em]">
+{/*         <div className="absolute top-[414px] left-[22px] w-[392px] text-[#5E5F5F] font-poppins text-[12px] leading-[1.5] tracking-[-0.01em]">
           <span className="absolute left-0 w-[170px] overflow-hidden text-ellipsis whitespace-nowrap">{data.name}</span>
           <span className="absolute left-[180px]">{data.age} y/o</span>
           <span className="absolute left-[250px]">{data.height} cm</span>
           <span className="absolute left-[310px]">{data.weight} kg</span>
           <span className="absolute left-[370px]">{data.gender}</span>
-        </div> 
+        </div>  */}
 
         <div className="absolute top-[414px] left-[22px] w-[392px] text-[#5E5F5F] font-poppins text-[12px] leading-[1.5] tracking-[-0.01em] flex">
             {userFields.map((field, idx) => (
