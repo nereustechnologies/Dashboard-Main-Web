@@ -344,7 +344,7 @@ export default function Page5Layout({ data }: { data: Page5Data }) {
           {data.summary?.[2]?.paragraph || "Focus on consistent movement patterns."}
         </p>
       </div>
-      <div className="absolute left-[346px] top-[177px] h-[243px] w-[195px] text-white">
+      <div className="absolute left-[346px] top-[177px] h-[243px] w-[235px] text-white">
         <div
           className="absolute w-[194.5px] border-t border-white/45"
           style={{ top: "29px", left: "0.5px", borderWidth: "0.3px" }}
@@ -361,9 +361,9 @@ export default function Page5Layout({ data }: { data: Page5Data }) {
           Lunge Stretch
         </p>
         <p
-          className="absolute left-0 top-[1px] font-gerante text-[12px] text-[#00DDF9]"
+          className="absolute left-0 top-[1px] max-w-[ ] font-gerante text-[12px] text-[#00DDF9]"
           style={{
-            width: "11px",
+            width: "18px",
             height: "18px",
             lineHeight: "1.5em",
             letterSpacing: "-0.01em",
@@ -508,7 +508,7 @@ export default function Page5Layout({ data }: { data: Page5Data }) {
           Hip Stability:
         </p>
         <p
-          className="absolute left-[97px] top-[225px] font-poppins text-[12px] font-light"
+          className="absolute left-[95px] top-[225px] font-poppins text-[12px] font-light w-full"
           style={{ lineHeight: "1.5em", letterSpacing: "-0.01em" }}
         >
           {data.lunge_stretch["Hip Stability"] || "NA"}
