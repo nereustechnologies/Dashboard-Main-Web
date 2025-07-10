@@ -83,11 +83,30 @@ export default function Page3Layout({ data }: { data: Page3Data }) {
           </span>
         </div>
 
-{/*         {/* Vector Lines */}
-{/*         <div
+        <div
           className="absolute top-[405px] left-1/2 -translate-x-1/2 w-[393.5px]"
+          style={{ borderTop: "1.3px solid #242424" }} />
+
+         <div
+          className="absolute top-[441px] left-1/2 -translate-x-1/2 w-[393.5px]"
           style={{ borderTop: "1.3px solid #242424" }}
         />
+
+        <div
+          className="absolute top-[503px] left-1/2 -translate-x-1/2 w-[393.5px]"
+          style={{ borderTop: "0.6px dashed #242424" }}
+        />
+        <div
+          className="absolute top-[565px] left-1/2 -translate-x-1/2 w-[393.5px]"
+          style={{ borderTop: "0.6px dashed #242424" }}
+        />
+        <div
+          className="absolute top-[644px] left-[32.5px] w-[372px]"
+          style={{ borderTop: "1.3px solid #242424" }}
+        />
+        
+{/*         {/* Vector Lines */}
+{/*        
         <div
           className="absolute top-[415px] left-[136px] h-[15.5px]"
           style={{ borderLeft: "1px solid #242424" }}
@@ -104,22 +123,8 @@ export default function Page3Layout({ data }: { data: Page3Data }) {
           className="absolute top-[415px] left-[362px] h-[15.5px]"
           style={{ borderLeft: "1px solid #242424" }}
         />
-        <div
-          className="absolute top-[441px] left-1/2 -translate-x-1/2 w-[393.5px]"
-          style={{ borderTop: "1.3px solid #242424" }}
-        />
-        <div
-          className="absolute top-[503px] left-1/2 -translate-x-1/2 w-[393.5px]"
-          style={{ borderTop: "0.6px dashed #242424" }}
-        />
-        <div
-          className="absolute top-[565px] left-1/2 -translate-x-1/2 w-[393.5px]"
-          style={{ borderTop: "0.6px dashed #242424" }}
-        />
-        <div
-          className="absolute top-[644px] left-[32.5px] w-[372px]"
-          style={{ borderTop: "1.3px solid #242424" }}
-        /> */}
+       
+         */}
 
         {/* User Info Section */}
 {/*         <div className="absolute top-[414px] left-[22px] w-[392px] text-[#5E5F5F] font-poppins text-[12px] leading-[1.5] tracking-[-0.01em]">
