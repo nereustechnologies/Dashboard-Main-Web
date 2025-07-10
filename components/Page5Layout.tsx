@@ -258,7 +258,7 @@ export default function Page5Layout({ data }: { data: Page5Data }) {
           Ankle Mobility:
         </p>
         <p
-          className="absolute left-[122px] top-[139px] font-poppins text-[12px] font-light"
+          className="absolute left-[122px] top-[139px] font-poppins text-[8px] font-light"
           style={{ lineHeight: "1.5em", letterSpacing: "-0.01em" }}
         >
           {data.knee_to_wall["Ankle Mobility"] || "NA"}
