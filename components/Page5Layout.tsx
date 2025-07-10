@@ -174,9 +174,8 @@ export default function Page5Layout({ data }: { data: Page5Data }) {
           Knee-to-Wall Test
         </p>
         <p
-          className="absolute left-0 top-[1px] font-gerante text-[12px] text-[#00DDF9]"
+          className="absolute left-0 top-[1px] max-w-[32px] font-gerante text-[12px] text-[#00DDF9]"
           style={{
-            width: "11px",
             height: "18px",
             lineHeight: "1.5em",
             letterSpacing: "-0.01em",
