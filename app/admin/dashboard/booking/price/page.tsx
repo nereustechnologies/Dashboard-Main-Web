@@ -5,26 +5,42 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
-import { startOfDay, format } from 'date-fns'
-
+import { format } from 'date-fns'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { DatePicker } from '@/components/ui/date-picker'
-import { Table, TableHead, TableHeader, TableRow, TableCell, TableBody } from '@/components/ui/table'
+import {
+  Table, TableHead, TableHeader, TableRow, TableCell, TableBody,
+} from '@/components/ui/table'
 
-interface SlotDate {
+interface TimeSlot {
   id: string
-  date: string
-  price: number
+  startTime: string
+  endTime: string
+  count: number
+  price?: number
+  slotDate: {
+    location: {
+      id: string
+      name: string
+    }
+    date: string
+  }
 }
 
-export default function SlotDatePriceConfig() {
-  const [dates, setDates] = useState<SlotDate[]>([])
+interface Location {
+  id: string
+  name: string
+}
+
+export default function TimeSlotPriceConfig() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
-  const [price, setPrice] = useState('')
+  const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
+  const [slots, setSlots] = useState<TimeSlot[]>([])
+  const [locations, setLocations] = useState<Location[]>([])
+  const [priceMap, setPriceMap] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [filterDate, setFilterDate] = useState<Date | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -36,76 +52,138 @@ export default function SlotDatePriceConfig() {
     if (parsedUser.role !== 'admin') return router.push('/login')
   }, [router])
 
-  const fetchPrices = async () => {
+useEffect(() => {
+  const fetchFilteredLocations = async () => {
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch('/api/admin/slotdate', {
+      const res = await fetch('/api/admin/timeslots', {
         headers: { Authorization: `Bearer ${token}` },
       })
-      const data = await res.json()
-      setDates(data)
+      const allSlots: TimeSlot[] = await res.json()
+
+      if (!selectedDate) return
+
+      const selectedDay = format(selectedDate, 'yyyy-MM-dd')
+
+      // Filter slots for selected date
+      const slotsForDate = allSlots.filter(
+        (slot) => format(new Date(slot.slotDate.date), 'yyyy-MM-dd') === selectedDay
+      )
+
+      // Extract unique locations
+      const uniqueMap: Record<string, Location> = {}
+      slotsForDate.forEach((slot) => {
+        const loc = slot.slotDate.location
+        uniqueMap[loc.id] = loc
+      })
+
+      const filteredLocations = Object.values(uniqueMap)
+      setLocations(filteredLocations)
+    } catch (err) {
+      console.error('Failed to load filtered locations:', err)
+      setError('Could not load available locations for selected date')
+    }
+  }
+
+  if (selectedDate) {
+    fetchFilteredLocations()
+    setSelectedLocationId(null) // Reset location when date changes
+  }
+}, [selectedDate])
+
+
+  const fetchTimeSlots = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch('/api/admin/timeslots', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const allSlots = await res.json()
+
+      if (selectedDate && selectedLocationId) {
+        const day = format(selectedDate, 'yyyy-MM-dd')
+        const filtered = allSlots.filter((slot: TimeSlot) =>
+          format(new Date(slot.slotDate.date), 'yyyy-MM-dd') === day &&
+          slot.slotDate.location.id === selectedLocationId
+        )
+        setSlots(filtered)
+      }
     } catch (err) {
       console.error(err)
-      setError('Failed to fetch date prices')
+      setError('Failed to fetch slots')
     }
   }
 
   useEffect(() => {
-    fetchPrices()
-  }, [])
+    if (selectedDate && selectedLocationId) {
+      fetchTimeSlots()
+    }
+  }, [selectedDate, selectedLocationId])
 
-  const handleSubmit = async () => {
-    if (!selectedDate) return
+  const handlePriceChange = (id: string, value: string) => {
+    setPriceMap((prev) => ({ ...prev, [id]: value }))
+  }
+
+  const updatePrice = async (timeSlotId: string) => {
     try {
       setLoading(true)
       setError(null)
       setSuccessMessage(null)
-
       const token = localStorage.getItem('token')
-      const res = await fetch('/api/admin/slotdate', {
+
+      const res = await fetch('/api/admin/timeslots/price', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-         date: format(selectedDate, 'yyyy-MM-dd'), // ✅ Send as plain date string
-
-          price: parseInt(price),
+          timeSlotId,
+          price: parseInt(priceMap[timeSlotId]),
         }),
       })
 
-      const responseData = await res.json()
+      const data = await res.json()
 
       if (!res.ok) {
-        setError(responseData.error || 'Failed to update')
+        setError(data.error || 'Failed to update price')
       } else {
-        setSuccessMessage(responseData.message || 'Price updated successfully')
-        setPrice('')
-        setSelectedDate(null)
-        fetchPrices()
+        setSuccessMessage('Price updated successfully')
+        fetchTimeSlots()
       }
     } catch (err) {
       console.error(err)
-      setError('Failed to update price')
+      setError('Error updating price')
     } finally {
       setLoading(false)
     }
   }
 
-  const filteredDates = filterDate
-    ? dates.filter(
-        (d) =>
-          startOfDay(new Date(d.date)).toISOString() ===
-          startOfDay(filterDate).toISOString()
-      )
-    : dates
-
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Manage Date-wise Session Price</h1>
+      <h1 className="text-2xl font-bold mb-4">Set Price Per Time Slot</h1>
 
       <Card className="p-4 mb-6 space-y-4">
+        <div className="flex flex-col md:flex-row gap-4">
+         <select
+  className="border p-2 rounded w-full md:w-1/2"
+  value={selectedLocationId ?? ''}
+  onChange={(e) => setSelectedLocationId(e.target.value || null)}
+  disabled={!selectedDate}
+>
+  <option value="">Select Location</option>
+  {locations.map((loc) => (
+    <option key={loc.id} value={loc.id}>
+      {loc.name}
+    </option>
+  ))}
+</select>
+          <DatePicker
+            date={selectedDate ?? undefined}
+            setDate={(date) => setSelectedDate(date ?? null)}
+          />
+        </div>
+
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -117,68 +195,48 @@ export default function SlotDatePriceConfig() {
             <AlertDescription>{successMessage}</AlertDescription>
           </Alert>
         )}
-
-        <DatePicker
-          date={selectedDate ?? undefined}
-          setDate={(date) => setSelectedDate(date ?? null)}
-        />
-
-        <Input
-          placeholder="Enter price (₹)"
-          value={price}
-          type="number"
-          onChange={(e) => setPrice(e.target.value)}
-        />
-
-        <Button onClick={handleSubmit} disabled={loading || !selectedDate || !price}>
-          {loading ? 'Saving...' : 'Save Price for Date'}
-        </Button>
       </Card>
 
-      {/* Filter */}
-      <div className="mb-4 space-y-1">
-        <label className="text-sm font-medium">Filter by Date</label>
-        <DatePicker
-          date={filterDate ?? undefined}
-          setDate={(date) => setFilterDate(date ?? null)}
-        />
-        {filterDate && (
-          <Button
-            variant="ghost"
-            className="text-sm px-2"
-            onClick={() => setFilterDate(null)}
-          >
-            Clear Filter
-          </Button>
-        )}
-      </div>
-
-      <Card className="p-4">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Price (₹)</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredDates.length > 0 ? (
-              filteredDates.map((d) => (
-                <TableRow key={d.id}>
-                  <TableCell>{format(new Date(d.date), 'yyyy-MM-dd')}</TableCell>
-                  <TableCell>{d.price}</TableCell>
-                </TableRow>
-              ))
-            ) : (
+      {slots.length > 0 ? (
+        <Card className="p-4 space-y-2">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={2} className="text-center">
-                  No data available for selected date
-                </TableCell>
+                <TableHead>Start</TableHead>
+                <TableHead>End</TableHead>
+                <TableHead>Current Price</TableHead>
+                <TableHead>Update Price</TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Card>
+            </TableHeader>
+            <TableBody>
+              {slots.map((slot) => (
+                <TableRow key={slot.id}>
+                  <TableCell>{format(new Date(slot.startTime), 'hh:mm a')}</TableCell>
+                  <TableCell>{format(new Date(slot.endTime), 'hh:mm a')}</TableCell>
+                  <TableCell>{slot.price ? `₹${slot.price}` : 'Not set'}</TableCell>
+                  <TableCell className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="₹"
+                      value={priceMap[slot.id] ?? ''}
+                      onChange={(e) => handlePriceChange(slot.id, e.target.value)}
+                      className="w-28"
+                    />
+                    <Button
+                      onClick={() => updatePrice(slot.id)}
+                      disabled={loading || !priceMap[slot.id]}
+                    >
+                      Save
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      ) : (
+        <p className="text-center text-gray-500">No slots available for selected date and location.</p>
+      )}
     </div>
   )
 }

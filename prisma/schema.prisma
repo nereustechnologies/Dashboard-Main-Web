@@ -112,6 +112,7 @@ model SectionEvaluation {
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   customer   Customer    @relation(fields: [customerId], references: [id])
+
   @@unique([customerId, section])
 }
 
@@ -194,20 +195,20 @@ model EmailLog {
 }
 
 model Client {
-  id             String     @id @default(uuid())
-  fullName       String
-  age            Int
-  gender         Gender
-  email          String
-  whatsapp       String
-  medicalHistory String?
-  whyMove        String
-  fitnessGoal    String
-  uniqueId       String
-  createdAt      DateTime   @default(now())
-  Booking        Booking[]
-  EmailLog       EmailLog[]
-  ManualClientTest  ManualClientTest[]
+  id               String            @id @default(uuid())
+  fullName         String
+  age              Int
+  gender           Gender
+  email            String
+  whatsapp         String
+  medicalHistory   String?
+  whyMove          String
+  fitnessGoal      String
+  uniqueId         String
+  createdAt        DateTime          @default(now())
+  Booking          Booking[]
+  EmailLog         EmailLog[]
+  ManualClientTest ManualClientTest?
 }
 
 model SlotDate {
@@ -218,9 +219,8 @@ model SlotDate {
   location   Location   @relation(fields: [locationId], references: [id])
   timeSlots  TimeSlot[]
 
-  @@unique([date, locationId])
+ 
 }
-
 
 model Location {
   id      String     @id @default(uuid())
@@ -236,6 +236,7 @@ model TimeSlot {
   endTime    DateTime
   count      Int
   slotDateId String
+  price      Int?
   bookings   Booking[]
   temps      Temp[]    @relation("TimeSlotToTemp")
   slotDate   SlotDate  @relation(fields: [slotDateId], references: [id])
@@ -250,28 +251,25 @@ model Booking {
   ageConfirmation  Boolean
   paymentId        String
   paymentStatus    PaymentStatus? @default(PENDING)
-  invoiceNumber    Int           @default(autoincrement())
+  invoiceNumber    Int            @default(autoincrement())
   timeSlotId       String
   createdAt        DateTime       @default(now())
   client           Client         @relation(fields: [clientId], references: [id])
   timeSlot         TimeSlot       @relation(fields: [timeSlotId], references: [id])
 }
-model ManualClientTest {
-  id        String   @id @default(uuid())
-  clientId  String
-  reason    String   // optional: why test was done manually (e.g., internal, demo)
-  createdAt DateTime @default(now())
-
-  client    Client   @relation(fields: [clientId], references: [id])
-
-  @@unique([clientId])
-}
-
 
 model Config {
   id        String   @id @default(uuid())
   price     Int
   updatedAt DateTime @updatedAt
+}
+
+model ManualClientTest {
+  id        String   @id
+  clientId  String   @unique
+  reason    String
+  createdAt DateTime @default(now())
+  Client    Client   @relation(fields: [clientId], references: [id])
 }
 
 enum EmailType {
