@@ -265,7 +265,7 @@ model Config {
 }
 
 model ManualClientTest {
-  id        String   @id
+  id        String   @id @default(uuid())
   clientId  String   @unique
   reason    String
   createdAt DateTime @default(now())
