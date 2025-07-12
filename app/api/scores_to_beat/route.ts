@@ -47,3 +47,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Server error" }, { status: 500 })
   }
 }
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const customerId = searchParams.get("customerId")
+
+    if (!customerId) {
+      return NextResponse.json({ error: "Missing customerId" }, { status: 400 })
+    }
+
+    const scores = await prisma.scoresToBeat.findMany({
+      where: { customerId },
+    })
+
+    return NextResponse.json({ data: scores }, { status: 200 })
+  } catch (err) {
+    console.error("Failed to fetch scores:", err)
+    return NextResponse.json({ error: "Server error" }, { status: 500 })
+  }
+}
