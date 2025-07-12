@@ -30,22 +30,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const userCount = await prisma.client.count()
-    const uniqueId = `NT-${(userCount + 1).toString().padStart(4, "0")}`
-
-    const createdClient = await prisma.client.create({
-      data: {
-        fullName,
-        age,
-        gender,
-        email,
+   const existingClient = await prisma.client.findFirst({
+      where: {
+        fullName: {
+          equals: fullName,
+          mode: 'insensitive',
+        },
         whatsapp,
-        medicalHistory,
-        whyMove,
-        fitnessGoal,
-        uniqueId
-      }
+      },
     })
+
+    let createdClient
+    if (existingClient) {
+      createdClient = existingClient
+    } else {
+      const userCount = await prisma.client.count()
+      const uniqueId = `NT-${(userCount + 1).toString().padStart(4, "0")}`
+
+      createdClient = await prisma.client.create({
+        data: {
+          fullName,
+          age,
+          gender,
+          email,
+          whatsapp,
+          medicalHistory,
+          whyMove,
+          fitnessGoal,
+          uniqueId,
+        },
+      })
+    }
 
     await prisma.manualClientTest.create({
       data: {
