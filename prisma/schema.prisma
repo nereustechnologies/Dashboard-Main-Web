@@ -269,7 +269,7 @@ model ManualClientTest {
   clientId  String   @unique
   reason    String
   createdAt DateTime @default(now())
-  Client    Client   @relation(fields: [clientId], references: [id])
+  client    Client   @relation(fields: [clientId], references: [id])
 }
 
 enum EmailType {
