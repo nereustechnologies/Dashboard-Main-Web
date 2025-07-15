@@ -109,22 +109,19 @@ const pages = element.children;
     });
         setLoading(true)
 
-    const res = await fetch(
-      'http://129.154.255.167:5678/webhook/d67d7b2f-bc72-48e6-bc5c-337e576ece53',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filename: 'fitness_report.pdf',
-          base64Pdf: base64,
-          clientInfo: {
-            id: reportData?.page1?.uniqueId,
-            name: reportData?.page1?.name,
-            email: reportData?.page1?.email,
-          },
-        }),
-      }
-    );
+   const res = await fetch('/api/send-pdf', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    filename: 'fitness_report.pdf',
+    base64Pdf: base64,
+    clientInfo: {
+      id: reportData?.page1?.uniqueId,
+      name: reportData?.page1?.name,
+      email: reportData?.page1?.email,
+    },
+  }),
+});
 
     if (!res.ok) throw new Error('Failed to send PDF to n8n');
 
