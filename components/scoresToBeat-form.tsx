@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useState } from "react"
 import {
   Card,
@@ -9,8 +7,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
-import { Loader2 } from "lucide-react"
+import { Plus, Trash2, Loader2 } from "lucide-react"
 
 interface ScoreInputs {
   title: string
@@ -40,7 +37,7 @@ export function ScoresToBeat({ customerId }: ScoresToBeatProps) {
           }))
           setData(formatted)
         } else {
-          setData([{ title: "", current: "", target: "" }]) // default
+          setData([{ title: "", current: "", target: "" }])
         }
       } catch (error) {
         console.error("Failed to fetch scores:", error)
@@ -61,6 +58,12 @@ export function ScoresToBeat({ customerId }: ScoresToBeatProps) {
 
   const handleAddSet = () => {
     setData((prev) => [...prev, { title: "", current: "", target: "" }])
+  }
+
+  const handleDelete = (index: number) => {
+    const updated = [...data]
+    updated.splice(index, 1)
+    setData(updated)
   }
 
   const handleSave = async () => {
@@ -97,7 +100,13 @@ export function ScoresToBeat({ customerId }: ScoresToBeatProps) {
         ) : (
           <>
             {data.map((score, idx) => (
-              <div key={idx} className="space-y-2">
+              <div key={idx} className="space-y-2 relative border p-4 rounded-md shadow-sm ">
+                <div
+                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 cursor-pointer"
+                  onClick={() => handleDelete(idx)}
+                >
+                  <Trash2 className="w-5 h-5" />
+                </div>
                 <Input
                   placeholder="Title"
                   value={score.title}

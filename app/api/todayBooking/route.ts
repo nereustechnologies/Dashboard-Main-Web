@@ -18,7 +18,7 @@ export async function GET() {
       },
     },
     select: {
-      client: {
+        client: {
         select: {
           id: true,
           uniqueId: true,

@@ -109,6 +109,7 @@ const sampleFallbackData: FitnessReportData = {
     ]
   },
   page9: {
+    identity:"mobility-dominant",
     scores: {
       endurance: 5,
       strength: 7,

@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, Suspense } from 'react';
+
 import { useSearchParams } from 'next/navigation';
 import Page10Layout from "@/components/Page10Layout";
 import Page11Layout from "@/components/Page11Layout";
@@ -14,9 +15,14 @@ import Page7Layout from "@/components/Page7Layout";
 import Page8Layout from "@/components/Page8Layout";
 import Page9Layout from "@/components/Page9Layout";
 import { FitnessReportData } from '@/lib/report-converter';
+import { Scale } from 'lucide-react';
 
 function PreviewPrintContent() {
+  
   const [reportData, setReportData] = useState<FitnessReportData | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+const [confirmInput, setConfirmInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showInstructions, setShowInstructions] = useState(false);
@@ -43,7 +49,98 @@ function PreviewPrintContent() {
     setTimeout(checkFonts, 500);
   }, []);
 
-  const handleDownloadPDF = () => {
+
+
+const handleApprove = async () => {
+
+ if (!reportData || loading || !fontsLoaded) {
+    alert('⏳ Report is still loading. Please wait a moment before sending.');
+    return;
+  }
+
+  try {
+
+         const html2canvas = (await import('html2canvas')).default;
+             const jsPDF = (await import('jspdf')).jsPDF;
+const element = document.getElementById('report-container');
+if (!element) throw new Error('Report container not found');
+
+const pages = element.children;
+    if (pages && !pages.length) throw new Error('No pages found');
+
+
+    const pdf = new jsPDF({
+      unit: 'mm',
+      format: 'a5',
+      orientation: 'portrait',
+    });
+
+    for (let i = 0; i < pages.length; i++) {
+  const canvas = await html2canvas(pages[i] as HTMLElement, {
+    scale: 2,
+    useCORS: true,
+    scrollX: 0,
+    scrollY: 0,
+  });
+
+  const imgData = canvas.toDataURL('image/jpeg', 1.0);
+  const imgProps = pdf.getImageProperties(imgData);
+
+  const pdfWidth = 148; // A5 width in mm
+  const pdfHeight = 210;
+  const imgWidth = pdfWidth;
+  const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+  const yOffset = (pdfHeight - imgHeight) / 2;
+
+  // ✅ Only add a page *before* drawing second and subsequent pages
+  if (i !== 0) pdf.addPage();
+
+  pdf.addImage(imgData, 'JPEG', 0, yOffset > 0 ? yOffset : 0, imgWidth, imgHeight);
+}
+
+    const pdfBlob = pdf.output('blob');
+
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () =>
+        resolve(reader.result?.toString().split(',')[1] || '');
+      reader.onerror = reject;
+      reader.readAsDataURL(pdfBlob);
+    });
+        setLoading(true)
+
+    const res = await fetch(
+      'http://129.154.255.167:5678/webhook/d67d7b2f-bc72-48e6-bc5c-337e576ece53',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: 'fitness_report.pdf',
+          base64Pdf: base64,
+          clientInfo: {
+            id: reportData?.page1?.uniqueId,
+            name: reportData?.page1?.name,
+            email: reportData?.page1?.email,
+          },
+        }),
+      }
+    );
+
+    if (!res.ok) throw new Error('Failed to send PDF to n8n');
+
+    alert('✅ PDF report sent successfully via n8n!');
+  } catch (err) {
+    alert(
+      '❌ Error sending PDF: ' +
+        (err instanceof Error ? err.message : String(err))
+    );
+  } finally {
+    setLoading(false);
+    setCooldownSeconds(0);
+  }
+};
+
+  const handleDownloadPDF = () => { 
     // Set document title for the PDF filename
     const customerName = reportData?.page1?.name || 'Customer';
     const currentDate = new Date().toISOString().split('T')[0];
@@ -64,6 +161,21 @@ function PreviewPrintContent() {
       document.title = originalTitle;
     }, 3000);
   };
+  useEffect(() => {
+  if (cooldownSeconds <= 0) return;
+
+  const interval = setInterval(() => {
+    setCooldownSeconds((prev) => {
+      if (prev <= 1) {
+        clearInterval(interval);
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [cooldownSeconds]);
 
   useEffect(() => {
     setLoading(true);
@@ -290,6 +402,27 @@ function PreviewPrintContent() {
           transform: translateY(-2px);
           box-shadow: 0 6px 16px rgba(0, 212, 239, 0.4);
         }
+        .send{
+          
+          background: #00D4EF;
+          color: white;
+          border: none;
+          border-radius: 50px;
+          padding: 15px 25px;
+          font-size: 16px;
+          font-weight: bold;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(0, 212, 239, 0.3);
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .send:hover {
+          background: #00B8CC;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(0, 212, 239, 0.4);
+        }
                 @media print {
           .download-button, .instructions-modal {
             display: none !important;
@@ -348,6 +481,57 @@ function PreviewPrintContent() {
           font-size: 14px;
         }
       `}</style>
+
+      {showConfirmModal && (
+  <div className="fixed inset-0 z-[1000] bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center">
+    <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+      <h2 className="text-2xl font-bold text-gray-800 mb-2">📤 Confirm Email</h2>
+      <p className="text-gray-600 mb-4">
+        Are you sure you want to send this report to the client?
+        <br /> Type <span className="font-semibold text-blue-600">confirm</span> to proceed.
+      </p>
+
+      <input
+        type="text"
+        className="w-full border border-gray-300 rounded px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        placeholder="Type 'confirm'"
+        value={confirmInput}
+        onChange={(e) => setConfirmInput(e.target.value)}
+      />
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => {
+            setShowConfirmModal(false);
+            setConfirmInput('');
+          }}
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm font-medium"
+        >
+          Cancel
+        </button>
+        <button
+          disabled={confirmInput.trim().toLowerCase() !== 'confirm'}
+          onClick={async () => {
+            setShowConfirmModal(false);
+            setConfirmInput('');
+            setCooldownSeconds(120); 
+           await handleApprove();
+// 2 minutes
+
+          }}
+          className={`px-4 py-2 rounded text-sm font-medium text-white ${
+            confirmInput.trim().toLowerCase() === 'confirm'
+              ? 'bg-blue-600 hover:bg-blue-700'
+              : 'bg-blue-300 cursor-not-allowed'
+          }`}
+        >
+          Send Email
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       
       {/* Instructions Modal */}
       {showInstructions && (
@@ -386,6 +570,22 @@ function PreviewPrintContent() {
          </svg>
         Download PDF
       </button>
+      <button
+  onClick={() => setShowConfirmModal(true)}
+  disabled={loading || cooldownSeconds > 0}
+  className={`fixed right-60 top-[20px] send ${
+    cooldownSeconds > 0 ? 'opacity-60 cursor-not-allowed' : ''
+  }`}
+>
+  {loading
+    ? 'Sending...'
+    : cooldownSeconds > 0
+    ? `Cooldown (${cooldownSeconds}s)`
+    : 'Send Report'}
+</button>
+
+
+    <div id="report-container">
 
       <div className="page"><Page1Layout data={reportData.page1} /></div>
       <div className="page"><Page2Layout data={reportData.page3} /></div>
@@ -399,6 +599,7 @@ function PreviewPrintContent() {
       <div className="page"><Page10Layout data={reportData.page10} /></div>
       <div className="page"><Page11Layout data={reportData.page11} /></div>
       <div className="last-page"><Page12Layout data={reportData.page12} /></div>
+    </div>
     </div>
   );
 }

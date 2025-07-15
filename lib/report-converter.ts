@@ -1,3 +1,5 @@
+import { unique } from "next/dist/build/utils";
+
 // A generic type for summary items used across multiple pages
 interface SummaryItem {
   title: string;
@@ -98,6 +100,7 @@ export interface Page7Data {
 
 // Page 9: Movement Signature
 export interface Page9Data {
+  identity:string,
   scores: {
     endurance: number;
     strength: number;
@@ -131,6 +134,9 @@ export interface Page12Data {
 
 // Page 1: Basic info
 export interface Page1Data {
+  id:string,
+  uniqueId:string,
+  email:string,
   name: string;
 }
 
@@ -309,7 +315,10 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
   
   return {
     page1: { 
-      name: customerData.name 
+      name: customerData.name,
+      email:customerData.client.email,
+      id:customerData.id,
+      uniqueId:customerData.uniqueId
     },
     
     page3: {
@@ -429,6 +438,7 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
     },
     
     page9: {
+      identity:movementSignature.identity,
       scores: {
         endurance: movementSignature?.enduranceRating || 5,
         strength: movementSignature?.strengthRating || 5,

@@ -21,11 +21,19 @@ export default function Page9Layout({
 
   let trait: "endurance" | "strength" | "mobility" | "hybrid" = "hybrid";
 
-  if (numMax === 1) {
-    if (enduranceIsMax) trait = "endurance";
-    else if (strengthIsMax) trait = "strength";
-    else if (mobilityIsMax) trait = "mobility";
-  }
+let Identity=page9.identity
+if(Identity=="Mobility-Dominant"){
+  trait="mobility"
+}
+if(Identity=="Strength-Dominant"){
+  trait="strength"
+}
+if(Identity=="Endurance-Dominant"){
+  trait="endurance"
+}
+if(Identity=="Hybrid-Dominant"){
+  trait="hybrid"
+}
 
   const content = {
     endurance: {

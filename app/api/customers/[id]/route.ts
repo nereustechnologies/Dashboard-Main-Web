@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
     // Also fetch related Client information if it exists
     const clientInfo = await prisma.client.findFirst({
       where: {
-        fullName: customerInfo.name
+        uniqueId: customerInfo.UniqueId ?? ''
       },
       include: {
         Booking: {

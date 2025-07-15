@@ -206,6 +206,7 @@ model Client {
   fitnessGoal      String
   uniqueId         String
   createdAt        DateTime          @default(now())
+  FitnessReport FitnessReport[]
   Booking          Booking[]
   EmailLog         EmailLog[]
   ManualClientTest ManualClientTest?
@@ -271,6 +272,15 @@ model ManualClientTest {
   createdAt DateTime @default(now())
   client    Client   @relation(fields: [clientId], references: [id])
 }
+model FitnessReport {
+  id         String   @id @default(cuid())
+  clientId   String   @unique
+  client     Client   @relation(fields: [clientId], references: [id])
+  reportURL  String
+  approvedAt DateTime?
+  createdAt  DateTime @default(now())
+}
+
 
 enum EmailType {
   CONFIRMATION
