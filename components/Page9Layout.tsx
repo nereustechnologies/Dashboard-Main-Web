@@ -21,7 +21,7 @@ export default function Page9Layout({
 
   let trait: "endurance" | "strength" | "mobility" | "hybrid" = "hybrid";
 
-let Identity=page9.identity
+let Identity=page9.identity ?? null
 if(Identity=="Mobility-Dominant"){
   trait="mobility"
 }

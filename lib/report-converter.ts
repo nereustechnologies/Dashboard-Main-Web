@@ -438,7 +438,7 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
     },
     
     page9: {
-      identity:movementSignature.identity,
+identity: movementSignature?.identity ?? null,
       scores: {
         endurance: movementSignature?.enduranceRating || 5,
         strength: movementSignature?.strengthRating || 5,
