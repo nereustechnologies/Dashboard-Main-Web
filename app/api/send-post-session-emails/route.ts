@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
         }
 
         try {
-          const response = await fetch("http://129.154.255.167:5678/webhook/c54a7d7e-77aa-455c-ba10-e3293502cae0", {
+          const response = await fetch("http://129.154.255.167:5678/webhook/2353608f-b5a2-4659-8f3f-bcb66bfa47b3", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),

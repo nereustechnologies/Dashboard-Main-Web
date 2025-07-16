@@ -52,85 +52,57 @@ const [confirmInput, setConfirmInput] = useState('');
 
 
 const handleApprove = async () => {
-
- if (!reportData || loading || !fontsLoaded) {
+  if (!reportData || loading || !fontsLoaded) {
     alert('⏳ Report is still loading. Please wait a moment before sending.');
     return;
   }
 
   try {
+    const html2canvas = (await import('html2canvas')).default;
+    const jsPDF = (await import('jspdf')).jsPDF;
+    const element = document.getElementById('report-container');
+    if (!element) throw new Error('Report container not found');
 
-         const html2canvas = (await import('html2canvas')).default;
-             const jsPDF = (await import('jspdf')).jsPDF;
-const element = document.getElementById('report-container');
-if (!element) throw new Error('Report container not found');
+    const pdf = new jsPDF({ unit: 'mm', format: 'a5', orientation: 'portrait' });
 
-const pages = element.children;
-    if (pages && !pages.length) throw new Error('No pages found');
+    for (let i = 0; i < element.children.length; i++) {
+      const canvas = await html2canvas(element.children[i] as HTMLElement, {
+        scale: 2,
+        useCORS: true,
+        scrollX: 0,
+        scrollY: 0,
+      });
 
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const imgProps = pdf.getImageProperties(imgData);
 
-    const pdf = new jsPDF({
-      unit: 'mm',
-      format: 'a5',
-      orientation: 'portrait',
-    });
+      const pdfWidth = 148;
+      const pdfHeight = 210;
+      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const yOffset = (pdfHeight - imgHeight) / 2;
 
-    for (let i = 0; i < pages.length; i++) {
-  const canvas = await html2canvas(pages[i] as HTMLElement, {
-    scale: 2,
-    useCORS: true,
-    scrollX: 0,
-    scrollY: 0,
-  });
-
-  const imgData = canvas.toDataURL('image/jpeg', 1.0);
-  const imgProps = pdf.getImageProperties(imgData);
-
-  const pdfWidth = 148; // A5 width in mm
-  const pdfHeight = 210;
-  const imgWidth = pdfWidth;
-  const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-  const yOffset = (pdfHeight - imgHeight) / 2;
-
-  // ✅ Only add a page *before* drawing second and subsequent pages
-  if (i !== 0) pdf.addPage();
-
-  pdf.addImage(imgData, 'JPEG', 0, yOffset > 0 ? yOffset : 0, imgWidth, imgHeight);
-}
+      if (i !== 0) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, yOffset > 0 ? yOffset : 0, pdfWidth, imgHeight);
+    }
 
     const pdfBlob = pdf.output('blob');
 
-    const base64 = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () =>
-        resolve(reader.result?.toString().split(',')[1] || '');
-      reader.onerror = reject;
-      reader.readAsDataURL(pdfBlob);
+    // ✅ Build FormData
+    const formData = new FormData();
+    formData.append('pdf', pdfBlob, 'fitness_report.pdf');
+    formData.append('id', reportData.page1?.uniqueId ?? '');
+    formData.append('name', reportData.page1?.name ?? '');
+    formData.append('email', reportData.page1?.email ?? '');
+
+    const res = await fetch('/api/send-pdf', {
+      method: 'POST',
+      body: formData, // 🔥 No JSON, no base64, just raw binary
     });
-        setLoading(true)
 
-   const res = await fetch('/api/send-pdf', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    filename: 'fitness_report.pdf',
-    base64Pdf: base64,
-    clientInfo: {
-      id: reportData?.page1?.uniqueId,
-      name: reportData?.page1?.name,
-      email: reportData?.page1?.email,
-    },
-  }),
-});
-
-    if (!res.ok) throw new Error('Failed to send PDF to n8n');
-
-    alert('✅ PDF report sent successfully via n8n!');
+    if (!res.ok) throw new Error('Failed to send PDF');
+    alert('✅ PDF report sent successfully!');
   } catch (err) {
-    alert(
-      '❌ Error sending PDF: ' +
-        (err instanceof Error ? err.message : String(err))
-    );
+    alert('❌ Error sending PDF: ' + (err instanceof Error ? err.message : String(err)));
   } finally {
     setLoading(false);
     setCooldownSeconds(0);
