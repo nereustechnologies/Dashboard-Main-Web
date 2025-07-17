@@ -94,10 +94,11 @@ const handleApprove = async () => {
     formData.append('name', reportData.page1?.name ?? '');
     formData.append('email', reportData.page1?.email ?? '');
 
-    const res = await fetch('/api/send-pdf', {
-      method: 'POST',
-      body: formData, // 🔥 No JSON, no base64, just raw binary
-    });
+   const res = await fetch('https://send-pdf-production.up.railway.app/send-pdf', {
+  method: 'POST',
+  body: formData, // 🔥 No JSON, no base64, just raw binary
+});
+
 
     if (!res.ok) throw new Error('Failed to send PDF');
     alert('✅ PDF report sent successfully!');
