@@ -34,6 +34,19 @@ export default function AdminDashboard() {
     setLoading(false)
   }, [router])
 
+  const handleDownloadCSV = async () => {
+  const res = await fetch('/api/admin/promo-usage');
+  const blob = await res.blob();
+
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'promo-code-usage.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
+
   const handleLogout = () => {
     localStorage.removeItem("token")
     localStorage.removeItem("user")
@@ -63,8 +76,11 @@ export default function AdminDashboard() {
     >
       Booking Dashboard
     </Button>
+    <button onClick={handleDownloadCSV}  className="bg-[#5cd2ec] text-black font-semibold hover:scale-105 transition mr-2 ml-2 rounded p-2">
+  PromoCode csv
+</button>
     <DownloadCsvButton></DownloadCsvButton>
-     
+      
           <Button variant="outline" onClick={handleLogout} className="border-[#00D4EF] text-[#00D4EF]">
             Logout
           </Button>
