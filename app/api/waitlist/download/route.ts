@@ -14,6 +14,7 @@ function formatIST(date: Date) {
     hour12: true,
   })
 }
+
 export async function GET() {
   const client = new Client({
     connectionString: process.env.DATABASE_URL_WAITLIST,
@@ -23,15 +24,22 @@ export async function GET() {
     await client.connect()
 
     const result = await client.query(
-      `SELECT "fullName", "phoneNumber", "email", "city", "createdAt"
+      `SELECT "fullName", "phoneNumber", "email", "city", "heardFrom", "gymName", "otherSource", "createdAt"
        FROM "WaitlistEntry"
        ORDER BY "createdAt" DESC`
     )
 
-    
-    
+    const headers = [
+      "Full Name",
+      "Phone Number",
+      "Email",
+      "City",
+      "Heard From",
+      "Gym Name",
+      "Other Source",
+      "Submitted At",
+    ]
 
-    const headers = ["Full Name", "Phone Number", "Email", "City", "Submitted At"]
     const csvRows = [
       headers.join(","),
       ...result.rows.map((row) =>
@@ -40,8 +48,10 @@ export async function GET() {
           `"${row.phoneNumber}"`,
           `"${row.email}"`,
           `"${row.city}"`,
-          `"${formatIST(row.createdAt)}"`
-
+          `"${row.heardFrom || ""}"`,
+          `"${row.gymName || ""}"`,
+          `"${row.otherSource || ""}"`,
+          `"${formatIST(row.createdAt)}"`,
         ].join(",")
       ),
     ]
