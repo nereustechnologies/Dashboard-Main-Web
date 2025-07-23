@@ -164,7 +164,7 @@ model MovementSignature {
 }
 
 model Temp {
-  id               String   @id @default(uuid())
+  id               String     @id @default(uuid())
   fullName         String
   age              Int
   gender           Gender
@@ -174,12 +174,14 @@ model Temp {
   medicalHistory   String?
   whyMove          String
   fitnessGoal      String
-  consentAgreement Boolean  @default(true)
+  consentAgreement Boolean    @default(true)
   ageConfirmation  Boolean
   paymentStatus    String
   timeSlotId       String
-  createdAt        DateTime @default(now())
-  timeSlot         TimeSlot @relation("TimeSlotToTemp", fields: [timeSlotId], references: [id])
+  createdAt        DateTime   @default(now())
+  promoCodeId      String?
+  PromoCode        PromoCode? @relation(fields: [promoCodeId], references: [id])
+  timeSlot         TimeSlot   @relation("TimeSlotToTemp", fields: [timeSlotId], references: [id])
 }
 
 model EmailLog {
@@ -206,9 +208,9 @@ model Client {
   fitnessGoal      String
   uniqueId         String
   createdAt        DateTime          @default(now())
-  FitnessReport FitnessReport[]
   Booking          Booking[]
   EmailLog         EmailLog[]
+  FitnessReport    FitnessReport?
   ManualClientTest ManualClientTest?
 }
 
@@ -219,8 +221,6 @@ model SlotDate {
   price      Int?
   location   Location   @relation(fields: [locationId], references: [id])
   timeSlots  TimeSlot[]
-
- 
 }
 
 model Location {
@@ -257,6 +257,7 @@ model Booking {
   createdAt        DateTime       @default(now())
   client           Client         @relation(fields: [clientId], references: [id])
   timeSlot         TimeSlot       @relation(fields: [timeSlotId], references: [id])
+  BookingPromo     BookingPromo[]
 }
 
 model Config {
@@ -272,15 +273,41 @@ model ManualClientTest {
   createdAt DateTime @default(now())
   client    Client   @relation(fields: [clientId], references: [id])
 }
+
 model FitnessReport {
-  id         String   @id @default(cuid())
-  clientId   String   @unique
-  client     Client   @relation(fields: [clientId], references: [id])
+  id         String    @id @default(cuid())
+  clientId   String    @unique
   reportURL  String
   approvedAt DateTime?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
+  client     Client    @relation(fields: [clientId], references: [id])
 }
 
+model BookingPromo {
+  id          String    @id
+  bookingId   String
+  promoCodeId String
+  createdAt   DateTime  @default(now())
+  Booking     Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  PromoCode   PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+
+  @@unique([bookingId, promoCodeId])
+}
+
+model PromoCode {
+  id            String         @id
+  code          String         @unique
+  discountType  DiscountType
+  discountValue Int
+  isActive      Boolean        @default(true)
+  usageLimit    Int?
+  usedCount     Int            @default(0)
+  expiryDate    DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime
+  BookingPromo  BookingPromo[]
+  Temp          Temp[]
+}
 
 enum EmailType {
   CONFIRMATION
@@ -315,4 +342,9 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUND
+}
+
+enum DiscountType {
+  percent
+  flat
 }
