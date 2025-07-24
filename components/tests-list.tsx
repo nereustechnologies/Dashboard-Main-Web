@@ -248,7 +248,7 @@ const assignDoctor = async () => {
      <Tabs defaultValue="Tests">
        <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="Tests">Tests</TabsTrigger>
-            <TabsTrigger value="Doctors">Doctors</TabsTrigger>
+            {MainDoctor? <TabsTrigger value="Doctors">Doctors</TabsTrigger> : <></>}
           </TabsList>
           <TabsContent value="Tests">
                      
@@ -437,9 +437,8 @@ const assignDoctor = async () => {
 )}
  </TabsContent>
 
-  <TabsContent value="Doctors">
- <DoctorsTab doctors={doctors}></DoctorsTab>
-  </TabsContent>
+ {MainDoctor && <DoctorsTab doctors={doctors} />}
+
      </Tabs>
 </>
   )
