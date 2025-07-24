@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Authorization: Admins and Doctors can see any test. Testers can only see their own tests.
-    if (user.role !== "admin" && user.role !== "doctor" && test.testerId !== user.id) {
+    if (user.role !== "admin" && user.role !== "doctor" && test.testerId !== user.id && user.role !== "MainDoctor") {
       return NextResponse.json({ error: "Forbidden: You do not have permission to view this test" }, { status: 403 })
     }
 

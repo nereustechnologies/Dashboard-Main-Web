@@ -2,14 +2,53 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { Label } from "@radix-ui/react-label";
+
+import {
+  Dialog,
+
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { DoctorsTab } from "./DoctorsTab";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import { Search, Download, Eye, Calendar, Filter, ChevronDown, Trash } from "lucide-react"
+import { Search, Download, Eye, Calendar, Filter, ChevronDown, Trash, Hospital } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { toast } from "@/components/ui/use-toast"
+import { toast as baseToast } from "@/components/ui/use-toast"
+
+export const toast = Object.assign(baseToast, {
+  success: (message: string) =>
+    baseToast({
+      title: "Success",
+      description: message,
+    }),
+  error: (message: string) =>
+    baseToast({
+      title: "Error",
+      description: message,
+      variant: "destructive",
+    }),
+})
+
 import { useRouter } from "next/navigation" // Import useRouter
+
+type Doctor = {
+  id: string;
+  name: string;
+  email: string;
+};
+type Test = {
+  id: string
+  customer: { name: string }
+  // add other fields as necessary (e.g., date, status, AssignedTo, etc.)
+}
 
 export default function TestsList() { // Renamed component
   const router = useRouter() // Initialize router
@@ -18,12 +57,39 @@ export default function TestsList() { // Renamed component
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCategory, setFilterCategory] = useState("all")
   const [error, setError] = useState("")
+  const [MainDoctor,setMainDoctor]= useState(false)
+const [showAssignDialog, setShowAssignDialog] = useState(false);
+const [selectedTest, setSelectedTest] = useState<Test | null>(null)
+
+const [doctors, setDoctors] = useState<Doctor[]>([]); // ✅ Correct typing
+const [selectedDoctorId, setSelectedDoctorId] = useState("none");
+  
 
   useEffect(() => {
-    // Fetch test history from API
+      const fetchDoctors = async () => {
+    try {
+      const res = await fetch("/api/doctors")
+      const data = await res.json()
+      setDoctors(data)
+    } catch (error) {
+      console.error("Failed to fetch doctors", error)
+    }
+  }
+
+    fetchDoctors()
+
+            const getUser = localStorage.getItem("user")
+            if (getUser) {
+  const user = JSON.parse(getUser) // Convert JSON string to object
+  setMainDoctor(user.role === "MainDoctor")
+}
+    // Fetch test history from 
+    // API
+
+
     const fetchTests = async () => {
       try {
-        const token = localStorage.getItem("token")
+    const token = localStorage.getItem("token")
         if (!token) {
           // For the doctor's view, you might have a different auth mechanism
           // or this page might be protected by a higher-level route guard.
@@ -57,6 +123,33 @@ export default function TestsList() { // Renamed component
 
     fetchTests()
   }, [])
+  const handleAssignClick = (test:Test) => {
+  setSelectedTest(test);
+  
+  setShowAssignDialog(true);
+};
+const assignDoctor = async () => {
+  try {
+    const res = await fetch("/api/assign-doctor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        testId: selectedTest?.id,
+        doctorId: selectedDoctorId === "none" ? null : selectedDoctorId,
+      }),
+    });
+
+    if (res.ok) {
+      toast.success("Doctor assigned successfully!");
+      setShowAssignDialog(false);
+    } else {
+      toast.error("Failed to assign doctor.");
+    }
+  } catch (error) {
+    toast.error("Something went wrong.");
+  }
+};
+
 
   const filteredTests = tests.filter((test) => {
     const matchesSearch =
@@ -151,12 +244,22 @@ export default function TestsList() { // Renamed component
   }
 
   return (
+    <>
+     <Tabs defaultValue="Tests">
+       <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="Tests">Tests</TabsTrigger>
+            <TabsTrigger value="Doctors">Doctors</TabsTrigger>
+          </TabsList>
+          <TabsContent value="Tests">
+                     
+                   
     <Card className="border-[#00D4EF]/20 bg-black">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-xl text-[#00D4EF] flex items-center gap-2">
           <Calendar className="h-5 w-5" />
           Available Tests {/* Optionally change title */}
         </CardTitle>
+
         <div className="flex items-center space-x-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -202,6 +305,11 @@ export default function TestsList() { // Renamed component
                 <TableHead>Gender</TableHead>
                 <TableHead>Categories</TableHead>
                 <TableHead>Status</TableHead>
+                {MainDoctor ? (
+  <TableHead>
+    Doctor
+  </TableHead>
+) : null}
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -228,6 +336,14 @@ export default function TestsList() { // Renamed component
                       {test.status}
                     </span>
                   </TableCell>
+                 {MainDoctor ? (
+  <TableCell>
+    <span className="text-white">
+   {test.AssignedTo?.[0]?.doctor?.name}
+   </span>
+  </TableCell>
+  
+) : null}
                   <TableCell className="text-right">
                     <div className="flex justify-end space-x-1">
                       <Button
@@ -258,6 +374,17 @@ export default function TestsList() { // Renamed component
                       >
                         <Trash size={14} />
                       </Button>
+                      {MainDoctor? (
+                     <Button
+  variant="outline"
+  size="sm"
+  onClick={() => handleAssignClick(test)} // pass the test object
+  className="border-white text-white"
+  title="Assign Doctor"
+>
+  Assign
+</Button>
+):null}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -267,5 +394,55 @@ export default function TestsList() { // Renamed component
         )}
       </CardContent>
     </Card>
+    
+    {showAssignDialog && selectedTest && (
+  <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Assign Doctor</DialogTitle>
+        <DialogDescription>
+          Assign a doctor to the following test.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="space-y-2">
+        <div className="text-sm text-muted-foreground">
+          <strong>Test ID:</strong> {selectedTest?.id}
+        </div>
+        <div className="text-sm text-muted-foreground">
+          <strong>Customer:</strong> {selectedTest.customer.name}
+        </div>
+
+        <Label htmlFor="doctor">Select Doctor</Label>
+        <select
+          id="doctor"
+          value={selectedDoctorId}
+          onChange={(e) => setSelectedDoctorId(e.target.value)}
+          className="w-full p-2 border rounded"
+        >
+          <option value="none">None</option>
+          {doctors.map((doc) => (
+            <option key={doc.id} value={doc.id}>
+              {doc.name} ({doc.email})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <DialogFooter>
+        <Button onClick={assignDoctor}>Done</Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+)}
+ </TabsContent>
+
+  <TabsContent value="Doctors">
+ <DoctorsTab doctors={doctors}></DoctorsTab>
+  </TabsContent>
+     </Tabs>
+</>
   )
+  
+
 }

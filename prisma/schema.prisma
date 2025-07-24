@@ -16,9 +16,11 @@ model User {
   adminId   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  assignedTests TestAssignment[] @relation("DoctorAssignedToTests")
   tests     Test[]
   admin     User?    @relation("AdminToTesters", fields: [adminId], references: [id])
   testers   User[]   @relation("AdminToTesters")
+  
 }
 
 model Customer {
@@ -41,6 +43,20 @@ model Customer {
   tests              Test[]
   trainingPurposes   TrainingPurpose[]
 }
+model TestAssignment {
+  id        String   @id @default(uuid())
+  testId    String
+  doctorId  String
+ 
+  assignedAt DateTime @default(now())
+
+  test      Test     @relation(fields: [testId], references: [id])
+  doctor    User     @relation("DoctorAssignedToTests", fields: [doctorId], references: [id])
+ 
+
+  @@unique([testId]) // Ensure only one doctor per test for now (you can remove later for many-to-many)
+}
+
 
 model Test {
   id         String      @id @default(uuid())
@@ -50,6 +66,7 @@ model Test {
   testerId   String
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
+  AssignedTo TestAssignment[]
   exercises  Exercise[]
   customer   Customer    @relation(fields: [customerId], references: [id])
   tester     User        @relation(fields: [testerId], references: [id])
@@ -295,7 +312,7 @@ model BookingPromo {
 }
 
 model PromoCode {
-  id            String         @id
+  id            String         @id @default(uuid())
   code          String         @unique
   discountType  DiscountType
   discountValue Int
@@ -304,7 +321,7 @@ model PromoCode {
   usedCount     Int            @default(0)
   expiryDate    DateTime?
   createdAt     DateTime       @default(now())
-  updatedAt     DateTime
+  updatedAt    DateTime @updatedAt
   BookingPromo  BookingPromo[]
   Temp          Temp[]
 }

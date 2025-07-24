@@ -12,19 +12,50 @@ export async function GET(request: NextRequest) {
 
     let tests;
 
-    if (user.role === "admin" || user.role === "doctor") {
-      // Admins and Doctors can see all tests
-      tests = await prisma.test.findMany({
+  if (user.role === "admin" || user.role === "MainDoctor") {
+  tests = await prisma.test.findMany({
+    include: {
+      customer: true,
+      tester: { select: { name: true, id: true } },
+      exercises: { select: { category: true } },
+      AssignedTo: {
         include: {
-          customer: true, // Include customer details
-          tester: { select: { name: true, id: true } }, // Include tester's name and id
-          exercises: { select: { category: true } }, // For displaying categories
+          doctor: {
+            select: { id: true, name: true, email: true },
+          },
         },
-        orderBy: {
-          createdAt: "desc", // Or 'date' field, depending on preference
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
+    else if (user.role === "doctor") {
+  // Fetch assigned tests using TestAssignment table
+  const assignedTests = await prisma.testAssignment.findMany({
+    where: {
+      doctorId: user.id,
+    },
+    include: {
+      test: {
+        include: {
+          customer: true,
+          tester: { select: { name: true, id: true } },
+          exercises: { select: { category: true } },
         },
-      });
-    } else if (user.role === "tester") {
+      },
+    },
+    orderBy: {
+      assignedAt: "desc", // or test.createdAt, but this works from TestAssignment
+    },
+  });
+
+  // Map to just the test objects
+  tests = assignedTests.map((assignment) => assignment.test);
+}
+     else if (user.role === "tester") {
       // Testers can only see their own tests
       tests = await prisma.test.findMany({
         where: {

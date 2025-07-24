@@ -56,7 +56,10 @@ export default function LoginForm() {
         router.push("/admin/dashboard")
       } else if (data.user.role === "doctor") {
         router.push("/doctor")
-      } else {
+      } else if (data.user.role === "MainDoctor") {
+        router.push("/doctor")
+      }
+       else {
         router.push("/tester/dashboard")
       }
     } catch (error) {
@@ -124,6 +127,7 @@ export default function LoginForm() {
           {userType === "tester" && <p>Email: tester@example.com / Password: password</p>}
           {userType === "admin" && <p>Email: admin@example.com / Password: password</p>}
           {userType === "doctor" && <p>Email: doctor@example.com / Password: password (once registered)</p>} {/* Added doctor demo credentials info */}
+          {userType === "MainDoctor" && <p>Email: doctor@example.com / Password: password (once registered)</p>} {/* Added doctor demo credentials info */}
         </div>
       </form>
     </Tabs>

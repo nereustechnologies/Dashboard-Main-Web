@@ -59,6 +59,7 @@
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.1",
     "jszip": "latest",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.454.0",
     "ml-matrix": "^6.12.1",
     "next": "15.3.3",

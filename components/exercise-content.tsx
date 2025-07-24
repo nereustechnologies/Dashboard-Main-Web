@@ -235,6 +235,7 @@ export function ExerciseContent({ exerciseData, exerciseName, exerciseId }: Exer
             .split(/\r?\n/) // split by new line
             .map((line) => line.split(/,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/)) // naive CSV split respecting quotes
           setCsvData(rows)
+          console.log("dewhdbhkedhewd",csvData)
         }
       }
     } catch (err) {
