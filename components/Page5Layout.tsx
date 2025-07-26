@@ -76,7 +76,7 @@ export default function Page5Layout({ data }: { data: Page5Data }) {
           className="absolute left-[19px] top-[53px] font-poppins text-[13px] font-medium italic"
           style={{ lineHeight: "1.38", letterSpacing: "-0.01em" }}
         >
-          {data.knee_flexion["Rep Count"] / 2} reps
+          {data.knee_flexion["Rep Count"]} reps
         </p>
         <p
           className="absolute left-[19px] top-[72px] font-poppins text-[13px] font-medium italic"

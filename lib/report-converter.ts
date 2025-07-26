@@ -243,30 +243,49 @@ export function convertCustomerDataToReportData(customerData: CustomerData): Fit
   }
   
   // Helper function to extract analysis results
-  const getAnalysisResults = (exerciseName: string) => {
-    const exercise = getExerciseData(exerciseName)
-    if (!exercise?.assetFiles) return null
-    
-    // Look for any file with analysis results (processed or otherwise)
-    const fileWithAnalysis = exercise.assetFiles.find((file: any) => 
-      file.analysisResults
-    )
-    
-    if (!fileWithAnalysis?.analysisResults) return null
-    
-    let analysisData = fileWithAnalysis.analysisResults
-    
-    // Handle different analysis result formats
-    if (analysisData.body && typeof analysisData.body === 'string') {
-      try {
-        analysisData = JSON.parse(analysisData.body)
-      } catch (e) {
-        // If parsing fails, use the original structure
-      }
+const getAnalysisResults = (exerciseName: string) => {
+  const exercise = getExerciseData(exerciseName);
+  if (!exercise?.assetFiles) return null;
+
+  // Step 1: Group files by fileName and keep the latest one based on updatedAt
+  const latestFilesByName = new Map<string, any>();
+
+  exercise.assetFiles.forEach((file: any) => {
+    const existing = latestFilesByName.get(file.fileName);
+
+    if (
+      !existing ||
+      new Date(file.updatedAt).getTime() > new Date(existing.updatedAt).getTime()
+    ) {
+      latestFilesByName.set(file.fileName, file);
     }
-    
-    return analysisData
+  });
+
+  // Step 2: Collect files that have analysisResults
+  const valuesArray: any[] = [];
+  latestFilesByName.forEach((value) => {
+    if (value.analysisResults) {
+      valuesArray.push(value);
+    }
+  });
+
+  // Step 3: Use the first valid one (or customize to your needs)
+  if (valuesArray.length === 0) return null;
+
+  let analysisData = valuesArray[0].analysisResults;
+
+  // Step 4: If it's a stringified JSON in `body`, parse it
+  if (analysisData.body && typeof analysisData.body === 'string') {
+    try {
+      analysisData = JSON.parse(analysisData.body);
+    } catch (e) {
+      // use original structure if parsing fails
+    }
   }
+
+  return analysisData;
+};
+
   
   // Helper function to create summary items from training purposes
   const createSummaryItems = (category: string): SummaryItem[] => {
