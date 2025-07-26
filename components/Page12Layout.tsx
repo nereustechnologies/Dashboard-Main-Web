@@ -74,8 +74,7 @@ const Page12Layout: React.FC<{ data: Page12Data }> = ({ data }) => {
 
       <p className="absolute left-[106px] top-[823px] w-[419px] text-center font-poppins text-[10px] font-light leading-[14px] text-white">
         This report is for informational purposes only and is not a substitute
-        for medical or professional advice. See full Terms & Conditions at our
-        company website.
+        for medical or professional advice. See full <a href="https://booking.nereustechnologies.com/terms" className="font-poppins  font-semibold leading-[18px] text-[#00DDF9]">Terms & Conditions</a> 
       </p>
     </div>
   );
