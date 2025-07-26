@@ -45,12 +45,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: "Exercise not found" }, { status: 404 })
     }
 
-    // Prefer the first asset file that has analysisResults or processed path
-    const preferredFile = exercise.assetFiles.find((f) => f.analysisResults || f.s3PathProcessed) || exercise.assetFiles[0]
+   const sortedFiles = [...exercise.assetFiles].sort((a, b) => {
+  return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+})
 
-    const analysisResults = preferredFile?.analysisResults ?? null
-    const s3PathProcessed = preferredFile?.s3PathProcessed ?? null
+// Prefer the latest file that has analysisResults or s3PathProcessed
+const preferredFile = sortedFiles.find(f => f.analysisResults || f.s3PathProcessed) || sortedFiles[0]
 
+const analysisResults = preferredFile?.analysisResults ?? null
+const s3PathProcessed = preferredFile?.s3PathProcessed ?? null
     return NextResponse.json({ analysisResults, s3PathProcessed })
   } catch (error) {
     console.error("Error fetching exercise analysis:", error)
