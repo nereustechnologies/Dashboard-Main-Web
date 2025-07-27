@@ -52,12 +52,15 @@ const [confirmInput, setConfirmInput] = useState('');
 
 
 const handleApprove = async () => {
-  if (!reportData || loading || !fontsLoaded) {
-    alert('⏳ Report is still loading. Please wait a moment before sending.');
-    return;
-  }
+if (!reportData || loading || !fontsLoaded || document.fonts.status !== 'loaded') {
+  alert('⏳ Report is still loading or fonts not ready. Please wait...');
+  return;
+}
 
   try {
+  await document.fonts.ready;
+  
+
     const html2canvas = (await import('html2canvas')).default;
     const jsPDF = (await import('jspdf')).jsPDF;
     const element = document.getElementById('report-container');
@@ -66,26 +69,33 @@ const handleApprove = async () => {
     const pdf = new jsPDF({ unit: 'mm', format: 'a5', orientation: 'portrait' });
 
     for (let i = 0; i < element.children.length; i++) {
-      const canvas = await html2canvas(element.children[i] as HTMLElement, {
-        scale: 2,
-        useCORS: true,
-        scrollX: 0,
-        scrollY: 0,
-      });
+     const scaleFactor = 0.9; // 90% of A5
+const pdfWidth = 148 * scaleFactor;
+const pdfHeight = 210 * scaleFactor;
 
-      const imgData = canvas.toDataURL('image/jpeg', 1.0);
-      const imgProps = pdf.getImageProperties(imgData);
+const offsetX = (148 - pdfWidth) / 2;
+const offsetY = (210 - pdfHeight) / 2;
 
-      const pdfWidth = 148;
-      const pdfHeight = 210;
-      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      const yOffset = (pdfHeight - imgHeight) / 2;
+const canvas = await html2canvas(element.children[i] as HTMLElement, {
+  scale: 1,
+  useCORS: true,
+  backgroundColor: '#000', // Match actual bg, not null
+  scrollX: 0,
+  scrollY: 0,
+  logging: true,
+});
 
-      if (i !== 0) pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, yOffset > 0 ? yOffset : 0, pdfWidth, imgHeight);
+const imgData = canvas.toDataURL('image/jpeg', 1.0);
+const imgProps = pdf.getImageProperties(imgData);
+const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+if (i !== 0) pdf.addPage();
+pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight);
+
     }
 
-    const pdfBlob = pdf.output('blob');
+const pdfBlob = new Blob([pdf.output('arraybuffer')], { type: 'application/pdf' });
+
 
     // ✅ Build FormData
     const formData = new FormData();
@@ -240,6 +250,12 @@ const handleApprove = async () => {
       />
       
       <style>{`
+      .page, .last-page {
+  margin: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
         @font-face {
           font-family: 'Gerante';
           src: url('/fonts/Gerante-Regular.woff2') format('woff2'),
@@ -277,6 +293,7 @@ const handleApprove = async () => {
           height: 100%;
         }
         
+
         /* Screen display */
         @media screen {
           html, body {
@@ -450,6 +467,17 @@ const handleApprove = async () => {
           color: #0369a1;
           font-size: 14px;
         }
+         
+  @media print {
+  @page {
+  size: 167mm 235mm;
+  margin: 0;
+}
+
+      }
+
+}
+          
       `}</style>
 
       {showConfirmModal && (
@@ -592,3 +620,4 @@ export default function PreviewPrintPage() {
     </Suspense>
   );
 }
+
