@@ -1,6 +1,8 @@
 import type { Page3Data } from "@/lib/report-converter";
 
+
 export default function Page2Layout({ data }: { data: Page3Data }) {
+  
   return (
     <div
       className="relative w-full h-full overflow-hidden"
@@ -71,7 +73,7 @@ export default function Page2Layout({ data }: { data: Page3Data }) {
       />
       {/* Figma Text 1 */}
       <span
-        className="absolute left-[38px] top-[89px] w-[224px] h-[129px] font-gerante font-normal text-[78px] text-[#00EDF9]"
+        className="absolute left-[38px] top-[89px] w-[224px] h-[129px] font-gerante font-normal text-[65px] text-[#00EDF9]"
         style={{ letterSpacing: "-0.01em" }}
       >
         {data.name.split(" ")[0].toUpperCase()},
