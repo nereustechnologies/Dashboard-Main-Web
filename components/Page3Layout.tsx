@@ -1,14 +1,14 @@
 import type { Page3Data } from "@/lib/report-converter";
 
 export default function Page3Layout({ data }: { data: Page3Data }) {
+const userFields = [
+  { value: data.name },
+  { value: `${data.age} y/o` },
+  { value: `${data.height} cm` },
+  { value: `${data.weight} kg` },
+  { value: data.gender },
+];
 
-        const userFields = [
-              { value: data.name, style: "left-0 w-[170px] overflow-hidden text-ellipsis whitespace-nowrap" },
-              { value: `${data.age} y/o`, style: "left-[180px]" },
-              { value: `${data.height} cm`, style: "left-[250px]" },
-              { value: `${data.weight} kg`, style: "left-[310px]" },
-              { value: data.gender, style: "left-[370px]" },
-        ];
 
   return (
     <div
@@ -136,17 +136,19 @@ export default function Page3Layout({ data }: { data: Page3Data }) {
         </div>  */}
 
         <div className="absolute top-[414px] left-[22px] w-[392px] text-[#5E5F5F] font-poppins text-[12px] leading-[1.5] tracking-[-0.01em] flex">
-            {userFields.map((field, idx) => (
-              <div key={idx} className="relative flex items-center">
-                <span className={field.style}>{field.value}</span>
-                  {idx < userFields.length - 1 && (
-                  <div
-                  className="h-[15.5px] mx-[10px]"
-                  style={{ borderLeft: "1px solid #242424" }}
-                  />
-                  )}
-              </div>
-            ))}
+          {userFields.map((field, idx) => (
+  <div key={idx} className="relative flex items-center">
+    <span className={`whitespace-nowrap overflow-hidden text-ellipsis ${idx === 0 ? "max-w-[170px]" : "max-w-[80px]"}`}>
+      {field.value}
+    </span>
+    {idx < userFields.length - 1 && (
+      <div
+        className="h-[15.5px] mx-[10px]"
+        style={{ borderLeft: "1px solid #242424" }}
+      />
+    )}
+  </div>
+))}
         </div>
 
         {/* "Why You Move" Section */}
